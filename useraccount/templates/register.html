@@ -1,86 +1,185 @@
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
-    margin: 0;
-    padding: 0;
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
 
-/* Container */
-form {
-    width: 400px;
-    margin: 50px auto;
-    padding: 25px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+        }
 
-/* Title */
-h2 {
-    text-align: center;
-    margin-top: 40px;
-    color: #333;
-}
+        .container {
+            width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
 
-/* Paragraph spacing (Django form.as_p uses <p>) */
-form p {
-    margin-bottom: 15px;
-}
+        h2 {
+            text-align: center;
+        }
 
-/* Labels */
-label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-}
+        .step {
+            display: none;
+        }
 
-/* Inputs */
-input, select, textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-}
+        .step.active {
+            display: block;
+        }
 
-/* Focus effect */
-input:focus, select:focus, textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-}
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
 
-/* Checkbox group */
-input[type="checkbox"] {
-    width: auto;
-    margin-right: 5px;
-}
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-/* Button */
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        button:hover {
+            background: #45a049;
+        }
 
-/* Button hover */
-button:hover {
-    background-color: #45a049;
-}
-</style>
-<h2>Register</h2>
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
+<body>
+
+<div class="container">
+    <h2>Register</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Step 1 -->
+        <div class="step active">
+            <label>Username</label>
+            {{ form.username }}
+
+            <label>Email</label>
+            {{ form.email }}
+
+            <button type="button" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <label>Password</label>
+            {{ form.password }}
+
+            <label>Confirm Password</label>
+            {{ form.confirm_password }}
+
+            <div class="btn-group">
+                <button type="button" onclick="prevStep()">Back</button>
+                <button type="button" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <label>Student Status</label>
+            {{ form.student_status }}
+
+            <label>Birthday</label>
+            {{ form.birthday }}
+
+            <label>Gender</label>
+            {{ form.gender }}
+
+            <div class="btn-group">
+                <button type="button" onclick="prevStep()">Back</button>
+                <button type="button" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <label>Goals</label>
+            {{ form.goals }}
+
+            <label>Availability</label>
+            {{ form.availability }}
+
+            <div class="btn-group">
+                <button type="button" onclick="prevStep()">Back</button>
+                <button type="submit">Register</button>
+            </div>
+        </div>
+
+    </form>
+
     <p style="text-align:center; margin-top:10px;">
-    Already have an account?
-    <a href=>Login</a>
-</p>
-</form>
+        Already have an account?
+        <a href="">Login</a>
+    </p>
+</div>
+
+<script>
+    let currentStep = 0;
+    const steps = document.querySelectorAll(".step");
+
+    function showStep(index) {
+        steps.forEach((step, i) => {
+            step.classList.remove("active");
+            if (i === index) {
+                step.classList.add("active");
+            }
+        });
+    }
+
+    function validateStep() {
+        let inputs = steps[currentStep].querySelectorAll("input, select, textarea");
+        let valid = true;
+
+        inputs.forEach(input => {
+            if (!input.value) {
+                input.style.border = "2px solid red";
+                valid = false;
+            } else {
+                input.style.border = "1px solid #ccc";
+            }
+        });
+
+        return valid;
+    }
+
+    function nextStep() {
+        if (!validateStep()) {
+            alert("Please fill all fields before proceeding!");
+            return;
+        }
+
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    }
+</script>
+
+</body>
+</html>

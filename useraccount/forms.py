@@ -21,6 +21,8 @@ class UserRegistrationForm(forms.ModelForm):
         widgets = {
             'password': forms.PasswordInput(),
             'birthday': forms.DateInput(attrs={'type': 'date'}),
+            'goals': forms.Textarea(attrs={'rows': 3}),
+            'availability': forms.Textarea(attrs={'rows': 3}),
         }
 
 
