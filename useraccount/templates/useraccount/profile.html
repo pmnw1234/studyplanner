@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ request.user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto animate-fadeIn">
+    <div class="card shadow-xl mb-6 overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <div class="h-32 bg-gradient-to-r from-[#FDF4F5] to-[#F8F1ED]"></div>
+        <div class="card-body relative pt-0">
+            <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 gap-6">
+               <div class="avatar">
+    <div class="w-32 h-32 rounded-full ring ring-[#D4A373] ring-offset-base-100 ring-offset-2 overflow-hidden bg-white">
+        {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="{{ request.user.username }}" class="object-cover" />
+        {% else %}
+            <i class="bi bi-person-circle text-6xl text-[#D4A373] flex items-center justify-center h-full"></i>
+        {% endif %}
+    </div>
+</div>
+                <div class="flex-1 text-center md:text-left pb-2">
+                    <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ request.user.username }}</h1>
+                    <p class="text-sm font-medium" style="color: var(--text-secondary);">
+                        <i class="bi bi-mortarboard-fill me-1"></i> {{ profile.student_status }}
+                    </p>
+                </div>
+                <div class="pb-2">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-sm md:btn-md border-none shadow-md" style="background-color: var(--accent-brown); color: white;">
+                        <i class="bi bi-pencil-square"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1 space-y-6">
+            <div class="card shadow-md p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <h3 class="font-bold mb-4 border-b pb-2" style="color: var(--accent-brown);">About Me</h3>
+                <div class="space-y-3 text-sm">
+                    <p><span class="opacity-60">Level:</span> <span class="font-semibold">{{ profile.current_level }}</span></p>
+                    <p><span class="opacity-60">Preferred Time:</span> <span class="font-semibold">{{ profile.preferred_study_time }}</span></p>
+                    <p><span class="opacity-60">Gender:</span> <span class="font-semibold">{{ profile.gender }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-2 space-y-6">
+            <div class="card shadow-md p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold mb-3 flex items-center" style="color: var(--accent-pink);">
+                            <i class="bi bi-star-fill me-2"></i> Can Teach
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% if profile.skills_to_teach %}
+                                {% for skill in profile.skills_to_teach.all %}
+                                    <span class="badge badge-lg p-3 border-none" style="background-color: #F8F1ED; color: var(--accent-brown);">{{ skill.name }}</span>
+                                {% empty %}
+                                    <p class="text-xs italic opacity-50">No skills listed yet.</p>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-xs italic opacity-50">No skills listed yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-3 flex items-center" style="color: var(--accent-brown);">
+                            <i class="bi bi-search me-2"></i> Wants to Learn
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% if profile.skills_to_learn %}
+                                {% for skill in profile.skills_to_learn.all %}
+                                    <span class="badge badge-lg p-3 border-none" style="background-color: #FDF4F5; color: var(--accent-pink);">{{ skill.name }}</span>
+                                {% empty %}
+                                    <p class="text-xs italic opacity-50">No skills listed yet.</p>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-xs italic opacity-50">No skills listed yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-md p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <h4 class="font-bold mb-3" style="color: var(--text-primary);">Study Goals</h4>
+                <p class="text-sm mb-6 leading-relaxed">{{ profile.goals|default:"No goals set yet." }}</p>
+                
+                <h4 class="font-bold mb-3" style="color: var(--text-primary);">Availability</h4>
+                <div class="p-3 rounded-lg text-sm" style="background-color: var(--bg-page); border-left: 4px solid var(--accent-pink);">
+                    {{ profile.availability|default:"Not specified." }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+</style>
+{% endblock %}
+

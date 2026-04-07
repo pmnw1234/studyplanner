@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}SkillSwap{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Light Mode Colors */
+        [data-theme="light"] {
+            --bg-page: #FFF8F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #4A3728;
+            --text-secondary: #8B6914;
+            --border-color: #F9EAE1;
+            --accent-pink: #D4A373;
+            --accent-brown: #4A3728;
+            --navbar-bg: #FFFFFF;
+        }
+        
+        /* Dark Mode Colors (keeping pink!) */
+        [data-theme="dark"] {
+            --bg-page: #2D241E;
+            --bg-card: #3D2B1F;
+            --text-primary: #F9EAE1;
+            --text-secondary: #D4A373;
+            --border-color: #4A3728;
+            --accent-pink: #D4A373;
+            --accent-brown: #F9EAE1;
+            --navbar-bg: #2D241E;
+        }
+        
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        /* Responsive container padding */
+        .container-custom {
+            width: 100%;
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .container-custom {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .container-custom {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        
+        /* Mobile menu animation */
+        .mobile-menu-enter {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-enter-active {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        /* Touch-friendly tap highlight removal */
+        .no-tap-highlight {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="no-tap-highlight">
+    
+    <!-- Responsive Navbar with Mobile Menu -->
+    <nav class="sticky top-0 z-50 shadow-sm" style="background-color: var(--navbar-bg); border-bottom: 1px solid var(--border-color);">
+        <div class="container-custom">
+            <div class="navbar min-h-[60px] md:min-h-[70px] p-0">
+                
+                <!-- Left side - Logo -->
+                <div class="navbar-start">
+                    <a class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2" href="#" style="color: var(--text-primary);">
+                        <i class="bi bi-intersect text-lg md:text-2xl" style="color: var(--accent-pink);"></i>
+                        <span class="ml-1 md:ml-2 hidden sm:inline">SkillSwap</span>
+                        <span class="ml-1 sm:hidden">SS</span>
+                    </a>
+                </div>
+                
+                <!-- Center - Desktop Menu (hidden on mobile) -->
+                <div class="navbar-center hidden md:flex">
+                    <ul class="menu menu-horizontal px-1 gap-1">
+                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-house-door"></i> Feed</a></li>
+                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-people"></i> Matches</a></li>
+                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-chat-dots"></i> Messages</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Right side - Theme toggle + User menu -->
+                <div class="navbar-end gap-1 md:gap-2">
+                    
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm md:btn-md">
+                        <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-pink);"></i>
+                    </button>
+                    
+                    <!-- Desktop User Dropdown (hidden on mobile) -->
+                    <div class="dropdown dropdown-end hidden md:block">
+                        <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                            <div class="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" style="background-color: var(--border-color);">
+                                <i class="bi bi-person-circle text-base md:text-xl" style="color: var(--accent-pink);"></i>
+                            </div>
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-52 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <li><a  href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
+                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-gear"></i> Settings</a></li>
+                            <li><hr class="my-1" style="border-color: var(--border-color);"></li>
+                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="btn btn-ghost btn-circle btn-sm md:hidden">
+                        <i id="mobile-menu-icon" class="bi bi-list text-xl" style="color: var(--accent-pink);"></i>
+                    </button>
+                    
+                    <!-- Mobile User Avatar (visible on mobile) -->
+                    <div class="dropdown dropdown-end md:hidden">
+                        <label tabindex="0" class="btn btn-ghost btn-circle avatar btn-sm">
+                            <div class="rounded-full w-8 h-8 flex items-center justify-center" style="background-color: var(--border-color);">
+                                <i class="bi bi-person-circle" style="color: var(--accent-pink);"></i>
+                            </div>
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-44 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <li><a a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
+                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-gear"></i> Settings</a></li>
+                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu" class="mobile-menu-enter md:hidden overflow-hidden">
+                <ul class="menu py-2 space-y-1" style="border-top: 1px solid var(--border-color);">
+                    <li>
+                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-house-door"></i> Feed</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-people"></i> Matches</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-chat-dots"></i> Messages</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area - Responsive -->
+    <main class="container-custom py-4 md:py-6 lg:py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer (optional) -->
+    <footer class="mt-auto py-6 md:py-8" style="border-top: 1px solid var(--border-color); background-color: var(--bg-page);">
+        <div class="container-custom">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-xs md:text-sm" style="color: var(--text-secondary);">
+                <div class="flex gap-4">
+                    <a href="#" class="hover:opacity-70"><i class="bi bi-github"></i> GitHub</a>
+                    <a href="#" class="hover:opacity-70"><i class="bi bi-twitter-x"></i> Twitter</a>
+                    <a href="#" class="hover:opacity-70"><i class="bi bi-envelope"></i> Contact</a>
+                </div>
+                <div>
+                    <i class="bi bi-heart-fill text-xs" style="color: var(--accent-pink);"></i>
+                    <span>© 2024 SkillSwap. All rights reserved.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle + Mobile Menu JavaScript -->
+    <script>
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+        
+        function updateIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.className = 'bi bi-sun-fill text-base md:text-xl';
+                themeIcon.style.color = '#D4A373';
+            } else {
+                themeIcon.className = 'bi bi-moon-fill text-base md:text-xl';
+                themeIcon.style.color = '#D4A373';
+            }
+        }
+        
+        // Mobile Menu Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+        let isMenuOpen = false;
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('mobile-menu-enter');
+                mobileMenu.classList.add('mobile-menu-enter-active');
+                mobileMenuIcon.className = 'bi bi-x-lg text-xl';
+            } else {
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                mobileMenuIcon.className = 'bi bi-list text-xl';
+            }
+        });
+        
+        // Close mobile menu when clicking outside (optional)
+        document.addEventListener('click', (e) => {
+            if (isMenuOpen && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                isMenuOpen = false;
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                mobileMenuIcon.className = 'bi bi-list text-xl';
+            }
+        });
+        
+        // Responsive resize handler - close menu on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && isMenuOpen) {
+                isMenuOpen = false;
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                mobileMenuIcon.className = 'bi bi-list text-xl';
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
