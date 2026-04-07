@@ -3,330 +3,239 @@
 {% block title %}Dashboard | SkillSwap{% endblock %}
 
 {% block content %}
-<div class="space-y-4 md:space-y-6">
-    <!-- Welcome Header with Streak - Responsive Stack -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="space-y-6 md:space-y-8">
+    
+    <!-- Welcome Header - Minimal -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b" style="border-color: var(--border-color);">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--text-primary);">
-                <i class="bi bi-person-badge me-2" style="color: var(--accent-pink);"></i>
-                Hello, {{ profile.user.username }}!
+            <h1 class="text-2xl md:text-3xl font-light tracking-tight" style="color: var(--text-primary);">
+                Good {{ time_of_day }}, {{ profile.user.username }}
             </h1>
-            <p class="text-sm md:text-base mt-1" style="color: var(--text-secondary);">
-                <i class="bi bi-gem me-1"></i> Keep your learning fire burning
+            <p class="text-sm mt-1 opacity-60" style="color: var(--text-secondary);">
+                <i class="bi bi-calendar3 me-1"></i> {{ today|date:"l, F j" }}
             </p>
         </div>
         
-        <!-- Streak Card - Full width on mobile -->
-        <div class="stats shadow w-full sm:w-auto" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="stat p-3 md:p-4">
-                <div class="stat-figure">
-                    <i class="bi bi-fire text-2xl md:text-3xl" style="color: var(--accent-pink);"></i>
-                </div>
-                <div>
-                    <div class="stat-title text-sm" style="color: var(--text-primary);">Current Streak</div>
-                    <div class="stat-value text-2xl md:text-3xl" style="color: var(--accent-pink);">{{ streak_days|default:'0' }}</div>
-                    <div class="stat-desc text-xs" style="color: var(--text-secondary);">
-                        <i class="bi bi-trophy"></i> Best: {{ best_streak|default:'0' }} days
-                    </div>
-                </div>
-            </div>
+        <!-- Minimal Streak -->
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: var(--border-color);">
+            <i class="bi bi-fire text-sm" style="color: var(--accent-primary);"></i>
+            <span class="text-sm font-medium" style="color: var(--text-primary);">{{ streak_days|default:'0' }} day streak</span>
         </div>
     </div>
 
-    <!-- Main Grid - Responsive Columns -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+    <!-- Minimal Stats Row - Clean Numbers -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-clock text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ weekly_hours|default:'0' }}</p>
+            <p class="text-xs opacity-50">hours this week</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-people text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ matches|length|default:'0' }}</p>
+            <p class="text-xs opacity-50">matches waiting</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-check-circle text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
+            <p class="text-xs opacity-50">sessions completed</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-graph-up text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ consistency_percent|default:'0' }}%</p>
+            <p class="text-xs opacity-50">consistency</p>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- LEFT COLUMN - Profile & Progress -->
-        <div class="space-y-4 md:space-y-6">
+        <!-- LEFT COLUMN -->
+        <div class="space-y-6">
             
-            <!-- Profile Card -->
-            <div class="card shadow-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="card-body p-4 md:p-6">
-                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                        <div class="avatar placeholder">
-                            <div class="rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center" style="background-color: var(--border-color);">
-                                <i class="bi bi-person-circle text-4xl md:text-5xl" style="color: var(--accent-pink);"></i>
-                            </div>
-                        </div>
-                        <div class="text-center sm:text-left">
-                            <h2 class="card-title text-xl md:text-2xl justify-center sm:justify-start" style="color: var(--text-primary);">{{ profile.user.username }}</h2>
-                            <div class="badge gap-2 mt-2 border-none inline-flex" style="background-color: var(--border-color); color: var(--text-primary);">
-                                <i class="bi bi-mortarboard"></i> {{ profile.student_status|default:'Student' }}
-                            </div>
-                        </div>
+            <!-- Profile Card - Minimal -->
+            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+                        <i class="bi bi-person text-xl" style="color: var(--accent-primary);"></i>
                     </div>
-                    
-                    <div class="divider my-3" style="background-color: var(--border-color);"></div>
-                    
-                    <div class="space-y-3">
-                        <div class="flex items-start sm:items-center gap-2 flex-col sm:flex-row">
-                            <div class="flex items-center gap-2 min-w-[100px]">
-                                <i class="bi bi-flag-fill" style="color: var(--accent-pink);"></i>
-                                <span class="font-semibold" style="color: var(--text-primary);">Goal:</span>
-                            </div>
-                            <span style="color: var(--text-primary);" class="text-sm">{{ profile.goals|default:'Set your goal' }}</span>
-                        </div>
-                        
-                        <div class="flex items-start sm:items-center gap-2 flex-col sm:flex-row">
-                            <div class="flex items-center gap-2 min-w-[100px]">
-                                <i class="bi bi-clock-fill" style="color: var(--accent-pink);"></i>
-                                <span class="font-semibold" style="color: var(--text-primary);">Study Time:</span>
-                            </div>
-                            <span class="badge border-none inline-flex" style="background-color: var(--border-color); color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
-                        </div>
-                        
-                        <div>
-                            <div class="flex justify-between mb-2">
-                                <span class="font-semibold text-sm" style="color: var(--text-primary);">
-                                    <i class="bi bi-graph-up"></i> Consistency
-                                </span>
-                                <span class="text-sm" style="color: var(--accent-pink);">{{ consistency_percent|default:'0' }}%</span>
-                            </div>
-                            <progress class="progress w-full h-2" style="background-color: var(--border-color);" 
-                                     value="{{ consistency_percent|default:'0' }}" 
-                                     max="100"></progress>
-                        </div>
-                    </div>
-                    
-                    <div class="card-actions justify-end mt-4">
-                        <a href="{% url 'edit_profile' %}" class="btn btn-sm md:btn-md border-none w-full sm:w-auto" style="background-color: var(--accent-brown); color: var(--bg-card);">
-                            <i class="bi bi-pencil"></i> Edit Profile
-                        </a>
+                    <div>
+                        <h3 class="font-medium" style="color: var(--text-primary);">{{ profile.user.username }}</h3>
+                        <p class="text-xs opacity-50">{{ profile.student_status|default:'Student' }}</p>
                     </div>
                 </div>
+                
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Goal</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.goals|default:'Not set'|truncatechars:30 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Study time</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Level</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Beginner' }}</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'edit_profile' %}" class="block text-center w-full mt-4 py-2 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    Edit profile
+                </a>
             </div>
 
-            <!-- Progress Dashboard -->
-            <div class="card shadow-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="card-body p-4 md:p-6">
-                    <h3 class="card-title text-base md:text-lg" style="color: var(--text-primary);">
-                        <i class="bi bi-bar-chart-steps" style="color: var(--accent-pink);"></i> Your Progress
-                    </h3>
-                    
-                    <div class="space-y-4 mt-2">
-                        <div>
-                            <div class="flex justify-between text-xs md:text-sm mb-2">
-                                <span style="color: var(--text-primary);">
-                                    <i class="bi bi-database"></i> SQL Course
-                                </span>
-                                <span style="color: var(--accent-pink);">{{ sql_progress|default:'65' }}%</span>
-                            </div>
-                            <progress class="progress w-full h-2" style="background-color: var(--border-color);" 
-                                     value="{{ sql_progress|default:'65' }}" 
-                                     max="100"></progress>
+            <!-- Course Progress - Clean -->
+            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <h3 class="font-medium mb-4 text-sm opacity-70">Active courses</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>SQL</span>
+                            <span class="opacity-50">{{ sql_progress|default:65 }}%</span>
                         </div>
-                        
-                        <div>
-                            <div class="flex justify-between text-xs md:text-sm mb-2">
-                                <span style="color: var(--text-primary);">
-                                    <i class="bi bi-brush"></i> Figma Design
-                                </span>
-                                <span style="color: var(--accent-pink);">{{ figma_progress|default:'40' }}%</span>
-                            </div>
-                            <progress class="progress w-full h-2" style="background-color: var(--border-color);" 
-                                     value="{{ figma_progress|default:'40' }}" 
-                                     max="100"></progress>
-                        </div>
-                        
-                        <div>
-                            <div class="flex justify-between text-xs md:text-sm mb-2">
-                                <span style="color: var(--text-primary);">
-                                    <i class="bi bi-file-code"></i> Python for Data
-                                </span>
-                                <span style="color: var(--accent-pink);">{{ python_progress|default:'80' }}%</span>
-                            </div>
-                            <progress class="progress w-full h-2" style="background-color: var(--border-color);" 
-                                     value="{{ python_progress|default:'80' }}" 
-                                     max="100"></progress>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ sql_progress|default:65 }}%; background-color: var(--accent-primary);"></div>
                         </div>
                     </div>
-                    
-                    <div class="divider my-3" style="background-color: var(--border-color);"></div>
-                    
-                    <div class="flex flex-col sm:flex-row justify-between gap-2 text-xs md:text-sm">
-                        <span style="color: var(--text-primary);">
-                            <i class="bi bi-hourglass-split" style="color: var(--accent-pink);"></i> Hours: <strong>{{ weekly_hours|default:'0' }}</strong>
-                        </span>
-                        <span style="color: var(--text-primary);">
-                            <i class="bi bi-award" style="color: var(--accent-pink);"></i> Sessions: <strong>{{ sessions_done|default:'0' }}</strong>
-                        </span>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Figma</span>
+                            <span class="opacity-50">{{ figma_progress|default:40 }}%</span>
+                        </div>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ figma_progress|default:40 }}%; background-color: var(--accent-primary);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Python</span>
+                            <span class="opacity-50">{{ python_progress|default:80 }}%</span>
+                        </div>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ python_progress|default:80 }}%; background-color: var(--accent-primary);"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN - Matches & Feed -->
-        <div class="lg:col-span-2 space-y-4 md:space-y-6">
+        <!-- RIGHT COLUMN -->
+        <div class="lg:col-span-2 space-y-6">
             
-            <!-- Tabs - Horizontal scroll on mobile -->
-            <div class="overflow-x-auto pb-2">
-                <div role="tablist" class="tabs tabs-boxed p-1 min-w-max" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                    <a role="tab" class="tab tab-active whitespace-nowrap" data-tab="matches" style="color: var(--text-primary);">
-                        <i class="bi bi-people-fill me-1 md:me-2"></i> 
-                        <span class="text-sm">Smart Matches</span>
-                    </a>
-                    <a role="tab" class="tab whitespace-nowrap" data-tab="feed" style="color: var(--text-primary);">
-                        <i class="bi bi-newspaper me-1 md:me-2"></i>
-                        <span class="text-sm">Study Feed</span>
-                    </a>
-                    <a role="tab" class="tab whitespace-nowrap" data-tab="activity" style="color: var(--text-primary);">
-                        <i class="bi bi-bell-fill me-1 md:me-2"></i>
-                        <span class="text-sm">Activity</span>
-                    </a>
-                </div>
+            <!-- Tabs - Minimal Underline Style -->
+            <div class="flex gap-6 border-b pb-2" style="border-color: var(--border-color);">
+                <button class="tab-minimal tab-active-minimal text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
+                    Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
+                </button>
+                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="feed" style="color: var(--text-primary);">
+                    Feed
+                </button>
+                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
+                    Activity
+                </button>
             </div>
 
-            <!-- Matches Tab - Responsive Grid -->
+            <!-- Matches Tab -->
             <div id="matches-tab" class="tab-content">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div class="space-y-3">
                     {% for match in matches %}
-                    <div class="card shadow-md" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                        <div class="card-body p-3 md:p-4">
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                <div class="w-full sm:w-auto">
-                                    <h3 class="font-bold text-sm md:text-base" style="color: var(--text-primary);">
-                                        <i class="bi bi-person-circle me-1" style="color: var(--accent-pink);"></i>
-                                        {{ match.name }}
-                                    </h3>
-                                    <div class="badge gap-1 mt-1 border-none text-xs" style="background-color: var(--border-color); color: var(--text-primary);">
-                                        <i class="bi bi-code-slash"></i> {{ match.skill_offer }} 
-                                        <i class="bi bi-arrow-right-short"></i> 
-                                        <i class="bi bi-chat-dots"></i> {{ match.skill_want }}
-                                    </div>
-                                </div>
-                                <div class="radial-progress text-center" 
-                                     style="--value: {{ match.score|default:'0' }}; --size:2.5rem; --thickness:4px; color: var(--accent-pink);">
-                                    <span class="text-xs font-bold" style="color: var(--text-primary);">{{ match.score|default:'0' }}%</span>
-                                </div>
+                    <div class="flex items-center justify-between p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+                                <i class="bi bi-person text-sm" style="color: var(--accent-primary);"></i>
                             </div>
-                            <div class="card-actions justify-end mt-3">
-                                <button class="btn btn-xs md:btn-sm border-none" style="background-color: var(--accent-pink); color: white;">
-                                    <i class="bi bi-hand-thumbs-up"></i> Connect
-                                </button>
-                                <button class="btn btn-ghost btn-xs md:btn-sm" style="color: var(--text-primary);">
-                                    <i class="bi bi-eye"></i> View
-                                </button>
+                            <div>
+                                <p class="font-medium text-sm" style="color: var(--text-primary);">{{ match.name }}</p>
+                                <p class="text-xs opacity-50">{{ match.skill_offer }} → {{ match.skill_want }}</p>
                             </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-medium" style="color: var(--accent-primary);">{{ match.score }}%</span>
+                            <button class="px-3 py-1 rounded-lg text-xs transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                                Connect
+                            </button>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="col-span-1 sm:col-span-2 text-center py-8 md:py-12">
-                        <i class="bi bi-people text-3xl md:text-4xl" style="color: var(--accent-pink);"></i>
-                        <p class="mt-2 text-sm" style="color: var(--text-primary);">No matches yet. Update your skills!</p>
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-people text-3xl"></i>
+                        <p class="text-sm mt-2">No matches yet</p>
                     </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- Study Feed Tab - Responsive Cards -->
+            <!-- Feed Tab -->
             <div id="feed-tab" class="tab-content hidden">
                 <div class="space-y-3">
                     {% for update in study_feed %}
-                    <div class="card shadow-md" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                        <div class="card-body p-3 md:p-4">
-                            <div class="flex gap-3">
-                                <div class="avatar placeholder flex-shrink-0">
-                                    <div class="rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center" style="background-color: var(--border-color);">
-                                        <i class="bi bi-person text-xl md:text-2xl" style="color: var(--accent-pink);"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm md:text-base">
-                                        <span class="font-bold" style="color: var(--text-primary);">{{ update.user }}</span>
-                                        <span style="color: var(--text-primary);"> {{ update.action }}</span>
-                                    </p>
-                                    <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                                        <i class="bi bi-clock"></i> {{ update.time_ago }}
-                                    </p>
-                                    <div class="flex flex-wrap gap-2 mt-2">
-                                        <div class="badge gap-1 border-none text-xs" style="background-color: var(--border-color); color: var(--text-primary);">
-                                            <i class="bi bi-journal-bookmark-fill"></i> {{ update.topic }}
-                                        </div>
-                                        <div class="badge gap-1 border-none text-xs" style="background-color: var(--border-color); color: var(--text-primary);">
-                                            <i class="bi bi-bullseye"></i> {{ update.goal }}
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-wrap gap-3 mt-3">
-                                        <button class="btn btn-ghost btn-xs" style="color: var(--accent-pink);">
-                                            <i class="bi bi-heart"></i> <span class="text-xs">{{ update.likes|default:'0' }}</span>
-                                        </button>
-                                        <button class="btn btn-ghost btn-xs" style="color: var(--accent-pink);">
-                                            <i class="bi bi-chat"></i> <span class="text-xs">{{ update.comments|default:'0' }}</span>
-                                        </button>
-                                        <button class="btn btn-ghost btn-xs" style="color: var(--accent-pink);">
-                                            <i class="bi bi-share"></i>
-                                        </button>
-                                    </div>
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: var(--border-color);">
+                                <i class="bi bi-chat text-xs" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm"><span class="font-medium">{{ update.user }}</span> {{ update.action }}</p>
+                                <p class="text-xs opacity-50 mt-1">{{ update.time_ago }}</p>
+                                <div class="flex gap-3 mt-2">
+                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-heart"></i> {{ update.likes|default:'0' }}</button>
+                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-chat"></i> {{ update.comments|default:'0' }}</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center py-8 md:py-12">
-                        <i class="bi bi-newspaper text-3xl md:text-4xl" style="color: var(--accent-pink);"></i>
-                        <p class="mt-2 text-sm" style="color: var(--text-primary);">No study updates yet</p>
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-newspaper text-3xl"></i>
+                        <p class="text-sm mt-2">No updates yet</p>
                     </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- Activity Tab - Responsive List -->
+            <!-- Activity Tab -->
             <div id="activity-tab" class="tab-content hidden">
-                <div class="card shadow-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                    <div class="card-body p-0">
-                        <ul class="divide-y" style="border-color: var(--border-color);">
-                            {% for activity in user_activities %}
-                            <li class="p-3 md:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                                <i class="bi bi-{{ activity.icon }} text-lg md:text-xl" style="color: var(--accent-pink);"></i>
-                                <span class="flex-1 text-sm md:text-base" style="color: var(--text-primary);">{{ activity.message }}</span>
-                                <span class="text-xs md:text-sm" style="color: var(--text-secondary);">
-                                    <i class="bi bi-calendar3"></i> {{ activity.date }}
-                                </span>
-                            </li>
-                            {% empty %}
-                            <li class="p-8 md:p-12 text-center">
-                                <i class="bi bi-bell-slash text-3xl md:text-4xl" style="color: var(--accent-pink);"></i>
-                                <p class="mt-2 text-sm" style="color: var(--text-primary);">No recent activity</p>
-                            </li>
-                            {% endfor %}
-                        </ul>
+                <div class="space-y-2">
+                    {% for activity in user_activities %}
+                    <div class="flex items-center gap-3 p-3 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <i class="bi bi-{{ activity.icon }} text-sm opacity-50"></i>
+                        <span class="text-sm flex-1" style="color: var(--text-primary);">{{ activity.message }}</span>
+                        <span class="text-xs opacity-40">{{ activity.date }}</span>
                     </div>
+                    {% empty %}
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-inbox text-3xl"></i>
+                        <p class="text-sm mt-2">No recent activity</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
-            <!-- Quick Actions - Responsive Stack -->
-            <div class="card" style="background-color: var(--border-color);">
-                <div class="card-body p-3 md:p-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <span class="font-semibold text-sm md:text-base" style="color: var(--text-primary);">
-                            <i class="bi bi-lightning-charge-fill" style="color: var(--accent-pink);"></i> Quick Actions
-                        </span>
-                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                            <button class="btn btn-xs md:btn-sm border-none w-full sm:w-auto" style="background-color: var(--accent-pink); color: white;">
-                                <i class="bi bi-calendar-plus"></i> Schedule
-                            </button>
-                            <button class="btn btn-xs md:btn-sm border-none w-full sm:w-auto" style="background-color: var(--accent-brown); color: var(--bg-card);">
-                                <i class="bi bi-plus-circle"></i> Add Skill
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Quick Action - Minimal -->
+            <div class="flex gap-3 pt-2">
+                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-calendar-plus me-1"></i> Schedule
+                </button>
+                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-plus-circle me-1"></i> Add skill
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Tab Switching JavaScript -->
 <script>
-    document.querySelectorAll('[data-tab]').forEach(tab => {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
+    document.querySelectorAll('.tab-minimal').forEach(tab => {
+        tab.addEventListener('click', function() {
             const tabName = this.getAttribute('data-tab');
             
-            document.querySelectorAll('[data-tab]').forEach(t => {
-                t.classList.remove('tab-active');
+            document.querySelectorAll('.tab-minimal').forEach(t => {
+                t.classList.remove('tab-active-minimal');
+                t.style.opacity = '0.5';
             });
-            this.classList.add('tab-active');
+            this.classList.add('tab-active-minimal');
+            this.style.opacity = '1';
             
             document.getElementById('matches-tab').classList.add('hidden');
             document.getElementById('feed-tab').classList.add('hidden');
@@ -338,35 +247,12 @@
 </script>
 
 <style>
-    /* Responsive progress bar */
-    .progress::-webkit-progress-value {
-        background-color: #D4A373;
-        transition: width 0.3s ease;
+    .tab-active-minimal {
+        opacity: 1 !important;
+        border-bottom: 2px solid var(--accent-primary);
     }
-    .progress::-moz-progress-bar {
-        background-color: #D4A373;
-    }
-    
-    /* Active tab styling */
-    .tab-active {
-        background-color: #D4A373 !important;
-        color: white !important;
-    }
-    
-    .tab-active i {
-        color: white !important;
-    }
-    
-    /* Touch-friendly button sizing */
-    @media (max-width: 640px) {
-        .btn, .tab {
-            min-height: 40px;
-        }
-    }
-    
-    /* Smooth transitions */
-    .card, .btn, .tab {
-        transition: all 0.2s ease;
+    .progress-fill {
+        width: var(--progress-width);
     }
 </style>
 {% endblock %}

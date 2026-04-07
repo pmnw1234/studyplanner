@@ -17,35 +17,43 @@
         }
         
         /* Light Mode Colors */
-        [data-theme="light"] {
-            --bg-page: #FFF8F0;
-            --bg-card: #FFFFFF;
-            --text-primary: #4A3728;
-            --text-secondary: #8B6914;
-            --border-color: #F9EAE1;
-            --accent-pink: #D4A373;
-            --accent-brown: #4A3728;
-            --navbar-bg: #FFFFFF;
-        }
-        
-        /* Dark Mode Colors (keeping pink!) */
-        [data-theme="dark"] {
-            --bg-page: #2D241E;
-            --bg-card: #3D2B1F;
-            --text-primary: #F9EAE1;
-            --text-secondary: #D4A373;
-            --border-color: #4A3728;
-            --accent-pink: #D4A373;
-            --accent-brown: #F9EAE1;
-            --navbar-bg: #2D241E;
-        }
-        
+      /* Light Mode Colors */
+html[data-theme="light"] {
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --text-primary: #1E293B;
+    --text-secondary: #475569;
+    --border-color: #E2E8F0;
+    --accent-primary: #3B82F6;
+    --accent-secondary: #10B981;
+    --accent-ocean: #0EA5E9;
+    --navbar-bg: #FFFFFF;
+}
+
+/* Dark Mode Colors (keeping pink!) */
+html[data-theme="dark"] {
+    --bg-page: #0F172A;
+    --bg-card: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --border-color: #334155;
+    --accent-primary: #3B82F6;
+    --accent-secondary: #10B981;
+    --accent-ocean: #0EA5E9;
+    --navbar-bg: #0F172A;
+}
         body {
             background-color: var(--bg-page);
             color: var(--text-primary);
             transition: all 0.3s ease;
         }
         
+        /* Add at the bottom of your <style> tag */
+.radial-progress {
+    --value: 0;
+    --size: 3rem;
+    --thickness: 4px;
+}
         /* Responsive container padding */
         .container-custom {
             width: 100%;
