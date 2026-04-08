@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | SkillSwap{% endblock %}
+
+{% block content %}
+<div class="space-y-6 md:space-y-8">
+    
+    <!-- Welcome Header - Minimal -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b" style="border-color: var(--border-color);">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-light tracking-tight" style="color: var(--text-primary);">
+                Good {{ time_of_day }}, {{ profile.user.username }}
+            </h1>
+            <p class="text-sm mt-1 opacity-60" style="color: var(--text-secondary);">
+                <i class="bi bi-calendar3 me-1"></i> {{ today|date:"l, F j" }}
+            </p>
+        </div>
+        
+        <!-- Minimal Streak -->
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: var(--border-color);">
+            <i class="bi bi-fire text-sm" style="color: var(--accent-primary);"></i>
+            <span class="text-sm font-medium" style="color: var(--text-primary);">{{ streak_days|default:'0' }} day streak</span>
+        </div>
+    </div>
+
+    <!-- Minimal Stats Row - Clean Numbers -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-clock text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ weekly_hours|default:'0' }}</p>
+            <p class="text-xs opacity-50">hours this week</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-people text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ matches|length|default:'0' }}</p>
+            <p class="text-xs opacity-50">matches waiting</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-check-circle text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
+            <p class="text-xs opacity-50">sessions completed</p>
+        </div>
+        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-graph-up text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ consistency_percent|default:'0' }}%</p>
+            <p class="text-xs opacity-50">consistency</p>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- LEFT COLUMN -->
+        <div class="space-y-6">
+            
+            <!-- Profile Card - Minimal -->
+            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+                        <i class="bi bi-person text-xl" style="color: var(--accent-primary);"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium" style="color: var(--text-primary);">{{ profile.user.username }}</h3>
+                        <p class="text-xs opacity-50">{{ profile.student_status|default:'Student' }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Goal</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.goals|default:'Not set'|truncatechars:30 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Study time</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-50">Level</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Beginner' }}</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'edit_profile' %}" class="block text-center w-full mt-4 py-2 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    Edit profile
+                </a>
+            </div>
+
+            <!-- Course Progress - Clean -->
+            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <h3 class="font-medium mb-4 text-sm opacity-70">Active courses</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>SQL</span>
+                            <span class="opacity-50">{{ sql_progress|default:65 }}%</span>
+                        </div>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ sql_progress|default:65 }}%; background-color: var(--accent-primary);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Figma</span>
+                            <span class="opacity-50">{{ figma_progress|default:40 }}%</span>
+                        </div>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ figma_progress|default:40 }}%; background-color: var(--accent-primary);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Python</span>
+                            <span class="opacity-50">{{ python_progress|default:80 }}%</span>
+                        </div>
+                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ python_progress|default:80 }}%; background-color: var(--accent-primary);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Tabs - Minimal Underline Style -->
+            <div class="flex gap-6 border-b pb-2" style="border-color: var(--border-color);">
+                <button class="tab-minimal tab-active-minimal text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
+                    Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
+                </button>
+                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="feed" style="color: var(--text-primary);">
+                    Feed
+                </button>
+                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
+                    Activity
+                </button>
+            </div>
+
+            <!-- Matches Tab -->
+            <div id="matches-tab" class="tab-content">
+                <div class="space-y-3">
+                    {% for match in matches %}
+                    <div class="flex items-center justify-between p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+                                <i class="bi bi-person text-sm" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-sm" style="color: var(--text-primary);">{{ match.name }}</p>
+                                <p class="text-xs opacity-50">{{ match.skill_offer }} → {{ match.skill_want }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-medium" style="color: var(--accent-primary);">{{ match.score }}%</span>
+                            <button class="px-3 py-1 rounded-lg text-xs transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                                Connect
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-people text-3xl"></i>
+                        <p class="text-sm mt-2">No matches yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Feed Tab -->
+            <div id="feed-tab" class="tab-content hidden">
+                <div class="space-y-3">
+                    {% for update in study_feed %}
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: var(--border-color);">
+                                <i class="bi bi-chat text-xs" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm"><span class="font-medium">{{ update.user }}</span> {{ update.action }}</p>
+                                <p class="text-xs opacity-50 mt-1">{{ update.time_ago }}</p>
+                                <div class="flex gap-3 mt-2">
+                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-heart"></i> {{ update.likes|default:'0' }}</button>
+                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-chat"></i> {{ update.comments|default:'0' }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-newspaper text-3xl"></i>
+                        <p class="text-sm mt-2">No updates yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Activity Tab -->
+            <div id="activity-tab" class="tab-content hidden">
+                <div class="space-y-2">
+                    {% for activity in user_activities %}
+                    <div class="flex items-center gap-3 p-3 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                        <i class="bi bi-{{ activity.icon }} text-sm opacity-50"></i>
+                        <span class="text-sm flex-1" style="color: var(--text-primary);">{{ activity.message }}</span>
+                        <span class="text-xs opacity-40">{{ activity.date }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-12 opacity-50">
+                        <i class="bi bi-inbox text-3xl"></i>
+                        <p class="text-sm mt-2">No recent activity</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Action - Minimal -->
+            <div class="flex gap-3 pt-2">
+                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-calendar-plus me-1"></i> Schedule
+                </button>
+                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-plus-circle me-1"></i> Add skill
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.tab-minimal').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            document.querySelectorAll('.tab-minimal').forEach(t => {
+                t.classList.remove('tab-active-minimal');
+                t.style.opacity = '0.5';
+            });
+            this.classList.add('tab-active-minimal');
+            this.style.opacity = '1';
+            
+            document.getElementById('matches-tab').classList.add('hidden');
+            document.getElementById('feed-tab').classList.add('hidden');
+            document.getElementById('activity-tab').classList.add('hidden');
+            
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        });
+    });
+</script>
+
+<style>
+    .tab-active-minimal {
+        opacity: 1 !important;
+        border-bottom: 2px solid var(--accent-primary);
+    }
+    .progress-fill {
+        width: var(--progress-width);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ request.user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6 md:py-10 animate-fadeIn">
+    
+    <!-- Profile Header Card -->
+    <div class="rounded-2xl mb-6 overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <!-- Cover Image -->
+        <div class="h-32 md:h-40" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));"></div>
+        
+        <div class="relative px-6 pb-6">
+            <!-- Avatar Section -->
+            <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 gap-4 md:gap-6">
+                <div class="avatar">
+                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-full ring-4 ring-white overflow-hidden bg-white flex items-center justify-center" style="box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="{{ request.user.username }}" class="object-cover w-full h-full" />
+                        {% else %}
+                            <i class="bi bi-person-circle text-6xl md:text-7xl" style="color: var(--accent-primary);"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex-1 text-center md:text-left pb-2">
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">{{ request.user.username }}</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-1 justify-center md:justify-start">
+                        <span class="badge border-none px-3 py-1" style="background-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-mortarboard-fill me-1"></i> {{ profile.student_status|default:'Student' }}
+                        </span>
+                        <span class="badge border-none px-3 py-1" style="background-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-calendar3 me-1"></i> Member since {{ request.user.date_joined|date:"M Y" }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="pb-2">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-sm md:btn-md border-none px-5" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                        <i class="bi bi-pencil-square"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- LEFT COLUMN - About & Stats -->
+        <div class="space-y-5">
+            <!-- About Card -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b" style="border-color: var(--border-color);">
+                    <i class="bi bi-person-badge text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold" style="color: var(--text-primary);">About Me</h3>
+                </div>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="opacity-60">Level</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Not set' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="opacity-60">Study Time</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="opacity-60">Gender</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.gender|default:'Not specified' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="opacity-60">Birthday</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.birthday|date:"F j, Y"|default:'Not set' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b" style="border-color: var(--border-color);">
+                    <i class="bi bi-graph-up text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold" style="color: var(--text-primary);">Activity Stats</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                        <i class="bi bi-fire text-xl" style="color: var(--accent-primary);"></i>
+                        <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ streak_days|default:'0' }}</p>
+                        <p class="text-xs opacity-60">Day Streak</p>
+                    </div>
+                    <div>
+                        <i class="bi bi-people text-xl" style="color: var(--accent-secondary);"></i>
+                        <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ study_partners_count|default:'0' }}</p>
+                        <p class="text-xs opacity-60">Partners</p>
+                    </div>
+                    <div>
+                        <i class="bi bi-clock-history text-xl" style="color: var(--accent-ocean);"></i>
+                        <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ total_hours|default:'0' }}</p>
+                        <p class="text-xs opacity-60">Hours</p>
+                    </div>
+                    <div>
+                        <i class="bi bi-award text-xl" style="color: #F59E0B;"></i>
+                        <p class="text-2xl font-bold mt-1" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
+                        <p class="text-xs opacity-60">Sessions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN - Skills & Goals -->
+        <div class="lg:col-span-2 space-y-5">
+            
+            <!-- Skills Section -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b" style="border-color: var(--border-color);">
+                    <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold" style="color: var(--text-primary);">Skills & Expertise</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Can Teach -->
+                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%);">
+                        <h4 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--accent-primary);">
+                            <i class="bi bi-star-fill"></i> Can Teach
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% if profile.skills_to_teach.all %}
+                                {% for skill in profile.skills_to_teach.all %}
+                                    <span class="badge border-none px-3 py-2 text-sm" style="background-color: var(--accent-primary); color: white;">
+                                        <i class="bi bi-check-circle-fill text-xs me-1"></i> {{ skill.name }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Wants to Learn -->
+                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%);">
+                        <h4 class="font-semibold mb-3 flex items-center gap-2" style="color: var(--accent-secondary);">
+                            <i class="bi bi-lightbulb-fill"></i> Wants to Learn
+                        </h4>
+                        <div class="flex flex-wrap gap-2">
+                            {% if profile.skills_to_learn.all %}
+                                {% for skill in profile.skills_to_learn.all %}
+                                    <span class="badge border-none px-3 py-2 text-sm" style="background-color: var(--accent-secondary); color: white;">
+                                        <i class="bi bi-bookmark-fill text-xs me-1"></i> {{ skill.name }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Goals Card -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b" style="border-color: var(--border-color);">
+                    <i class="bi bi-flag-fill text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold" style="color: var(--text-primary);">Study Goals</h3>
+                </div>
+                <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
+                    {{ profile.goals|default:"No goals set yet." }}
+                </p>
+            </div>
+
+            <!-- Availability Card -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b" style="border-color: var(--border-color);">
+                    <i class="bi bi-calendar-week text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold" style="color: var(--text-primary);">Availability</h3>
+                </div>
+                <div class="p-4 rounded-xl flex items-start gap-3" style="background-color: var(--bg-page); border-left: 4px solid var(--accent-primary);">
+                    <i class="bi bi-clock-history text-xl" style="color: var(--accent-primary);"></i>
+                    <p class="text-sm" style="color: var(--text-secondary);">{{ profile.availability|default:"Not specified." }}</p>
+                </div>
+            </div>
+            
+            <!-- Connect Button -->
+            {% if request.user.username != profile.user.username %}
+            <div class="rounded-xl p-5 text-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                <button class="btn bg-white text-gray-800 border-none px-8">
+                    <i class="bi bi-chat-dots-fill me-2"></i> Connect with {{ profile.user.username }}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--border-color);
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
