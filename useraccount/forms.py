@@ -22,24 +22,21 @@ class UserRegistrationForm(forms.ModelForm):
             'goals',
             'availability'
         ]
-        widgets = {
+        widgets ={
             'birthday': forms.DateInput(attrs={'type': 'date', 'class': 'input input-bordered w-full'}),
             'student_status': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'gender': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'current_level': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'goals': forms.Textarea(attrs={'rows': 2, 'class': 'textarea textarea-bordered w-full', 'placeholder': 'e.g. Master Power BI'}),
-<<<<<<< HEAD
-            'availability': forms.Textarea(attrs={'rows': 2}),
-            # Using CheckboxSelectMultiple makes it easier for users to pick multiple skills
-            'skills_to_teach': forms.CheckboxSelectMultiple(),
-            'skills_to_learn': forms.CheckboxSelectMultiple(),
-=======
+            'availability': forms.Textarea(attrs={'rows':2}),
+            'skills_to_teach':forms.CheckboxSelectMultiple(),
+            'skills_to_learn':forms.CheckboxSelectMultiple(),
             'skills_to_teach': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. Python, JavaScript, SQL (separate with commas)'}),
             'skills_to_learn': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. React, Django, Machine Learning (separate with commas)'}),
-            
->>>>>>> dashboard
         }
-    
+        widgets ={
+            
+        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Make current_level not required
