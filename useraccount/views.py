@@ -136,7 +136,14 @@ def change_password_view(request):
     
     return render(request, 'useraccount/change_password.html')
 
-# views.py - Add this function
+# views.py - Add landing_view at the top
+def landing_view(request):
+    
+    if request.user.is_authenticated:
+        return redirect('dashboard_home')
+    return render(request, 'landing.html')
+
+
 from django.contrib.auth import logout
 
 @login_required
@@ -144,4 +151,4 @@ def logout_view(request):
     """Log out the user and redirect to login page"""
     logout(request)
     messages.success(request, "You have been successfully logged out.")
-    return redirect('login')
+    return redirect('landing')

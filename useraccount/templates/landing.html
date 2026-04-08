@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SkillSwap - Learn & Teach Skills{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Futuristic Ocean Theme Animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    @keyframes float-reverse {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(20px) rotate(-5deg); }
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    
+    @keyframes slide-up {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slide-in-left {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slide-in-right {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0); opacity: 0.5; }
+        100% { transform: scale(4); opacity: 0; }
+    }
+    
+    @keyframes wave {
+        0% { transform: translateX(0) translateZ(0) scaleY(1); }
+        50% { transform: translateX(-25%) translateZ(0) scaleY(0.8); }
+        100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+    }
+    
+    .hero-badge {
+        animation: slide-up 0.8s ease-out;
+    }
+    
+    .hero-title {
+        animation: slide-up 0.8s ease-out 0.2s both;
+    }
+    
+    .hero-subtitle {
+        animation: slide-up 0.8s ease-out 0.4s both;
+    }
+    
+    .hero-buttons {
+        animation: slide-up 0.8s ease-out 0.6s both;
+    }
+    
+    .feature-card {
+        animation: slide-up 0.8s ease-out both;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .floating-icon {
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .floating-icon-reverse {
+        animation: float-reverse 7s ease-in-out infinite;
+    }
+    
+    .pulse-ring {
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+    
+    .wave-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .wave {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+        background: repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 50px,
+            rgba(59, 130, 246, 0.1) 50px,
+            rgba(59, 130, 246, 0.1) 100px
+        );
+        animation: wave 8s linear infinite;
+        pointer-events: none;
+    }
+    
+    .gradient-text {
+        background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-ocean) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative min-h-screen flex items-center justify-center overflow-hidden wave-container">
+    <!-- Animated Background Waves -->
+    <div class="wave"></div>
+    
+    <!-- Floating Background Elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 floating-icon opacity-20">
+            <i class="bi bi-code-square text-6xl" style="color: var(--accent-primary);"></i>
+        </div>
+        <div class="absolute top-40 right-20 floating-icon-reverse opacity-20">
+            <i class="bi bi-graph-up text-5xl" style="color: var(--accent-ocean);"></i>
+        </div>
+        <div class="absolute bottom-40 left-20 floating-icon opacity-10">
+            <i class="bi bi-people text-7xl" style="color: var(--accent-secondary);"></i>
+        </div>
+        <div class="absolute bottom-20 right-32 floating-icon-reverse opacity-20">
+            <i class="bi bi-chat-dots text-5xl" style="color: var(--accent-primary);"></i>
+        </div>
+        <div class="absolute middle-40 left-1/3 floating-icon opacity-15">
+            <i class="bi bi-lightbulb text-4xl" style="color: var(--accent-ocean);"></i>
+        </div>
+    </div>
+    
+    <!-- Hero Content -->
+    <div class="container mx-auto px-4 py-20 relative z-10">
+        <div class="text-center max-w-5xl mx-auto">
+            <!-- Badge -->
+            <div class="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                <i class="bi bi-stars text-sm" style="color: var(--accent-primary);"></i>
+                <span class="text-sm" style="color: var(--accent-primary);">The Future of Skill Exchange</span>
+            </div>
+            
+            <!-- Main Title -->
+            <h1 class="hero-title text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+                Learn & Teach
+                <span class="gradient-text block md:inline">Skills Together</span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="hero-subtitle text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                Join a global community where knowledge meets opportunity. Exchange skills, build connections, and grow faster together.
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="hero-buttons flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'register' %}" class="btn btn-lg px-8 text-white border-none transition-all duration-300 hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                    <i class="bi bi-rocket-takeoff me-2"></i> Start Your Journey
+                </a>
+                <a href="#features" class="btn btn-lg btn-outline px-8 transition-all duration-300 hover:scale-105" style="border-color: var(--accent-primary); color: var(--accent-primary);">
+                    <i class="bi bi-compass me-2"></i> Explore Platform
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="hero-buttons grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 pt-8 border-t" style="border-color: var(--border-color);">
+                <div>
+                    <div class="stat-number">10K+</div>
+                    <div class="text-sm" style="color: var(--text-secondary);">Active Learners</div>
+                </div>
+                <div>
+                    <div class="stat-number">500+</div>
+                    <div class="text-sm" style="color: var(--text-secondary);">Skills Available</div>
+                </div>
+                <div>
+                    <div class="stat-number">98%</div>
+                    <div class="text-sm" style="color: var(--text-secondary);">Satisfaction Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <a href="#features" class="btn btn-ghost btn-circle">
+            <i class="bi bi-chevron-down text-2xl" style="color: var(--accent-primary);"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div id="features" class="py-24 px-4" style="background: var(--bg-page);">
+    <div class="container mx-auto max-w-6xl">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style="background: rgba(59, 130, 246, 0.1);">
+                <i class="bi bi-grid-3x3-gap-fill text-sm" style="color: var(--accent-primary);"></i>
+                <span class="text-sm" style="color: var(--accent-primary);">Platform Features</span>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4" style="color: var(--text-primary);">
+                Everything You Need to
+                <span class="gradient-text">Succeed</span>
+            </h2>
+            <p class="text-lg max-w-2xl mx-auto" style="color: var(--text-secondary);">
+                Powerful tools to help you learn, teach, and connect with the right people
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.1s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-arrow-repeat text-2xl" style="color: var(--accent-primary);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Skill Exchange</h3>
+                <p style="color: var(--text-secondary);">Teach what you know, learn what you love. Connect with peers for mutual skill exchange.</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.2s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-robot text-2xl" style="color: var(--accent-ocean);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Smart Matching</h3>
+                <p style="color: var(--text-secondary);">AI-powered algorithm connects you with the perfect learning partners based on your goals.</p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.3s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-chat-dots text-2xl" style="color: var(--accent-secondary);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Real-time Chat</h3>
+                <p style="color: var(--text-secondary);">Built-in messaging system to coordinate sessions and build meaningful connections.</p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.4s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-calendar-check text-2xl" style="color: var(--accent-primary);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Session Scheduling</h3>
+                <p style="color: var(--text-secondary);">Easy scheduling tools to plan and manage your learning sessions efficiently.</p>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.5s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-trophy text-2xl" style="color: var(--accent-ocean);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Gamification</h3>
+                <p style="color: var(--text-secondary);">Earn badges, level up, and track your progress as you master new skills.</p>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="feature-card p-6 rounded-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color); animation-delay: 0.6s;">
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));">
+                    <i class="bi bi-shield-check text-2xl" style="color: var(--accent-secondary);"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Verified Profiles</h3>
+                <p style="color: var(--text-secondary);">Trustworthy community with verified profiles and rating system.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="py-24 px-4 wave-container" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(14, 165, 233, 0.05));">
+    <div class="container mx-auto max-w-6xl">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style="background: rgba(59, 130, 246, 0.1);">
+                <i class="bi bi-compass text-sm" style="color: var(--accent-primary);"></i>
+                <span class="text-sm" style="color: var(--accent-primary);">Simple Process</span>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4" style="color: var(--text-primary);">
+                How <span class="gradient-text">SkillSwap</span> Works
+            </h2>
+            <p class="text-lg max-w-2xl mx-auto" style="color: var(--text-secondary);">
+                Get started in just 3 simple steps
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 pulse-ring" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                    <i class="bi bi-person-plus text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">1. Create Account</h3>
+                <p style="color: var(--text-secondary);">Sign up and set up your profile with your skills and interests.</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 floating-icon" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                    <i class="bi bi-search-heart text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">2. Find Matches</h3>
+                <p style="color: var(--text-secondary);">Our AI matches you with ideal learning partners.</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 floating-icon-reverse" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                    <i class="bi bi-chat-heart text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">3. Start Learning</h3>
+                <p style="color: var(--text-secondary);">Connect, schedule sessions, and grow together.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="py-24 px-4">
+    <div class="container mx-auto max-w-4xl text-center">
+        <div class="p-12 rounded-3xl" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Ready to Transform Your Skills?
+            </h2>
+            <p class="text-lg text-white/90 mb-8">
+                Join thousands of learners and teachers already on SkillSwap
+            </p>
+            <a href="{% url 'register' %}" class="btn btn-lg bg-white px-8 hover:scale-105 transition-all duration-300" style="color: var(--accent-primary);">
+                <i class="bi bi-arrow-right-circle me-2"></i> Get Started Now
+            </a>
+            <p class="text-sm text-white/70 mt-4">
+                No credit card required • Free forever
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.feature-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease-out';
+        observer.observe(card);
+    });
+</script>
+{% endblock %}
