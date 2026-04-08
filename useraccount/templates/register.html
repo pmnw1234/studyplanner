@@ -57,6 +57,11 @@
             display: flex;
             gap: 10px;
         }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -81,11 +86,11 @@
 
         <!-- Step 2 -->
         <div class="step">
-            <label>Password</label>
-            {{ form.password }}
+            <label>Student Status</label>
+            {{ form.student_status }}
 
-            <label>Confirm Password</label>
-            {{ form.confirm_password }}
+            <label>Birthday</label>
+            {{ form.birthday }}
 
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
@@ -95,20 +100,17 @@
 
         <!-- Step 3 -->
         <div class="step">
-            <label>Student Status</label>
-            {{ form.student_status }}
-
-            <label>Birthday</label>
-            {{ form.birthday }}
-
             <label>Gender</label>
             {{ form.gender }}
-            <select name="current_level" class="select select-bordered w-full" required>
-    <option value="" disabled selected>Select your skill level</option>
-    <option value="Beginner">Beginner</option>
-    <option value="Intermediate">Intermediate</option>
-    <option value="Advanced">Advanced</option>
-</select>
+
+            <label>Current Level</label>
+            <select name="current_level" required>
+                <option value="" disabled selected>Select your level</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+            </select>
+
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
@@ -125,16 +127,34 @@
 
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
-                <button type="submit">Register</button>
+                <button type="button" onclick="nextStep()">Next</button>
             </div>
         </div>
-        <!-- register.html - Add this field somewhere in your form -->
+
+        <!-- Step 5 -->
+        <div class="step">
+            <label>Password</label>
+            {{ form.password }}
+
+            <label>Confirm Password</label>
+            {{ form.confirm_password }}
+
+            <p id="password-error" class="error"></p>
+
+            {% if form.errors %}
+                <p class="error">{{ form.errors }}</p>
+            {% endif %}
+
+            <div class="btn-group">
+                <button type="button" onclick="prevStep()">Back</button>
+                <button type="submit" onclick="return validatePasswords()">Register</button>
+            </div>
+        </div>
 
     </form>
 
     <p style="text-align:center; margin-top:10px;">
         Already have an account?
-        
         <a href="{% url 'login' %}">Login</a>
     </p>
 </div>
@@ -185,6 +205,21 @@
             currentStep--;
             showStep(currentStep);
         }
+    }
+
+    // Password validation
+    function validatePasswords() {
+        let password = document.querySelector("input[name='password']").value;
+        let confirm = document.querySelector("input[name='confirm_password']").value;
+
+        if (password !== confirm) {
+            document.getElementById("password-error").innerText = "Passwords must match!";
+            return false;
+        } else {
+            document.getElementById("password-error").innerText = "";
+        }
+
+        return true;
     }
 </script>
 
