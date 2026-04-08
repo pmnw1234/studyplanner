@@ -17,31 +17,31 @@
         }
         
         /* Light Mode Colors */
-      /* Light Mode Colors */
-html[data-theme="light"] {
-    --bg-page: #F8FAFC;
-    --bg-card: #FFFFFF;
-    --text-primary: #1E293B;
-    --text-secondary: #475569;
-    --border-color: #E2E8F0;
-    --accent-primary: #3B82F6;
-    --accent-secondary: #10B981;
-    --accent-ocean: #0EA5E9;
-    --navbar-bg: #FFFFFF;
-}
+        html[data-theme="light"] {
+            --bg-page: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #475569;
+            --border-color: #E2E8F0;
+            --accent-primary: #3B82F6;
+            --accent-secondary: #10B981;
+            --accent-ocean: #0EA5E9;
+            --navbar-bg: #FFFFFF;
+        }
 
-/* Dark Mode Colors (keeping pink!) */
-html[data-theme="dark"] {
-    --bg-page: #0F172A;
-    --bg-card: #1E293B;
-    --text-primary: #F1F5F9;
-    --text-secondary: #94A3B8;
-    --border-color: #334155;
-    --accent-primary: #3B82F6;
-    --accent-secondary: #10B981;
-    --accent-ocean: #0EA5E9;
-    --navbar-bg: #0F172A;
-}
+        /* Dark Mode Colors */
+        html[data-theme="dark"] {
+            --bg-page: #0F172A;
+            --bg-card: #1E293B;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --border-color: #334155;
+            --accent-primary: #3B82F6;
+            --accent-secondary: #10B981;
+            --accent-ocean: #0EA5E9;
+            --navbar-bg: #0F172A;
+        }
+        
         body {
             background-color: var(--bg-page);
             color: var(--text-primary);
@@ -49,11 +49,12 @@ html[data-theme="dark"] {
         }
         
         /* Add at the bottom of your <style> tag */
-.radial-progress {
-    --value: 0;
-    --size: 3rem;
-    --thickness: 4px;
-}
+        .radial-progress {
+            --value: 0;
+            --size: 3rem;
+            --thickness: 4px;
+        }
+        
         /* Responsive container padding */
         .container-custom {
             width: 100%;
@@ -100,6 +101,32 @@ html[data-theme="dark"] {
         html {
             scroll-behavior: smooth;
         }
+        
+        /* Active link styling */
+        .nav-link-active {
+            color: var(--accent-primary) !important;
+            font-weight: 600;
+        }
+
+        .nav-link-active i {
+            color: var(--accent-primary) !important;
+        }
+
+        /* Alert message styling */
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .alert-info {
+            background-color: #EFF6FF;
+            color: #1E40AF;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -112,8 +139,8 @@ html[data-theme="dark"] {
                 
                 <!-- Left side - Logo -->
                 <div class="navbar-start">
-                    <a class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2" href="#" style="color: var(--text-primary);">
-                        <i class="bi bi-intersect text-lg md:text-2xl" style="color: var(--accent-pink);"></i>
+                    <a class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2" href="{% url 'dashboard_home' %}" style="color: var(--text-primary);">
+                        <i class="bi bi-intersect text-lg md:text-2xl" style="color: var(--accent-primary);"></i>
                         <span class="ml-1 md:ml-2 hidden sm:inline">SkillSwap</span>
                         <span class="ml-1 sm:hidden">SS</span>
                     </a>
@@ -123,6 +150,7 @@ html[data-theme="dark"] {
                 <div class="navbar-center hidden md:flex">
                     <ul class="menu menu-horizontal px-1 gap-1">
                         <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-house-door"></i> Feed</a></li>
+                        <li><a href="{% url 'dashboard_home' %}" class="text-sm" style="color: var(--text-primary);" id="nav-dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                         <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-people"></i> Matches</a></li>
                         <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-chat-dots"></i> Messages</a></li>
                     </ul>
@@ -133,42 +161,51 @@ html[data-theme="dark"] {
                     
                     <!-- Theme Toggle Button -->
                     <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm md:btn-md">
-                        <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-pink);"></i>
+                        <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                     
                     <!-- Desktop User Dropdown (hidden on mobile) -->
-                    <div class="dropdown dropdown-end hidden md:block">
-                        <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-                            <div class="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" style="background-color: var(--border-color);">
-                                <i class="bi bi-person-circle text-base md:text-xl" style="color: var(--accent-pink);"></i>
-                            </div>
-                        </label>
-                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-52 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                            <li><a  href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
-                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-gear"></i> Settings</a></li>
-                            <li><hr class="my-1" style="border-color: var(--border-color);"></li>
-                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-                        </ul>
-                    </div>
-                    
+                  <!-- Desktop User Dropdown (hidden on mobile) -->
+<div class="dropdown dropdown-end hidden md:block">
+    <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+        <div class="rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center overflow-hidden" style="background-color: var(--border-color);">
+            {% if user.is_authenticated and user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+            {% else %}
+                <i class="bi bi-person-circle text-base md:text-xl" style="color: var(--accent-primary);"></i>
+            {% endif %}
+        </div>
+    </label>
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-52 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <li><a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
+        <li><a href="{% url 'edit_profile' %}" style="color: var(--text-primary);"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
+        <li><hr class="my-1" style="border-color: var(--border-color);"></li>
+        <li><a href="{% url 'logout' %}" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+</div>
                     <!-- Mobile Menu Button -->
                     <button id="mobile-menu-btn" class="btn btn-ghost btn-circle btn-sm md:hidden">
-                        <i id="mobile-menu-icon" class="bi bi-list text-xl" style="color: var(--accent-pink);"></i>
+                        <i id="mobile-menu-icon" class="bi bi-list text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                     
                     <!-- Mobile User Avatar (visible on mobile) -->
-                    <div class="dropdown dropdown-end md:hidden">
-                        <label tabindex="0" class="btn btn-ghost btn-circle avatar btn-sm">
-                            <div class="rounded-full w-8 h-8 flex items-center justify-center" style="background-color: var(--border-color);">
-                                <i class="bi bi-person-circle" style="color: var(--accent-pink);"></i>
-                            </div>
-                        </label>
-                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-44 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                            <li><a a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
-                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-gear"></i> Settings</a></li>
-                            <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-                        </ul>
-                    </div>
+                  <!-- Mobile User Avatar (visible on mobile) -->
+<div class="dropdown dropdown-end md:hidden">
+    <label tabindex="0" class="btn btn-ghost btn-circle avatar btn-sm">
+        <div class="rounded-full w-8 h-8 flex items-center justify-center overflow-hidden" style="background-color: var(--border-color);">
+            {% if user.is_authenticated and user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+            {% else %}
+                <i class="bi bi-person-circle" style="color: var(--accent-primary);"></i>
+            {% endif %}
+        </div>
+    </label>
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-44 mt-3" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <li><a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> Profile</a></li>
+        <li><a href="{% url 'edit_profile' %}" style="color: var(--text-primary);"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
+        <li><a href="{% url 'logout' %}" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+</div>
                 </div>
             </div>
             
@@ -176,11 +213,17 @@ html[data-theme="dark"] {
             <div id="mobile-menu" class="mobile-menu-enter md:hidden overflow-hidden">
                 <ul class="menu py-2 space-y-1" style="border-top: 1px solid var(--border-color);">
                     <li>
-                        <a href="#" class="justify-between" style="color: var(--text-primary);">
-                            <span><i class="bi bi-house-door"></i> Feed</span>
+                        <a href="{% url 'dashboard_home' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-speedometer2"></i> Dashboard</span>
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
                     </li>
+                     <li>
+            <a href="#" class="justify-between" style="color: var(--text-primary);">
+                <span><i class="bi bi-house-door"></i> Feed</span>
+                <i class="bi bi-chevron-right text-xs"></i>
+            </a>
+        </li>
                     <li>
                         <a href="#" class="justify-between" style="color: var(--text-primary);">
                             <span><i class="bi bi-people"></i> Matches</span>
@@ -200,11 +243,25 @@ html[data-theme="dark"] {
 
     <!-- Main Content Area - Responsive -->
     <main class="container-custom py-4 md:py-6 lg:py-8">
+        <!-- Messages Display -->
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} shadow-lg">
+                        <div>
+                            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} mr-2"></i>
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Footer (optional) -->
+    <!-- Footer -->
     <footer class="mt-auto py-6 md:py-8" style="border-top: 1px solid var(--border-color); background-color: var(--bg-page);">
         <div class="container-custom">
             <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-xs md:text-sm" style="color: var(--text-secondary);">
@@ -214,7 +271,7 @@ html[data-theme="dark"] {
                     <a href="#" class="hover:opacity-70"><i class="bi bi-envelope"></i> Contact</a>
                 </div>
                 <div>
-                    <i class="bi bi-heart-fill text-xs" style="color: var(--accent-pink);"></i>
+                    <i class="bi bi-heart-fill text-xs" style="color: var(--accent-primary);"></i>
                     <span>© 2026 SkillSwap. All rights reserved.</span>
                 </div>
             </div>
@@ -245,10 +302,10 @@ html[data-theme="dark"] {
         function updateIcon(theme) {
             if (theme === 'dark') {
                 themeIcon.className = 'bi bi-sun-fill text-base md:text-xl';
-                themeIcon.style.color = '#D4A373';
+                themeIcon.style.color = 'var(--accent-primary)';
             } else {
                 themeIcon.className = 'bi bi-moon-fill text-base md:text-xl';
-                themeIcon.style.color = '#D4A373';
+                themeIcon.style.color = 'var(--accent-primary)';
             }
         }
         
@@ -291,6 +348,22 @@ html[data-theme="dark"] {
                 mobileMenuIcon.className = 'bi bi-list text-xl';
             }
         });
+        
+        // Set active nav link based on current URL
+        function setActiveNavLink() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.menu a');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && currentPath.includes(href)) {
+                    link.classList.add('nav-link-active');
+                }
+            });
+        }
+        
+        // Call on page load
+        document.addEventListener('DOMContentLoaded', setActiveNavLink);
     </script>
     
     {% block extra_js %}{% endblock %}

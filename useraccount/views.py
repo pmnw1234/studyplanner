@@ -2,15 +2,21 @@ from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from .forms import UserProfileEditForm
-from django.contrib.auth import authenticate, login
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .forms import UserRegistrationForm, UserProfileEditForm
 from .models import UserProfile
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+
+
 def register_view(request):
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
+        form = UserRegistrationForm(request.POST, request.FILES)  # Don't forget request.FILES for profile_picture!
+        
         if form.is_valid():
             # 2. Save the User
             user = User.objects.create_user(
@@ -18,12 +24,6 @@ def register_view(request):
                 email=form.cleaned_data['email'],
                 password=form.cleaned_data['password']
             )
-
-            # ✅ Create profile manually
-            UserProfile.objects.create(user=user)
-
-            # ✅ Login
-            login(request, user)
 
             # 3. Link and Save the Profile
             profile = form.save(commit=False)
@@ -39,17 +39,39 @@ def register_view(request):
             return redirect('dashboard_home') 
     else:
         form = UserRegistrationForm()
-
+    
     return render(request, 'register.html', {'form': form})
 
+@login_required
+def edit_profile_view(request):
+  
+    profile = request.user.userprofile
+    
+    if request.method == 'POST':
+        form = UserProfileEditForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('profile')  # Make sure this matches your URL name
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserProfileEditForm(instance=profile)
+    
+    return render(request, 'useraccount/edit_profile.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    # Get or create profile for the logged-in user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, 'useraccount/profile.html', {'profile': profile})
 
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        # user = authenticate(request, username=email, password=password)
-        user = authenticate(request, email=request.POST.get("email"), password=password)
+        user = authenticate(request, username=email, password=password)
 
         if user is not None:
             login(request, user)
@@ -58,28 +80,4 @@ def login_view(request):
             return render(request, "login.html", {"error": "Invalid email or password"})
 
     return render(request, "login.html")
-
-
-@login_required
-def edit_profile_view(request):
-  
-    # profile = request.user.userprofile
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
-    if request.method == 'POST':
-        form = UserProfileEditForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.save() 
-            return redirect('dashboard_home')
-    else:
-        form = UserProfileEditForm(instance=profile)
-
-    return render(request, 'useraccount/edit_profile.html', {'form': form})
-
-
-@login_required
-def profile_view(request):
-    # Get the profile for the logged-in user
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'useraccount/profile.html', {'profile': profile})
 
