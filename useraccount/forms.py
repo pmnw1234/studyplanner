@@ -34,9 +34,7 @@ class UserRegistrationForm(forms.ModelForm):
             'skills_to_teach': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. Python, JavaScript, SQL (separate with commas)'}),
             'skills_to_learn': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. React, Django, Machine Learning (separate with commas)'}),
         }
-        widgets ={
-            
-        }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Make current_level not required

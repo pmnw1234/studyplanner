@@ -87,7 +87,7 @@ def landing_view(request):
         return redirect('dashboard_home')
     return render(request, 'landing.html')
 
-
+# views.py - Add this function
 from django.contrib.auth import logout
 
 @login_required
@@ -95,5 +95,4 @@ def logout_view(request):
     """Log out the user and redirect to login page"""
     logout(request)
     messages.success(request, "You have been successfully logged out.")
-    return redirect('landing')
-
+    return redirect('login')
