@@ -103,7 +103,12 @@
 
             <label>Gender</label>
             {{ form.gender }}
-
+            <select name="current_level" class="select select-bordered w-full" required>
+    <option value="" disabled selected>Select your skill level</option>
+    <option value="Beginner">Beginner</option>
+    <option value="Intermediate">Intermediate</option>
+    <option value="Advanced">Advanced</option>
+</select>
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
@@ -124,12 +129,7 @@
             </div>
         </div>
         <!-- register.html - Add this field somewhere in your form -->
-<select name="current_level" class="select select-bordered w-full" required>
-    <option value="" disabled selected>Select your skill level</option>
-    <option value="Beginner">Beginner</option>
-    <option value="Intermediate">Intermediate</option>
-    <option value="Advanced">Advanced</option>
-</select>
+
     </form>
 
     <p style="text-align:center; margin-top:10px;">
