@@ -22,25 +22,24 @@ class UserRegistrationForm(forms.ModelForm):
             'goals',
             'availability'
         ]
-        widgets ={
+        widgets = {
             'birthday': forms.DateInput(attrs={'type': 'date', 'class': 'input input-bordered w-full'}),
             'student_status': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'gender': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'current_level': forms.Select(attrs={'class': 'select select-bordered w-full'}),
             'goals': forms.Textarea(attrs={'rows': 2, 'class': 'textarea textarea-bordered w-full', 'placeholder': 'e.g. Master Power BI'}),
-            'availability': forms.Textarea(attrs={'rows':2}),
-            'skills_to_teach':forms.CheckboxSelectMultiple(),
-            'skills_to_learn':forms.CheckboxSelectMultiple(),
+            'availability': forms.Textarea(attrs={'rows': 2, 'class': 'textarea textarea-bordered w-full'}),
             'skills_to_teach': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. Python, JavaScript, SQL (separate with commas)'}),
             'skills_to_learn': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. React, Django, Machine Learning (separate with commas)'}),
         }
-        widgets ={
-            
-        }
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make current_level not required
         self.fields['current_level'].required = False
+        self.fields['profile_picture'].required = False
+        self.fields['skills_to_teach'].required = False
+        self.fields['skills_to_learn'].required = False
+    
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if User.objects.filter(username__iexact=username).exists():
@@ -63,10 +62,8 @@ class UserRegistrationForm(forms.ModelForm):
         
         return cleaned_data
 
-
-# forms.py - Simplified UserProfileEditForm with text inputs
+# Rest of your forms remain the same...
 class UserProfileEditForm(forms.ModelForm):
-    # Add first_name and last_name fields for the User model
     first_name = forms.CharField(
         required=False, 
         widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'First name'})
@@ -110,25 +107,19 @@ class UserProfileEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Populate first_name and last_name from the user model
         if self.instance and self.instance.user:
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
 
     def save(self, commit=True):
         profile = super().save(commit=False)
-        
-        # Update user's first_name and last_name
         if self.instance.user:
             self.instance.user.first_name = self.cleaned_data.get('first_name', '')
             self.instance.user.last_name = self.cleaned_data.get('last_name', '')
             if commit:
                 self.instance.user.save()
-        
         if commit:
             profile.save()
-        
         return profile
 
 class LoginForm(forms.Form):
