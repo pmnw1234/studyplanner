@@ -103,43 +103,42 @@
             </div>
             
             <!-- ===== SECTION 2: SKILLS ===== -->
-            <div>
-                <div class="flex items-center gap-2 mb-5 pb-2 border-b" style="border-color: var(--border-color);">
-                    <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
-                    <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Skills & Interests</h2>
-                    <span class="text-xs px-2 py-0.5 rounded-full ml-2" style="background-color: var(--border-color); color: var(--text-secondary);">Step 2</span>
+           <!-- ===== SECTION 2: SKILLS ===== -->
+<div>
+    <div class="flex items-center gap-2 mb-5 pb-2 border-b" style="border-color: var(--border-color);">
+        <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
+        <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Skills & Interests</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full ml-2" style="background-color: var(--border-color); color: var(--text-secondary);">Step 2</span>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Teach Skills - Text Input -->
+        <div class="p-5 rounded-xl" style="background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%); border: 1px solid var(--border-color);">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
+                    <i class="bi bi-star-fill text-white text-sm"></i>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Teach Skills -->
-                    <div class="p-5 rounded-xl" style="background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
-                                <i class="bi bi-star-fill text-white text-sm"></i>
-                            </div>
-                            <h3 class="font-semibold" style="color: var(--text-primary);">Skills I Can Teach</h3>
-                            <span class="text-xs opacity-60">Select all that apply</span>
-                        </div>
-                        <div class="space-y-2 max-h-56 overflow-y-auto pr-3 custom-scrollbar">
-                            {{ form.skills_to_teach }}
-                        </div>
-                    </div>
-                    
-                    <!-- Learn Skills -->
-                    <div class="p-5 rounded-xl" style="background: linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary);">
-                                <i class="bi bi-lightbulb-fill text-white text-sm"></i>
-                            </div>
-                            <h3 class="font-semibold" style="color: var(--text-primary);">Skills I Want to Learn</h3>
-                            <span class="text-xs opacity-60">Select all that apply</span>
-                        </div>
-                        <div class="space-y-2 max-h-56 overflow-y-auto pr-3 custom-scrollbar">
-                            {{ form.skills_to_learn }}
-                        </div>
-                    </div>
-                </div>
+                <h3 class="font-semibold" style="color: var(--text-primary);">Skills I Can Teach</h3>
+                <span class="text-xs opacity-60">Separate with commas</span>
             </div>
+            {{ form.skills_to_teach }}
+            <p class="text-xs mt-2 opacity-60">Example: Python, JavaScript, SQL, React</p>
+        </div>
+        
+        <!-- Learn Skills - Text Input -->
+        <div class="p-5 rounded-xl" style="background: linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%); border: 1px solid var(--border-color);">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary);">
+                    <i class="bi bi-lightbulb-fill text-white text-sm"></i>
+                </div>
+                <h3 class="font-semibold" style="color: var(--text-primary);">Skills I Want to Learn</h3>
+                <span class="text-xs opacity-60">Separate with commas</span>
+            </div>
+            {{ form.skills_to_learn }}
+            <p class="text-xs mt-2 opacity-60">Example: Django, Machine Learning, AWS</p>
+        </div>
+    </div>
+</div>
             
             <!-- ===== SECTION 3: GOALS & AVAILABILITY ===== -->
             <div>
