@@ -4,6 +4,8 @@ from django.contrib.auth.hashers import make_password
 from .forms import UserRegistrationForm
 
 from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
 
 def register_view(request):
     if request.method == 'POST':
@@ -35,3 +37,18 @@ def register_view(request):
         form = UserRegistrationForm()
 
     return render(request, 'register.html', {'form': form})
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("register")  # or dashboard later
+        else:
+            return render(request, "login.html", {"error": "Invalid email or password"})
+
+    return render(request, "login.html")
