@@ -105,36 +105,10 @@ def edit_profile_view(request):
 
 @login_required
 def profile_view(request):
-    # Get or create profile for the logged-in user
+    
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     return render(request, 'useraccount/profile.html', {'profile': profile})
 
-@login_required
-def change_password_view(request):
-    if request.method == 'POST':
-        old_password = request.POST.get('old_password')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
-        
-        # Check if old password is correct
-        if not request.user.check_password(old_password):
-            messages.error(request, 'Current password is incorrect.')
-        elif new_password != confirm_password:
-            messages.error(request, 'New passwords do not match.')
-        elif len(new_password) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
-        else:
-            # Change password
-            request.user.set_password(new_password)
-            request.user.save()
-            
-            # Update session to keep user logged in
-            update_session_auth_hash(request, request.user)
-            
-            messages.success(request, 'Your password has been changed successfully!')
-            return redirect('profile_view')
-    
-    return render(request, 'useraccount/change_password.html')
 
 # views.py - Add landing_view at the top
 def landing_view(request):
