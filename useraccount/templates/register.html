@@ -2,34 +2,28 @@
 <html>
 <head>
     <title>Register</title>
-
     <style>
         body {
             font-family: Arial;
             background: #f4f6f9;
         }
-
         .container {
-            width: 400px;
+            width: 500px;
             margin: 50px auto;
             background: white;
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
         h2 {
             text-align: center;
         }
-
         .step {
             display: none;
         }
-
         .step.active {
             display: block;
         }
-
         input, select, textarea {
             width: 100%;
             padding: 8px;
@@ -38,7 +32,6 @@
             border-radius: 5px;
             border: 1px solid #ccc;
         }
-
         button {
             width: 100%;
             padding: 10px;
@@ -48,34 +41,51 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
         button:hover {
             background: #45a049;
         }
-
         .btn-group {
             display: flex;
             gap: 10px;
         }
+        .errorlist {
+            color: red;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+        }
     </style>
 </head>
-
 <body>
 
 <div class="container">
     <h2>Register</h2>
-<label>Current Level</label>
-{{ form.current_level }}
-    <form method="POST">
+    
+    <!-- Display form errors -->
+    {% if form.non_field_errors %}
+        <div class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
         <!-- Step 1 -->
         <div class="step active">
             <label>Username</label>
             {{ form.username }}
+            {% if form.username.errors %}
+                <div class="errorlist">{{ form.username.errors }}</div>
+            {% endif %}
 
             <label>Email</label>
             {{ form.email }}
+            {% if form.email.errors %}
+                <div class="errorlist">{{ form.email.errors }}</div>
+            {% endif %}
 
             <button type="button" onclick="nextStep()">Next</button>
         </div>
@@ -84,6 +94,9 @@
         <div class="step">
             <label>Password</label>
             {{ form.password }}
+            {% if form.password.errors %}
+                <div class="errorlist">{{ form.password.errors }}</div>
+            {% endif %}
 
             <label>Confirm Password</label>
             {{ form.confirm_password }}
@@ -99,17 +112,18 @@
             <label>Student Status</label>
             {{ form.student_status }}
 
+            <label>Profile Picture</label>
+            {{ form.profile_picture }}
+
             <label>Birthday</label>
             {{ form.birthday }}
 
             <label>Gender</label>
             {{ form.gender }}
-            <select name="current_level" class="select select-bordered w-full" required>
-    <option value="" disabled selected>Select your skill level</option>
-    <option value="Beginner">Beginner</option>
-    <option value="Intermediate">Intermediate</option>
-    <option value="Advanced">Advanced</option>
-</select>
+
+            <label>Current Level</label>
+            {{ form.current_level }}
+
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
@@ -118,6 +132,12 @@
 
         <!-- Step 4 -->
         <div class="step">
+            <label>Skills to Teach</label>
+            {{ form.skills_to_teach }}
+
+            <label>Skills to Learn</label>
+            {{ form.skills_to_learn }}
+
             <label>Goals</label>
             {{ form.goals }}
 
@@ -129,13 +149,10 @@
                 <button type="submit">Register</button>
             </div>
         </div>
-        <!-- register.html - Add this field somewhere in your form -->
-
     </form>
 
     <p style="text-align:center; margin-top:10px;">
         Already have an account?
-        
         <a href="{% url 'login' %}">Login</a>
     </p>
 </div>
@@ -158,7 +175,7 @@
         let valid = true;
 
         inputs.forEach(input => {
-            if (!input.value) {
+            if (input.type !== 'file' && !input.value) {
                 input.style.border = "2px solid red";
                 valid = false;
             } else {
