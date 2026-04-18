@@ -1,6 +1,9 @@
 from django import forms
 from .models import UserProfile, Skill
 from django.contrib.auth.models import User
+from django import forms
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 class UserRegistrationForm(forms.ModelForm):
     # User fields (not in UserProfile model)
@@ -122,6 +125,39 @@ class UserProfileEditForm(forms.ModelForm):
         return profile
 
 class LoginForm(forms.Form):
+    email = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Email or Username'})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Password'})
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        email_or_username = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+        
+        if email_or_username and password:
+            # 1. Try to find user by email first
+            user = None
+            if '@' in email_or_username:
+                try:
+                    user_obj = User.objects.get(email=email_or_username)
+                    username = user_obj.username
+                    user = authenticate(username=username, password=password)
+                except User.DoesNotExist:
+                    pass # User not found by email
+            
+            # 2. If not found by email, try as a regular username
+            if user is None:
+                user = authenticate(username=email_or_username, password=password)
+            
+            # 3. If still None, authentication failed
+            if not user:
+                raise forms.ValidationError("Invalid email/username or password.")
+            
+            cleaned_data['user'] = user
+        return cleaned_data
     email = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Email or Username'})
     )

@@ -2,160 +2,81 @@
 <html>
 <head>
     <title>Register</title>
-
     <style>
-        body {
-            font-family: Arial;
-            background: #f4f6f9;
-        }
-
-        .container {
-            width: 400px;
-            margin: 50px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        .step {
-            display: none;
-        }
-
-        .step.active {
-            display: block;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #4c56af;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #454ca0;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .error {
-            color: red;
-            font-size: 14px;
-        }
+        body { font-family: Arial; background: #f4f6f9; }
+        .container { width: 400px; margin: 50px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .step { display: none; }
+        .step.active { display: block; }
+        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; }
+        button { width: 100%; padding: 10px; background: #4c56af; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #454ca0; }
+        .btn-group { display: flex; gap: 10px; }
+        .error { color: red; font-size: 14px; }
+        .errorlist { color: red; list-style: none; padding: 0; }
     </style>
 </head>
-
 <body>
 
 <div class="container">
     <h2>Register</h2>
 
-    <form method="POST">
+    {% if form.errors %}
+        <div style="background: #ffe6e6; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;">
+            <strong>Please correct the following errors:</strong>
+            {{ form.errors }}
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Step 1 -->
         <div class="step active">
-            <label>Username</label>
-            {{ form.username }}
-
-            <label>Email</label>
-            {{ form.email }}
-
+            <label>Username</label> {{ form.username }}
+            <label>Email</label> {{ form.email }}
             <button type="button" onclick="nextStep()">Next</button>
         </div>
 
-        <!-- Step 2 -->
         <div class="step">
-            <label>Student Status</label>
-            {{ form.student_status }}
-
-            <label>Birthday</label>
-            {{ form.birthday }}
-
+            <label>Student Status</label> {{ form.student_status }}
+            <label>Birthday</label> {{ form.birthday }}
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
             </div>
         </div>
 
-        <!-- Step 3 -->
         <div class="step">
-            <label>Gender</label>
-            {{ form.gender }}
-
-            <label>Current Level</label>
-            <select name="current_level" required>
-                <option value="" disabled selected>Select your level</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-            </select>
-
+            <label>Gender</label> {{ form.gender }}
+            <label>Current Level</label> {{ form.current_level }}
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
             </div>
         </div>
 
-        <!-- Step 4 -->
         <div class="step">
-            <label>Goals</label>
-            {{ form.goals }}
-
-            <label>Availability</label>
-            {{ form.availability }}
-
+            <label>Goals</label> {{ form.goals }}
+            <label>Availability</label> {{ form.availability }}
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
                 <button type="button" onclick="nextStep()">Next</button>
             </div>
         </div>
 
-        <!-- Step 5 -->
         <div class="step">
-            <label>Password</label>
-            {{ form.password }}
-
-            <label>Confirm Password</label>
-            {{ form.confirm_password }}
-
+            <label>Password</label> {{ form.password }}
+            <label>Confirm Password</label> {{ form.confirm_password }}
             <p id="password-error" class="error"></p>
-
-            {% if form.errors %}
-                <p class="error">{{ form.errors }}</p>
-            {% endif %}
-
             <div class="btn-group">
                 <button type="button" onclick="prevStep()">Back</button>
-                <button type="submit" onclick="return validatePasswords()">Register</button>
+                <button type="submit">Register</button>
             </div>
         </div>
-
     </form>
 
     <p style="text-align:center; margin-top:10px;">
-        Already have an account?
-        <a href="{% url 'login' %}">Login</a>
+        Already have an account? <a href="{% url 'login' %}">Login</a>
     </p>
 </div>
 
@@ -166,34 +87,11 @@
     function showStep(index) {
         steps.forEach((step, i) => {
             step.classList.remove("active");
-            if (i === index) {
-                step.classList.add("active");
-            }
+            if (i === index) step.classList.add("active");
         });
-    }
-
-    function validateStep() {
-        let inputs = steps[currentStep].querySelectorAll("input, select, textarea");
-        let valid = true;
-
-        inputs.forEach(input => {
-            if (!input.value) {
-                input.style.border = "2px solid red";
-                valid = false;
-            } else {
-                input.style.border = "1px solid #ccc";
-            }
-        });
-
-        return valid;
     }
 
     function nextStep() {
-        if (!validateStep()) {
-            alert("Please fill all fields before proceeding!");
-            return;
-        }
-
         if (currentStep < steps.length - 1) {
             currentStep++;
             showStep(currentStep);
@@ -205,21 +103,6 @@
             currentStep--;
             showStep(currentStep);
         }
-    }
-
-    // Password validation
-    function validatePasswords() {
-        let password = document.querySelector("input[name='password']").value;
-        let confirm = document.querySelector("input[name='confirm_password']").value;
-
-        if (password !== confirm) {
-            document.getElementById("password-error").innerText = "Passwords must match!";
-            return false;
-        } else {
-            document.getElementById("password-error").innerText = "";
-        }
-
-        return true;
     }
 </script>
 

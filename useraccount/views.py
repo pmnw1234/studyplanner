@@ -1,23 +1,20 @@
-from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import UserRegistrationForm, UserProfileEditForm
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .forms import UserRegistrationForm, UserProfileEditForm, LoginForm
 from .models import UserProfile
-from django.contrib.auth import authenticate
-from django.contrib.auth import logout
+from django.contrib.auth.models import User
 
 def landing_view(request):
     """Landing page view - shown to non-authenticated users"""
     if request.user.is_authenticated:
         return redirect('dashboard_home')
-    return render(request, 'landing.html')  # No 'useraccount/' prefix
+    return render(request, 'landing.html')
 
 def register_view(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
-        
         if form.is_valid():
             user = User.objects.create_user(
                 username=form.cleaned_data['username'],
@@ -34,30 +31,36 @@ def register_view(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = UserRegistrationForm()
-    
-    return render(request, 'register.html', {'form': form})  # No 'useraccount/' prefix
+    return render(request, 'register.html', {'form': form})
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            messages.success(request, f'Welcome back, {username}!')
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            login(request, form.cleaned_data['user'])
+            messages.success(request, 'Welcome back!')
             return redirect("dashboard_home")
         else:
-            messages.error(request, "Invalid username or password")
-            return render(request, "login.html", {"error": "Invalid username or password"})
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = LoginForm()
+    return render(request, "login.html", {"form": form})
 
-    return render(request, "login.html")
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been successfully logged out.")
+    return redirect('login')
+
+@login_required
+def profile_view(request):
+    
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, 'useraccount/profile.html', {'profile': profile})
 
 @login_required
 def edit_profile_view(request):
     profile = request.user.userprofile
-    
     if request.method == 'POST':
         form = UserProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
@@ -68,13 +71,7 @@ def edit_profile_view(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = UserProfileEditForm(instance=profile)
-    
-    return render(request, 'useraccount/edit_profile.html', {'form': form})  # This one IS in subfolder
-
-@login_required
-def profile_view(request):
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'useraccount/profile.html', {'profile': profile})  # This one IS in subfolder
+    return render(request, 'useraccount/edit_profile.html', {'form': form})
 
 @login_required
 def change_password_view(request):
@@ -90,19 +87,9 @@ def change_password_view(request):
         elif len(new_password) < 8:
             messages.error(request, 'Password must be at least 8 characters long.')
         else:
-            return render(request, "login.html", {"error": "Invalid email or password"})
-    return render(request, "login.html")
-
-# views.py - Add landing_view at the top
-def landing_view(request):
-    
-    if request.user.is_authenticated:
-        return redirect('dashboard_home')
-    return render(request, 'landing.html')
-
-
-@login_required
-def logout_view(request):
-    logout(request)
-    messages.success(request, "You have been successfully logged out.")
-    return redirect('login')
+            request.user.set_password(new_password)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Password updated!')
+            return redirect('profile')
+    return render(request, "useraccount/change_password.html")
