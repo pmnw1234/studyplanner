@@ -149,7 +149,11 @@
                 <!-- Center - Desktop Menu (hidden on mobile) -->
                 <div class="navbar-center hidden md:flex">
                     <ul class="menu menu-horizontal px-1 gap-1">
-                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-house-door"></i> Feed</a></li>
+                        <li>
+                            <a href="{% url 'feed' %}" class="text-sm" style="color: var(--text-primary);">
+                            <i class="bi bi-house-door"></i> Feed
+                            </a>
+                        </li>
                         <li><a href="{% url 'dashboard_home' %}" class="text-sm" style="color: var(--text-primary);" id="nav-dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                         <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-people"></i> Matches</a></li>
                         <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-chat-dots"></i> Messages</a></li>
@@ -219,7 +223,7 @@
                         </a>
                     </li>
                      <li>
-            <a href="#" class="justify-between" style="color: var(--text-primary);">
+            <a href="{% url 'feed' %}" class="justify-between" style="color: var(--text-primary);">
                 <span><i class="bi bi-house-door"></i> Feed</span>
                 <i class="bi bi-chevron-right text-xs"></i>
             </a>
@@ -356,7 +360,7 @@
             
             navLinks.forEach(link => {
                 const href = link.getAttribute('href');
-                if (href && href !== '#' && currentPath.includes(href)) {
+                if (href && href !== '#' && currentPath.startsWith(href)) {
                     link.classList.add('nav-link-active');
                 }
             });

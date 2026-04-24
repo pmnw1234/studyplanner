@@ -128,9 +128,11 @@
                 <button class="tab-minimal tab-active-minimal text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
                     Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
                 </button>
-                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="feed" style="color: var(--text-primary);">
-                    Feed
-                </button>
+<a href="{% url 'feed' %}" 
+   class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition"
+   style="color: var(--text-primary);">
+    Feed
+</a>
                 <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
                     Activity
                 </button>
@@ -194,23 +196,51 @@
                 </div>
             </div>
 
-            <!-- Activity Tab -->
-            <div id="activity-tab" class="tab-content hidden">
-                <div class="space-y-2">
-                    {% for activity in user_activities %}
-                    <div class="flex items-center gap-3 p-3 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                        <i class="bi bi-{{ activity.icon }} text-sm opacity-50"></i>
-                        <span class="text-sm flex-1" style="color: var(--text-primary);">{{ activity.message }}</span>
-                        <span class="text-xs opacity-40">{{ activity.date }}</span>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-12 opacity-50">
-                        <i class="bi bi-inbox text-3xl"></i>
-                        <p class="text-sm mt-2">No recent activity</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+{% for activity in user_activities %}
+<div class="flex items-center justify-between gap-3 p-3 rounded-xl"
+     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+    <!-- Left side -->
+    <div class="flex items-center gap-3">
+        <i class="bi bi-person text-sm opacity-50"></i>
+        <div>
+            <p class="text-sm">
+                <span class="font-medium">{{ activity.sender }}</span> sent you a request
+            </p>
+            <p class="text-xs opacity-50">{{ activity.time }}</p>
+        </div>
+    </div>
+
+    <!-- Right side buttons -->
+    {% if activity.status == 'pending' %}
+    <div class="flex gap-2">
+        <a href="{% url 'accept' activity.id %}"
+           class="px-3 py-1 text-xs rounded-lg"
+           style="background-color: #22c55e; color: white;">
+            Accept
+        </a>
+
+        <a href="{% url 'decline' activity.id %}"
+           class="px-3 py-1 text-xs rounded-lg"
+           style="background-color: #ef4444; color: white;">
+            Decline
+        </a>
+    </div>
+    {% else %}
+        <span class="text-xs px-2 py-1 rounded"
+              style="background-color: var(--border-color);">
+            {{ activity.status }}
+        </span>
+    {% endif %}
+
+</div>
+
+{% empty %}
+<div class="text-center py-12 opacity-50">
+    <i class="bi bi-inbox text-3xl"></i>
+    <p class="text-sm mt-2">No incoming requests</p>
+</div>
+{% endfor %}
 
             <!-- Quick Action - Minimal -->
             <div class="flex gap-3 pt-2">
@@ -238,7 +268,7 @@
             this.style.opacity = '1';
             
             document.getElementById('matches-tab').classList.add('hidden');
-            document.getElementById('feed-tab').classList.add('hidden');
+            {% comment %} document.getElementById('feed-tab').classList.add('hidden'); {% endcomment %}
             document.getElementById('activity-tab').classList.add('hidden');
             
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');

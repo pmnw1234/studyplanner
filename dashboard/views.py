@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from useraccount.models import UserProfile # Assuming this is your profile model
-
+from feedview.models import MatchRequest
+from django.utils.timesince import timesince
 @login_required
 def dashboard_home(request):
     # 1. Get the current user's profile
@@ -10,7 +11,7 @@ def dashboard_home(request):
     
     # 2. SMART MATCHING LOGIC
     
-    my_teaching_skills = profile.skills_to_teach
+    my_teaching_skills = profile.skills_to_teach or []
     
     match_objs = UserProfile.objects.filter(
         skills_to_learn__in=my_teaching_skills
@@ -37,11 +38,18 @@ def dashboard_home(request):
             'likes': 12
         },
     ]
+    requests = MatchRequest.objects.filter(receiver=request.user).order_by('-id')
 
-    user_activities = [
-        {'icon': 'check-circle', 'message': 'You updated your Python progress', 'date': 'Today'},
-        {'icon': 'people', 'message': 'New match found: Alex liked your SQL skill', 'date': 'Yesterday'},
-    ]
+    user_activities = []
+
+    for req in requests:
+        user_activities.append({
+            'icon': 'person',
+            'message': f"{req.sender.username} is interested in your skills",
+            'date': timesince(req.id) + " ago",  # simple placeholder
+            'id': req.id,
+            'status': req.status
+        })
 
     context = {
         'profile': profile,
