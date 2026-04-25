@@ -1,0 +1,37 @@
+<!-- Matches Tab -->
+<div id="matches-tab" class="tab-content" style="display: block !important;">
+    {% if matches %}
+        <div class="space-y-3">
+            {% for match in matches %}
+            <div class="flex items-center justify-between p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color); margin-bottom: 12px;">
+                <div class="flex items-center gap-4 flex-1">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
+                        {{ match.name|first|upper }}
+                    </div>
+                    <div>
+                        <a href="{% url 'view_other_profile' match.user_id %}" class="font-medium hover:underline" style="color: var(--text-primary); text-decoration: none;">
+                            {{ match.name }}
+                        </a>
+                        <p class="text-xs opacity-60">
+                            {{ match.skill_offer }} → {{ match.skill_want }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold" style="color: #c49a2a;">{{ match.score }}%</span>
+                    <a href="{% url 'view_other_profile' match.user_id %}" 
+                       class="px-4 py-2 rounded-xl text-sm"
+                       style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; text-decoration: none;">
+                        View Profile
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <i class="bi bi-people text-4xl opacity-50"></i>
+            <p class="mt-2">No matches yet. Add skills to your profile!</p>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,67 @@
+<!-- Recently Watched Videos -->
+<div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-clock-history text-lg" style="color: var(--accent-primary);"></i>
+            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">
+                Recently Watched
+            </h3>
+        </div>
+        <a href="#" class="text-xs opacity-50 hover:opacity-100">View all →</a>
+    </div>
+    
+    <div class="space-y-3 max-h-[400px] overflow-y-auto">
+        {% for video in recently_watched %}
+        <div class="flex gap-3 p-3 rounded-xl hover:scale-[1.01] transition-transform cursor-pointer" 
+             style="background-color: var(--bg-page); border: 1px solid var(--border-color);"
+             onclick="window.open('{{ video.url }}', '_blank')">
+            
+            <!-- Thumbnail -->
+            <div class="relative flex-shrink-0">
+                {% if video.thumbnail %}
+                <img src="{{ video.thumbnail }}" alt="{{ video.title }}" class="w-24 h-16 rounded-lg object-cover">
+                {% elif video.youtube_id %}
+                <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/mqdefault.jpg" alt="{{ video.title }}" class="w-24 h-16 rounded-lg object-cover">
+                {% else %}
+                <div class="w-24 h-16 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                    <i class="bi bi-camera-reels-fill text-white text-2xl"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Progress bar -->
+                {% if video.progress > 0 %}
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-600 rounded-b-lg overflow-hidden">
+                    <div class="h-full" style="width: {{ video.progress }}%; background-color: var(--accent-primary);"></div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-medium truncate" style="color: var(--text-primary);">
+                    {{ video.title }}
+                </h4>
+                <p class="text-xs opacity-50 mt-1">
+                    {{ video.course_title }} • {{ video.duration }}
+                </p>
+                <p class="text-xs opacity-40 mt-1">
+                    <i class="bi bi-eye"></i> Watched {{ video.time_ago }} ago
+                </p>
+            </div>
+            
+            <!-- Continue button -->
+            <button class="px-3 py-1 rounded-lg text-xs whitespace-nowrap h-fit" 
+                    style="background-color: var(--border-color); color: var(--text-primary);"
+                    onclick="event.stopPropagation(); window.open('{{ video.url }}', '_blank')">
+                Continue →
+            </button>
+        </div>
+        {% empty %}
+        <div class="text-center py-8 opacity-50">
+            <i class="bi bi-camera-reels text-3xl"></i>
+            <p class="text-sm mt-2">No videos watched yet</p>
+            <p class="text-xs mt-1">Start learning to see your history!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>

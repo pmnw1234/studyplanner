@@ -1,0 +1,16 @@
+<!-- Welcome Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b" style="border-color: var(--border-color);">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-light tracking-tight" style="color: var(--text-primary);">
+            Good {{ time_of_day }}, {{ profile.user.username }}
+        </h1>
+        <p class="text-sm mt-1 opacity-60" style="color: var(--text-secondary);">
+            <i class="bi bi-calendar3 me-1"></i> {{ today|date:"l, F j" }}
+        </p>
+    </div>
+    
+    <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: var(--border-color);">
+        <i class="bi bi-fire text-sm" style="color: var(--accent-primary);"></i>
+        <span class="text-sm font-medium" style="color: var(--text-primary);">{{ streak_days|default:'0' }} day streak</span>
+    </div>
+</div>
