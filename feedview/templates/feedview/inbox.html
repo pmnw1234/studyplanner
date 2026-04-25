@@ -1,0 +1,12 @@
+<h2>Inbox</h2>
+
+{% for req in requests %}
+    <div>
+        <strong>{{ req.sender.username }}</strong> wants to connect
+
+        <a href="{% url 'accept' req.id %}">Accept</a>
+        <a href="{% url 'decline' req.id %}">Decline</a>
+    </div>
+{% empty %}
+    <p>No requests</p>
+{% endfor %}
