@@ -3,8 +3,11 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from useraccount.models import UserProfile
+from feedview.models import MatchRequest
+from django.utils.timesince import timesince
 from datetime import datetime
 import json
+
 def calculate_match_score(my_teach, my_learn, other_teach, other_learn):
     """
     Calculate match score between two users
@@ -35,7 +38,6 @@ def calculate_match_score(my_teach, my_learn, other_teach, other_learn):
         return 0
     
     return int((score / max_score) * 100)
-
 
 @login_required
 def dashboard_home(request):
@@ -125,8 +127,20 @@ def dashboard_home(request):
     # User activities (for Activity tab)
     user_activities = []
     
-    # Add pending match requests here (you'll implement Request model later)
-    if matches:
+    # Get pending match requests from feedview model
+    requests = MatchRequest.objects.filter(receiver=request.user).order_by('-id')
+    
+    for req in requests:
+        user_activities.append({
+            'icon': 'person',
+            'message': f"{req.sender.username} is interested in your skills",
+            'date': timesince(req.created_at) if hasattr(req, 'created_at') else "recently",
+            'id': req.id,
+            'status': req.status
+        })
+    
+    # Add match suggestions activity
+    if matches and not requests:
         user_activities.append({
             'icon': 'person-plus', 
             'message': f'You have {len(matches)} new match suggestions', 
@@ -148,7 +162,7 @@ def dashboard_home(request):
             'date': ''
         })
     
-    # Calculate stats
+    # Calculate stats (you may want to implement these properly)
     weekly_hours = 0
     sessions_done = 0
     
@@ -177,8 +191,10 @@ def dashboard_home(request):
         'matches_json': json.dumps(matches), 
         'today': datetime.now(),
     }
-    # At the bottom of dashboard_home function, before return, add:
+    
+    # Debug output
     print(f"DEBUG: Found {len(matches)} matches")
     for m in matches:
         print(f"  - {m['name']}: {m['score']}%")
+    
     return render(request, 'dashboard/index.html', context)

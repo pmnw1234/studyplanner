@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-4">
+
+    <!-- Create Post -->
+    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="content" rows="2" placeholder="Share your study progress..."
+                class="w-full p-2 rounded-lg text-sm"
+                style="background-color: var(--border-color); color: var(--text-primary); border:none;"></textarea>
+            <button type="submit"
+                class="mt-2 px-4 py-2 rounded-lg text-sm"
+                style="background-color: var(--accent-primary); color:white;">
+                Post
+            </button>
+        </form>
+    </div>
+
+    <!-- Posts -->
+    {% for post in posts %}
+    <div class="p-4 rounded-2xl"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+        <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                 style="background-color: var(--border-color);">
+                <i class="bi bi-person"></i>
+            </div>
+            <span class="text-sm font-medium">{{ post.user }}</span>
+        </div>
+
+        <p class="text-sm mb-2">{{ post.content }}</p>
+
+        <div class="flex gap-4 text-xs">
+
+            <!-- LIKE -->
+            <form method="POST" action="{% url 'like_post' post.id %}">
+                {% csrf_token %}
+                <button class="opacity-60 hover:opacity-100">
+                    ❤️ {{ post.likes }}
+                </button>
+            </form>
+
+            <!-- INTERESTED -->
+            <a href="{% url 'send_request' post.user_id %}" 
+                class="opacity-60 hover:opacity-100">
+                    ⭐ Interested
+            </a>
+
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

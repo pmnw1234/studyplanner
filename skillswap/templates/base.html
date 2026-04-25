@@ -147,10 +147,26 @@
                 <!-- Center - Desktop Menu -->
                 <div class="navbar-center">
                     <ul class="menu menu-horizontal px-1 gap-1">
-                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-house-door"></i> <span>Feed</span></a></li>
-                        <li><a href="{% url 'dashboard_home' %}" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
-                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-people"></i> <span>Matches</span></a></li>
-                        <li><a href="#" class="text-sm" style="color: var(--text-primary);"><i class="bi bi-chat-dots"></i> <span>Messages</span></a></li>
+                        <li>
+                            <a href="{% url 'feed' %}" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-house-door"></i> <span>Feed</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'dashboard_home' %}" class="text-sm" style="color: var(--text-primary);" id="nav-dashboard">
+                                <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-people"></i> <span>Matches</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-chat-dots"></i> <span>Messages</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 
@@ -187,14 +203,49 @@
             <!-- Mobile Menu Dropdown -->
             <div id="mobile-menu" class="mobile-menu-enter md:hidden overflow-hidden">
                 <ul class="menu py-2 space-y-1" style="border-top: 1px solid var(--border-color);">
-                    <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-house-door"></i> Feed</a></li>
-                    <li><a href="{% url 'dashboard_home' %}" style="color: var(--text-primary);"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-people"></i> Matches</a></li>
-                    <li><a href="#" style="color: var(--text-primary);"><i class="bi bi-chat-dots"></i> Messages</a></li>
+                    <li>
+                        <a href="{% url 'dashboard_home' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-speedometer2"></i> Dashboard</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'feed' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-house-door"></i> Feed</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-people"></i> Matches</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-chat-dots"></i> Messages</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
                     <li><hr class="my-1" style="border-color: var(--border-color);"></li>
-                    <li><a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> My Profile</a></li>
-                    <li><a href="{% url 'edit_profile' %}" style="color: var(--text-primary);"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
-                    <li><a href="{% url 'logout' %}" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    <li>
+                        <a href="{% url 'profile' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-person"></i> My Profile</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'edit_profile' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-pencil-square"></i> Edit Profile</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'logout' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-box-arrow-right"></i> Logout</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -274,6 +325,7 @@
         if (mobileMenuBtn) {
             mobileMenuBtn.addEventListener('click', () => {
                 isMenuOpen = !isMenuOpen;
+                
                 if (isMenuOpen) {
                     mobileMenu.classList.remove('mobile-menu-enter');
                     mobileMenu.classList.add('mobile-menu-enter-active');
@@ -285,6 +337,44 @@
                 }
             });
         }
+        
+        // Close mobile menu when clicking outside (optional)
+        document.addEventListener('click', (e) => {
+            if (isMenuOpen && mobileMenuBtn && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                isMenuOpen = false;
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                mobileMenuIcon.className = 'bi bi-list text-xl';
+            }
+        });
+        
+        // Responsive resize handler - close menu on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && isMenuOpen) {
+                isMenuOpen = false;
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                if (mobileMenuIcon) {
+                    mobileMenuIcon.className = 'bi bi-list text-xl';
+                }
+            }
+        });
+        
+        // Set active nav link based on current URL
+        function setActiveNavLink() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.menu a');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && currentPath.startsWith(href)) {
+                    link.classList.add('nav-link-active');
+                }
+            });
+        }
+        
+        // Call setActiveNavLink when the page loads
+        document.addEventListener('DOMContentLoaded', setActiveNavLink);
     </script>
     
     {% block extra_js %}{% endblock %}
