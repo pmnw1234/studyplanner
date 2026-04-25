@@ -1,0 +1,27 @@
+<!-- AI Matching Animation Modal -->
+<div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all duration-300">
+    <div class="rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="text-center mb-6">
+            <div class="inline-block p-3 rounded-full mb-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
+                <i class="bi bi-robot text-2xl text-white"></i>
+            </div>
+            <h3 class="text-xl font-semibold" style="color: var(--text-primary);">AI is finding your perfect matches...</h3>
+            <p class="text-sm opacity-60 mt-1">Analyzing skills and learning goals</p>
+        </div>
+        
+        <!-- Animated scanning line -->
+        <div class="relative h-1 rounded-full overflow-hidden mb-8" style="background-color: var(--border-color);">
+            <div id="scanLine" class="absolute top-0 left-0 h-full rounded-full transition-all duration-50" style="background: linear-gradient(90deg, #8b6914, #c49a2a); width: 0%;"></div>
+        </div>
+        
+        <!-- Bubbles container for matches -->
+        <div id="bubbleContainer" class="flex flex-wrap justify-center gap-3 min-h-[120px] mb-6">
+            <!-- Bubbles will be dynamically added here -->
+        </div>
+        
+        <div class="text-center">
+            <p id="matchStatus" class="text-sm opacity-70">Scanning profiles...</p>
+        </div>
+    </div>
+</div>

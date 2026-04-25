@@ -1,0 +1,76 @@
+
+<!-- Saved Courses & Videos -->
+<div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
+            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">
+                Saved Items
+            </h3>
+        </div>
+        <a href="#" class="text-xs opacity-50 hover:opacity-100">View all →</a>
+    </div>
+    
+    <div class="space-y-3 max-h-[400px] overflow-y-auto">
+        {% for item in saved_items %}
+        <div class="flex gap-3 p-3 rounded-xl hover:scale-[1.01] transition-transform cursor-pointer" 
+             style="background-color: var(--bg-page); border: 1px solid var(--border-color);"
+             onclick="window.open('{{ item.url }}', '_blank')">
+            
+            <!-- Thumbnail -->
+            <div class="flex-shrink-0">
+                {% if item.thumbnail %}
+                <img src="{{ item.thumbnail }}" alt="{{ item.title }}" class="w-24 h-16 rounded-lg object-cover">
+                {% elif item.youtube_id %}
+                <img src="https://img.youtube.com/vi/{{ item.youtube_id }}/mqdefault.jpg" alt="{{ item.title }}" class="w-24 h-16 rounded-lg object-cover">
+                {% else %}
+                <div class="w-24 h-16 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                    <i class="bi bi-journal-bookmark-fill text-white text-2xl"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs px-2 py-0.5 rounded" style="background-color: var(--border-color);">
+                        {% if item.platform %}
+                            {{ item.platform }}
+                        {% elif item.course_title %}
+                            Course
+                        {% else %}
+                            Video
+                        {% endif %}
+                    </span>
+                </div>
+                <h4 class="text-sm font-medium truncate mt-1" style="color: var(--text-primary);">
+                    {{ item.title }}
+                </h4>
+                <p class="text-xs opacity-50 mt-1">
+                    {% if item.course_title %}
+                        {{ item.course_title }}
+                    {% elif item.description %}
+                        {{ item.description|truncatechars:60 }}
+                    {% endif %}
+                </p>
+                <p class="text-xs opacity-40 mt-1">
+                    <i class="bi bi-bookmark-check"></i> Saved {{ item.time_ago }} ago
+                </p>
+            </div>
+            
+            <!-- Remove button -->
+            <button class="px-2 py-1 rounded-lg text-xs whitespace-nowrap h-fit opacity-50 hover:opacity-100" 
+                    onclick="event.stopPropagation(); removeSavedItem({{ forloop.counter0 }})"
+                    style="color: #ef4444;">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        {% empty %}
+        <div class="text-center py-8 opacity-50">
+            <i class="bi bi-bookmark text-3xl"></i>
+            <p class="text-sm mt-2">No saved items yet</p>
+            <p class="text-xs mt-1">Save courses and videos to see them here!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>

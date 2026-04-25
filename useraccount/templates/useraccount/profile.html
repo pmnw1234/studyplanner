@@ -157,57 +157,61 @@
         <!-- RIGHT COLUMN - Skills & Goals (spans 2 columns) -->
         <div class="lg:col-span-2 space-y-6">
             
-            <!-- Skills Section - Modern Chip Design -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Skills & Expertise</h3>
+          <!-- Skills Section - Modern Chip Design -->
+<div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex items-center gap-2 mb-4">
+        <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
+        <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Skills & Expertise</h3>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Can Teach -->
+        <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)08, var(--bg-page)); border: 1px solid var(--border-color);">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
+                    <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <!-- Can Teach -->
-                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
-                                <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
-                            </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">I Can Teach</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% if profile.skills_to_teach.all %}
-                                {% for skill in profile.skills_to_teach.all %}
-                                    <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                                        {{ skill.name }}
-                                    </span>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-primary);">Add some!</a></p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Wants to Learn -->
-                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-secondary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
-                                <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
-                            </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">I Want to Learn</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% if profile.skills_to_learn.all %}
-                                {% for skill in profile.skills_to_learn.all %}
-                                    <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
-                                        {{ skill.name }}
-                                    </span>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-secondary);">Add some!</a></p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+                <h4 class="font-semibold" style="color: var(--text-primary);">I Can Teach</h4>
             </div>
+            <div class="flex flex-wrap gap-2">
+                {% with teach_skills=profile.get_skills_to_teach_list %}
+                    {% if teach_skills %}
+                        {% for skill in teach_skills %}
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                                {{ skill }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-primary);">Add some!</a></p>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        
+        <!-- Wants to Learn -->
+        <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-secondary)08, var(--bg-page)); border: 1px solid var(--border-color);">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
+                    <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
+                </div>
+                <h4 class="font-semibold" style="color: var(--text-primary);">I Want to Learn</h4>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                {% with learn_skills=profile.get_skills_to_learn_list %}
+                    {% if learn_skills %}
+                        {% for skill in learn_skills %}
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
+                                {{ skill }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-secondary);">Add some!</a></p>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Study Goals - Card with Quote Style -->
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">

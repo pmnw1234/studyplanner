@@ -11,8 +11,16 @@ class Post(models.Model):
 
 
 class MatchRequest(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_requests')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_requests')
+    sender = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='feedview_sent_requests'  # Changed from 'sent_requests'
+    )
+    receiver = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='feedview_received_requests'  # Changed from 'received_requests'
+    )
 
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
@@ -21,5 +29,6 @@ class MatchRequest(models.Model):
     ], default='pending')
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-# Create your models here.
+    
+    def __str__(self):
+        return f"{self.sender.username} -> {self.receiver.username} ({self.status})"

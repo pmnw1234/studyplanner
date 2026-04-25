@@ -1,0 +1,33 @@
+<!-- Course Progress -->
+<div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <h3 class="font-medium mb-4 text-sm opacity-70">Active courses</h3>
+    <div class="space-y-4">
+        <div>
+            <div class="flex justify-between text-xs mb-1">
+                <span>SQL</span>
+                <span class="opacity-50">{{ sql_progress|default:65 }}%</span>
+            </div>
+            <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div class="h-full rounded-full" style="width: {{ sql_progress|default:65 }}%; background-color: var(--accent-primary);"></div>
+            </div>
+        </div>
+        <div>
+            <div class="flex justify-between text-xs mb-1">
+                <span>Figma</span>
+                <span class="opacity-50">{{ figma_progress|default:40 }}%</span>
+            </div>
+            <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div class="h-full rounded-full" style="width: {{ figma_progress|default:40 }}%; background-color: var(--accent-primary);"></div>
+            </div>
+        </div>
+        <div>
+            <div class="flex justify-between text-xs mb-1">
+                <span>Python</span>
+                <span class="opacity-50">{{ python_progress|default:80 }}%</span>
+            </div>
+            <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div class="h-full rounded-full" style="width: {{ python_progress|default:80 }}%; background-color: var(--accent-primary);"></div>
+            </div>
+        </div>
+    </div>
+</div>
