@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'useraccount',  
     'dashboard', 
-    'feedview',
+    'feedview',  # Keep feedview from feed-view branch
+    'profiles'   # Keep profiles from main branch
 ]
 
 MIDDLEWARE = [
@@ -118,7 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-import os
 
+# Media files (User uploaded content)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

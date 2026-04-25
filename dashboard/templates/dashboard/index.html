@@ -5,284 +5,434 @@
 {% block content %}
 <div class="space-y-6 md:space-y-8">
     
-    <!-- Welcome Header - Minimal -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b" style="border-color: var(--border-color);">
-        <div>
-            <h1 class="text-2xl md:text-3xl font-light tracking-tight" style="color: var(--text-primary);">
-                Good {{ time_of_day }}, {{ profile.user.username }}
-            </h1>
-            <p class="text-sm mt-1 opacity-60" style="color: var(--text-secondary);">
-                <i class="bi bi-calendar3 me-1"></i> {{ today|date:"l, F j" }}
-            </p>
-        </div>
-        
-        <!-- Minimal Streak -->
-        <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: var(--border-color);">
-            <i class="bi bi-fire text-sm" style="color: var(--accent-primary);"></i>
-            <span class="text-sm font-medium" style="color: var(--text-primary);">{{ streak_days|default:'0' }} day streak</span>
-        </div>
-    </div>
+    {% include 'dashboard/components/welcome_header.html' %}
+    {% include 'dashboard/components/stats_cards.html' %}
 
-    <!-- Minimal Stats Row - Clean Numbers -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <i class="bi bi-clock text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
-            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ weekly_hours|default:'0' }}</p>
-            <p class="text-xs opacity-50">hours this week</p>
-        </div>
-        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <i class="bi bi-people text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
-            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ matches|length|default:'0' }}</p>
-            <p class="text-xs opacity-50">matches waiting</p>
-        </div>
-        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <i class="bi bi-check-circle text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
-            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
-            <p class="text-xs opacity-50">sessions completed</p>
-        </div>
-        <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <i class="bi bi-graph-up text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
-            <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ consistency_percent|default:'0' }}%</p>
-            <p class="text-xs opacity-50">consistency</p>
-        </div>
-    </div>
-
-    <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- LEFT COLUMN -->
         <div class="space-y-6">
-            
-            <!-- Profile Card - Minimal -->
-            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
-                        <i class="bi bi-person text-xl" style="color: var(--accent-primary);"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-medium" style="color: var(--text-primary);">{{ profile.user.username }}</h3>
-                        <p class="text-xs opacity-50">{{ profile.student_status|default:'Student' }}</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="opacity-50">Goal</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.goals|default:'Not set'|truncatechars:30 }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="opacity-50">Study time</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="opacity-50">Level</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Beginner' }}</span>
-                    </div>
-                </div>
-                
-                <a href="{% url 'edit_profile' %}" class="block text-center w-full mt-4 py-2 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
-                    Edit profile
-                </a>
-            </div>
-
-            <!-- Course Progress - Clean -->
-            <div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <h3 class="font-medium mb-4 text-sm opacity-70">Active courses</h3>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span>SQL</span>
-                            <span class="opacity-50">{{ sql_progress|default:65 }}%</span>
-                        </div>
-                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
-                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ sql_progress|default:65 }}%; background-color: var(--accent-primary);"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span>Figma</span>
-                            <span class="opacity-50">{{ figma_progress|default:40 }}%</span>
-                        </div>
-                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
-                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ figma_progress|default:40 }}%; background-color: var(--accent-primary);"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span>Python</span>
-                            <span class="opacity-50">{{ python_progress|default:80 }}%</span>
-                        </div>
-                        <div class="h-1 rounded-full overflow-hidden" style="background-color: var(--border-color);">
-                            <div class="h-full rounded-full progress-fill" style="--progress-width: {{ python_progress|default:80 }}%; background-color: var(--accent-primary);"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'dashboard/components/profile_card.html' %}
+            {% include 'dashboard/components/course_progress.html' %}
+            {% include 'dashboard/components/recently_watched.html' %}
         </div>
 
         <!-- RIGHT COLUMN -->
         <div class="lg:col-span-2 space-y-6">
             
-            <!-- Tabs - Minimal Underline Style -->
+            <!-- AI Match Button -->
+            <div class="mb-2">
+                <button id="aiMatchBtn" class="w-full py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; border: none;">
+                    <i id="aiIcon" class="bi bi-magic text-xl"></i>
+                    <span id="aiBtnText">Find AI Matches</span>
+                    <div id="aiSpinner" class="hidden">
+                        <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                </button>
+            </div>
+            
+            <!-- Tabs -->
             <div class="flex gap-6 border-b pb-2" style="border-color: var(--border-color);">
-                <button class="tab-minimal tab-active-minimal text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
+                <button class="tab-button active-tab text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
                     Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
                 </button>
-<a href="{% url 'feed' %}" 
-   class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition"
-   style="color: var(--text-primary);">
-    Feed
-</a>
-                <button class="tab-minimal text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
+                <button class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="saved" style="color: var(--text-primary);">
+                    Saved Items <span class="text-xs opacity-50 ml-1">{{ saved_items|length }}</span>
+                </button>
+                <button class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
                     Activity
                 </button>
             </div>
 
-            <!-- Matches Tab -->
+            <!-- Tab Contents - IMPORTANT: These MUST have the correct IDs -->
             <div id="matches-tab" class="tab-content">
-                <div class="space-y-3">
-                    {% for match in matches %}
-                    <div class="flex items-center justify-between p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
-                                <i class="bi bi-person text-sm" style="color: var(--accent-primary);"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-sm" style="color: var(--text-primary);">{{ match.name }}</p>
-                                <p class="text-xs opacity-50">{{ match.skill_offer }} → {{ match.skill_want }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-medium" style="color: var(--accent-primary);">{{ match.score }}%</span>
-                            <button class="px-3 py-1 rounded-lg text-xs transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
-                                Connect
-                            </button>
+                {% include 'dashboard/components/matches_tab.html' %}
+            </div>
+            
+            <div id="saved-tab" class="tab-content" style="display: none;">
+                {% include 'dashboard/components/saved_items.html' %}
+            </div>
+            
+            <div id="activity-tab" class="tab-content" style="display: none;">
+                {% for activity in user_activities %}
+                <div class="flex items-center justify-between gap-3 p-3 rounded-xl mb-2"
+                     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                    
+                    <div class="flex items-center gap-3 flex-1">
+                        <i class="bi bi-person text-sm opacity-50"></i>
+                        <div>
+                            <p class="text-sm">
+                                {% if activity.user_id %}
+                                    <a href="{% url 'view_other_profile' activity.user_id %}" 
+                                       class="font-medium hover:underline" 
+                                       style="color: var(--accent-primary);">
+                                        {{ activity.sender }}
+                                    </a>
+                                {% else %}
+                                    <span class="font-medium">{{ activity.sender|default:'Someone' }}</span>
+                                {% endif %}
+                                sent you a match request
+                            </p>
+                            <p class="text-xs opacity-50">{{ activity.time }} ago</p>
                         </div>
                     </div>
-                    {% empty %}
-                    <div class="text-center py-12 opacity-50">
-                        <i class="bi bi-people text-3xl"></i>
-                        <p class="text-sm mt-2">No matches yet</p>
+                    
+                    {% if activity.status == 'pending' and activity.id %}
+                    <div class="flex gap-2">
+                        <a href="{% url 'accept_connection' activity.id %}"
+                           class="px-3 py-1 text-xs rounded-lg"
+                           style="background-color: #22c55e; color: white; text-decoration: none;">
+                            Accept
+                        </a>
+                        <a href="{% url 'decline_connection' activity.id %}"
+                           class="px-3 py-1 text-xs rounded-lg"
+                           style="background-color: #ef4444; color: white; text-decoration: none;">
+                            Decline
+                        </a>
                     </div>
-                    {% endfor %}
+                    {% elif activity.status %}
+                        <span class="text-xs px-2 py-1 rounded capitalize"
+                              style="background-color: 
+                                {% if activity.status == 'accepted' %}#22c55e
+                                {% elif activity.status == 'declined' %}#ef4444
+                                {% else %}#f59e0b{% endif %}; 
+                              color: white;">
+                            {{ activity.status }}
+                        </span>
+                    {% endif %}
                 </div>
-            </div>
-
-            <!-- Feed Tab -->
-            <div id="feed-tab" class="tab-content hidden">
-                <div class="space-y-3">
-                    {% for update in study_feed %}
-                    <div class="p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: var(--border-color);">
-                                <i class="bi bi-chat text-xs" style="color: var(--accent-primary);"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm"><span class="font-medium">{{ update.user }}</span> {{ update.action }}</p>
-                                <p class="text-xs opacity-50 mt-1">{{ update.time_ago }}</p>
-                                <div class="flex gap-3 mt-2">
-                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-heart"></i> {{ update.likes|default:'0' }}</button>
-                                    <button class="text-xs opacity-50 hover:opacity-100"><i class="bi bi-chat"></i> {{ update.comments|default:'0' }}</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-12 opacity-50">
-                        <i class="bi bi-newspaper text-3xl"></i>
-                        <p class="text-sm mt-2">No updates yet</p>
-                    </div>
-                    {% endfor %}
+                {% empty %}
+                <div class="text-center py-12 opacity-50">
+                    <i class="bi bi-inbox text-3xl"></i>
+                    <p class="text-sm mt-2">No incoming requests</p>
                 </div>
+                {% endfor %}
             </div>
-
-{% for activity in user_activities %}
-<div class="flex items-center justify-between gap-3 p-3 rounded-xl"
-     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-
-    <!-- Left side -->
-    <div class="flex items-center gap-3">
-        <i class="bi bi-person text-sm opacity-50"></i>
-        <div>
-            <p class="text-sm">
-                <span class="font-medium">{{ activity.sender }}</span> sent you a request
-            </p>
-            <p class="text-xs opacity-50">{{ activity.time }}</p>
-        </div>
-    </div>
-
-    <!-- Right side buttons -->
-    {% if activity.status == 'pending' %}
-    <div class="flex gap-2">
-        <a href="{% url 'accept' activity.id %}"
-           class="px-3 py-1 text-xs rounded-lg"
-           style="background-color: #22c55e; color: white;">
-            Accept
-        </a>
-
-        <a href="{% url 'decline' activity.id %}"
-           class="px-3 py-1 text-xs rounded-lg"
-           style="background-color: #ef4444; color: white;">
-            Decline
-        </a>
-    </div>
-    {% else %}
-        <span class="text-xs px-2 py-1 rounded"
-              style="background-color: var(--border-color);">
-            {{ activity.status }}
-        </span>
-    {% endif %}
-
-</div>
-
-{% empty %}
-<div class="text-center py-12 opacity-50">
-    <i class="bi bi-inbox text-3xl"></i>
-    <p class="text-sm mt-2">No incoming requests</p>
-</div>
-{% endfor %}
-
-            <!-- Quick Action - Minimal -->
-            <div class="flex gap-3 pt-2">
-                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
-                    <i class="bi bi-calendar-plus me-1"></i> Schedule
-                </button>
-                <button class="flex-1 py-3 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
-                    <i class="bi bi-plus-circle me-1"></i> Add skill
-                </button>
-            </div>
+            
+            {% include 'dashboard/partials/quick_actions.html' %}
         </div>
     </div>
 </div>
 
-<script>
-    document.querySelectorAll('.tab-minimal').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            
-            document.querySelectorAll('.tab-minimal').forEach(t => {
-                t.classList.remove('tab-active-minimal');
-                t.style.opacity = '0.5';
-            });
-            this.classList.add('tab-active-minimal');
-            this.style.opacity = '1';
-            
-            document.getElementById('matches-tab').classList.add('hidden');
-            {% comment %} document.getElementById('feed-tab').classList.add('hidden'); {% endcomment %}
-            document.getElementById('activity-tab').classList.add('hidden');
-            
-            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-        });
-    });
-</script>
+<!-- AI Modal -->
+<div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all duration-300">
+    <div class="rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="text-center mb-6">
+            <div class="inline-block p-3 rounded-full mb-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
+                <i class="bi bi-robot text-2xl text-white"></i>
+            </div>
+            <h3 class="text-xl font-semibold" style="color: var(--text-primary);">AI is finding your perfect matches...</h3>
+            <p class="text-sm opacity-60 mt-1">Analyzing skills and learning goals</p>
+        </div>
+        
+        <div class="relative h-1 rounded-full overflow-hidden mb-8" style="background-color: var(--border-color);">
+            <div id="scanLine" class="absolute top-0 left-0 h-full rounded-full transition-all duration-50" style="background: linear-gradient(90deg, #8b6914, #c49a2a); width: 0%;"></div>
+        </div>
+        
+        <div id="bubbleContainer" class="flex flex-wrap justify-center gap-4 min-h-[120px] mb-6"></div>
+        
+        <div class="text-center">
+            <p id="matchStatus" class="text-sm opacity-70">Scanning profiles...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Pass matches data to JavaScript -->
+{{ matches|json_script:"matches-data" }}
 
 <style>
-    .tab-active-minimal {
+    .active-tab {
         opacity: 1 !important;
         border-bottom: 2px solid var(--accent-primary);
     }
-    .progress-fill {
-        width: var(--progress-width);
+    
+    .tab-content {
+        display: block;
+    }
+    
+    .bubble-item {
+        animation: bubblePop 0.4s ease-out;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .bubble-item:hover {
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .bubble-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+    }
+    
+    @keyframes bubblePop {
+        0% {
+            opacity: 0;
+            transform: scale(0.3) translateY(20px);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .animate-spin {
+        animation: spin 0.8s linear infinite;
     }
 </style>
+
+<script>
+    // ========== TAB SWITCHING ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        
+        // Get all tab content containers
+        const matchesTab = document.getElementById('matches-tab');
+        const savedTab = document.getElementById('saved-tab');
+        const activityTab = document.getElementById('activity-tab');
+        
+        // Function to show selected tab and hide others
+        function showTab(tabName) {
+            // Hide all tabs
+            if (matchesTab) matchesTab.style.display = 'none';
+            if (savedTab) savedTab.style.display = 'none';
+            if (activityTab) activityTab.style.display = 'none';
+            
+            // Show selected tab
+            if (tabName === 'matches' && matchesTab) {
+                matchesTab.style.display = 'block';
+            } else if (tabName === 'saved' && savedTab) {
+                savedTab.style.display = 'block';
+            } else if (tabName === 'activity' && activityTab) {
+                activityTab.style.display = 'block';
+            }
+            
+            // Update button styles
+            tabButtons.forEach(button => {
+                button.classList.remove('active-tab');
+                button.style.opacity = '0.5';
+                button.style.borderBottom = 'none';
+                
+                if (button.getAttribute('data-tab') === tabName) {
+                    button.classList.add('active-tab');
+                    button.style.opacity = '1';
+                    button.style.borderBottom = '2px solid var(--accent-primary)';
+                }
+            });
+        }
+        
+        // Add click event to each tab button
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabName = this.getAttribute('data-tab');
+                showTab(tabName);
+            });
+        });
+        
+        // Show matches tab by default
+        showTab('matches');
+    });
+
+    // ========== AI MATCH BUBBLES ==========
+    const aiBtn = document.getElementById('aiMatchBtn');
+    const aiIcon = document.getElementById('aiIcon');
+    const aiBtnText = document.getElementById('aiBtnText');
+    const aiSpinner = document.getElementById('aiSpinner');
+    const aiModal = document.getElementById('aiModal');
+    const scanLine = document.getElementById('scanLine');
+    const bubbleContainer = document.getElementById('bubbleContainer');
+    const matchStatus = document.getElementById('matchStatus');
+
+    const avatarColors = [
+        '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+        '#1abc9c', '#e67e22', '#e84393', '#16a085', '#c0392b',
+        '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#d35400'
+    ];
+
+    const matchesDataElement = document.getElementById('matches-data');
+    let userMatches = [];
+    
+    if (matchesDataElement) {
+        try {
+            userMatches = JSON.parse(matchesDataElement.textContent);
+            console.log('Matches loaded:', userMatches.length);
+        } catch (e) {
+            console.error('Failed to parse matches data:', e);
+            userMatches = [];
+        }
+    }
+
+    function getInitials(name) {
+        return name ? name.charAt(0).toUpperCase() : '?';
+    }
+
+    function animateBubbleSearch() {
+        let progress = 0;
+        const duration = 2500;
+        const interval = 20;
+        const step = (interval / duration) * 100;
+        
+        if (bubbleContainer) bubbleContainer.innerHTML = '';
+        if (matchStatus) matchStatus.textContent = '🎯 Scanning your skills...';
+        
+        const searchSteps = [
+            { text: '📚 Analyzing your skills to teach...', delay: 500 },
+            { text: '🎯 Finding matching learning goals...', delay: 1000 },
+            { text: '🤝 Calculating compatibility scores...', delay: 1500 },
+            { text: '✨ Found your best matches!', delay: 2000 }
+        ];
+        
+        searchSteps.forEach(step => {
+            setTimeout(() => {
+                if (matchStatus) matchStatus.textContent = step.text;
+            }, step.delay);
+        });
+        
+        const scanInterval = setInterval(() => {
+            progress += step;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(scanInterval);
+                showMatchBubbles();
+                setTimeout(() => {
+                    closeModalAndRefresh();
+                }, 4000);
+            }
+            if (scanLine) scanLine.style.width = `${progress}%`;
+        }, interval);
+    }
+
+    function showMatchBubbles() {
+        if (bubbleContainer) bubbleContainer.innerHTML = '';
+        if (matchStatus) matchStatus.textContent = '🎉 Click any profile to view! 🎉';
+        
+        if (!userMatches || userMatches.length === 0) {
+            if (bubbleContainer) {
+                bubbleContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="bi bi-emoji-frown text-5xl opacity-50"></i>
+                        <p class="mt-3 text-sm opacity-70">No matches yet. Add more skills to your profile!</p>
+                        <button onclick="window.location.href='/profile/edit/'" class="mt-4 px-4 py-2 rounded-xl text-sm" style="background-color: var(--border-color);">
+                            <i class="bi bi-plus-circle me-1"></i> Add Skills
+                        </button>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        userMatches.forEach((match, index) => {
+            setTimeout(() => {
+                const bubble = document.createElement('div');
+                const color = avatarColors[index % avatarColors.length];
+                bubble.className = 'bubble-item';
+                bubble.style.cssText = `
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 15px 12px;
+                    border-radius: 60px;
+                    background: ${color};
+                    color: white;
+                    min-width: 90px;
+                    cursor: pointer;
+                    transition: transform 0.3s, box-shadow 0.3s;
+                `;
+                
+                let avatarHtml = '';
+                if (match.profile_picture) {
+                    avatarHtml = `<img src="${match.profile_picture}" alt="${match.name}" class="bubble-avatar">`;
+                } else {
+                    avatarHtml = `
+                        <div style="width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                            ${getInitials(match.name)}
+                        </div>
+                    `;
+                }
+                
+                bubble.innerHTML = `
+                    ${avatarHtml}
+                    <span class="font-semibold text-sm">${match.name || 'User'}</span>
+                    <span class="text-xs opacity-90">${match.score || 0}% match</span>
+                    <div class="text-xs text-center mt-1 hidden md:block" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis;">
+                        ${match.skill_offer || '?'} → ${match.skill_want || '?'}
+                    </div>
+                `;
+                
+                bubble.onclick = () => {
+                    window.location.href = `/profile/${match.user_id}/`;
+                };
+                
+                if (bubbleContainer) bubbleContainer.appendChild(bubble);
+                
+                setTimeout(() => {
+                    bubble.style.transform = 'translateY(-5px)';
+                }, 100);
+            }, index * 150);
+        });
+    }
+
+    function closeModalAndRefresh() {
+        setTimeout(() => {
+            if (aiModal) aiModal.classList.add('hidden');
+            location.reload();
+        }, 3500);
+    }
+
+    if (aiBtn) {
+        aiBtn.addEventListener('click', () => {
+            if (aiIcon) aiIcon.classList.add('hidden');
+            if (aiBtnText) aiBtnText.textContent = 'Scanning...';
+            if (aiSpinner) aiSpinner.classList.remove('hidden');
+            
+            if (aiModal) {
+                aiModal.classList.remove('hidden');
+                const modalTransform = aiModal.querySelector('.transform');
+                if (modalTransform) {
+                    modalTransform.classList.remove('scale-95');
+                    modalTransform.classList.add('scale-100');
+                }
+            }
+            
+            setTimeout(() => {
+                animateBubbleSearch();
+            }, 300);
+            
+            setTimeout(() => {
+                if (aiIcon) aiIcon.classList.remove('hidden');
+                if (aiBtnText) aiBtnText.textContent = 'Find AI Matches';
+                if (aiSpinner) aiSpinner.classList.add('hidden');
+            }, 5000);
+        });
+    }
+
+    if (aiModal) {
+        aiModal.addEventListener('click', (e) => {
+            if (e.target === aiModal) {
+                aiModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    window.removeSavedItem = function(index) {
+        if (confirm('Remove this saved item?')) {
+            console.log('Remove item at index:', index);
+        }
+    };
+</script>
 {% endblock %}

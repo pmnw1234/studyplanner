@@ -1,0 +1,31 @@
+<!-- Profile Card -->
+<div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+            <i class="bi bi-person text-xl" style="color: var(--accent-primary);"></i>
+        </div>
+        <div>
+            <h3 class="font-medium" style="color: var(--text-primary);">{{ profile.user.username }}</h3>
+            <p class="text-xs opacity-50">{{ profile.student_status|default:'Student' }}</p>
+        </div>
+    </div>
+    
+    <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+            <span class="opacity-50">Goal</span>
+            <span class="font-medium" style="color: var(--text-primary);">{{ profile.goals|default:'Not set'|truncatechars:30 }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="opacity-50">Study time</span>
+            <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="opacity-50">Level</span>
+            <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Beginner' }}</span>
+        </div>
+    </div>
+    
+    <a href="{% url 'edit_profile' %}" class="block text-center w-full mt-4 py-2 rounded-xl text-sm transition-colors" style="background-color: var(--border-color); color: var(--text-primary);">
+        Edit profile
+    </a>
+</div>

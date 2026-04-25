@@ -1,0 +1,23 @@
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <i class="bi bi-clock text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+        <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ weekly_hours|default:'0' }}</p>
+        <p class="text-xs opacity-50">hours this week</p>
+    </div>
+    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <i class="bi bi-people text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+        <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ matches|length|default:'0' }}</p>
+        <p class="text-xs opacity-50">matches waiting</p>
+    </div>
+    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <i class="bi bi-check-circle text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+        <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
+        <p class="text-xs opacity-50">sessions completed</p>
+    </div>
+    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <i class="bi bi-graph-up text-lg opacity-60 mb-2 block" style="color: var(--text-secondary);"></i>
+        <p class="text-2xl font-semibold" style="color: var(--text-primary);">{{ consistency_percent|default:'0' }}%</p>
+        <p class="text-xs opacity-50">consistency</p>
+    </div>
+</div>
