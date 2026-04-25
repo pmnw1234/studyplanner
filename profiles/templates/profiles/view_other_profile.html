@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ request.user.username }}'s Profile | SkillSwap{% endblock %}
+{% block title %}{{ other_user.username }}'s Profile | SkillSwap{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
@@ -23,8 +23,8 @@
             <div class="flex flex-col md:flex-row items-center md:items-end -mt-14 gap-4 md:gap-6">
                 <div class="relative">
                     <div class="w-28 h-28 md:w-32 md:h-32 rounded-full ring-4 ring-white overflow-hidden shadow-xl" style="background-color: var(--bg-card);">
-                        {% if profile.profile_picture %}
-                            <img src="{{ profile.profile_picture.url }}" alt="{{ request.user.username }}" class="object-cover w-full h-full" />
+                        {% if other_profile.profile_picture %}
+                            <img src="{{ other_profile.profile_picture.url }}" alt="{{ other_user.username }}" class="object-cover w-full h-full" />
                         {% else %}
                             <div class="w-full h-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
                                 <i class="bi bi-person-fill text-5xl text-white"></i>
@@ -36,27 +36,56 @@
                 </div>
                 
                 <div class="flex-1 text-center md:text-left">
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">{{ request.user.get_full_name|default:request.user.username }}</h1>
-                    <p class="text-sm opacity-60 mt-1">@{{ request.user.username }}</p>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">{{ other_user.get_full_name|default:other_user.username }}</h1>
+                    <p class="text-sm opacity-60 mt-1">@{{ other_user.username }}</p>
                     <div class="flex flex-wrap items-center gap-2 mt-2 justify-center md:justify-start">
                         <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">
-                            <i class="bi bi-mortarboard-fill me-1"></i> {{ profile.student_status|default:'Student' }}
+                            <i class="bi bi-mortarboard-fill me-1"></i> {{ other_profile.student_status|default:'Student' }}
                         </span>
                         <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">
-                            <i class="bi bi-calendar3 me-1"></i> Joined {{ request.user.date_joined|date:"M Y" }}
+                            <i class="bi bi-calendar3 me-1"></i> Joined {{ other_user.date_joined|date:"M Y" }}
                         </span>
-                        {% if profile.current_level %}
+                        {% if other_profile.current_level %}
                         <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--accent-primary)20; color: var(--accent-primary);">
-                            <i class="bi bi-graph-up me-1"></i> {{ profile.current_level }}
+                            <i class="bi bi-graph-up me-1"></i> {{ other_profile.current_level }}
                         </span>
                         {% endif %}
                     </div>
                 </div>
                 
-                <div class="pb-2">
-                    <a href="{% url 'edit_profile' %}" class="btn btn-sm md:btn-md border-none px-6 rounded-full transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                        <i class="bi bi-pencil-square me-2"></i> Edit Profile
-                    </a>
+                <div class="pb-2 flex gap-2">
+                   <div class="pb-2 flex gap-2">
+    {% if is_connected %}
+        <span class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: var(--accent-secondary); color: white;">
+            <i class="bi bi-check-lg me-2"></i> Connected
+        </span>
+        <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: var(--border-color); color: var(--text-primary);">
+            <i class="bi bi-chat-dots me-2"></i> Message
+        </a>
+    {% elif request_sent %}
+        <a href="{% url 'cancel_request' other_user.id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: #F59E0B; color: white;">
+            <i class="bi bi-clock-history me-2"></i> Request Sent
+        </a>
+        <a href="{% url 'cancel_request' other_user.id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: var(--border-color); color: var(--text-primary);">
+            <i class="bi bi-x-lg me-2"></i> Cancel
+        </a>
+    {% elif request_received %}
+        <a href="{% url 'accept_connection' request_received_id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+            <i class="bi bi-check-lg me-2"></i> Accept
+        </a>
+        <a href="{% url 'decline_connection' request_received_id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">
+            <i class="bi bi-x-lg me-2"></i> Decline
+        </a>
+    {% else %}
+        <a href="{% url 'send_connection_request' other_user.id %}" class="btn btn-sm md:btn-md border-none px-6 rounded-full transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+            <i class="bi bi-person-plus me-2"></i> Connect
+        </a>
+        <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full transition-all hover:scale-105" style="background-color: var(--border-color); color: var(--text-primary);">
+            <i class="bi bi-chat-dots me-2"></i> Message
+        </a>
+    {% endif %}
+</div>
+                    
                 </div>
             </div>
         </div>
@@ -66,31 +95,31 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
             <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-primary)15;">
-                <i class="bi bi-fire text-lg" style="color: var(--accent-primary);"></i>
+                <i class="bi bi-journal-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ streak_days|default:'0' }}</p>
-            <p class="text-xs opacity-50">Day Streak</p>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ teach_skills|length|default:'0' }}</p>
+            <p class="text-xs opacity-50">Skills to Teach</p>
         </div>
         <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
             <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-secondary)15;">
-                <i class="bi bi-people text-lg" style="color: var(--accent-secondary);"></i>
+                <i class="bi bi-book-half text-lg" style="color: var(--accent-secondary);"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ study_partners_count|default:'0' }}</p>
-            <p class="text-xs opacity-50">Partners</p>
-        </div>
-        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-ocean)15;">
-                <i class="bi bi-clock-history text-lg" style="color: var(--accent-ocean);"></i>
-            </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ total_hours|default:'0' }}</p>
-            <p class="text-xs opacity-50">Hours</p>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ learn_skills|length|default:'0' }}</p>
+            <p class="text-xs opacity-50">Skills to Learn</p>
         </div>
         <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
             <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: #F59E0B15;">
-                <i class="bi bi-award text-lg" style="color: #F59E0B;"></i>
+                <i class="bi bi-people text-lg" style="color: #F59E0B;"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ sessions_done|default:'0' }}</p>
-            <p class="text-xs opacity-50">Sessions</p>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ match_score }}%</p>
+            <p class="text-xs opacity-50">Match with You</p>
+        </div>
+        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-ocean)15;">
+                <i class="bi bi-calendar-check text-lg" style="color: var(--accent-ocean);"></i>
+            </div>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ other_profile.preferred_study_time|default:'Any' }}</p>
+            <p class="text-xs opacity-50">Study Time</p>
         </div>
     </div>
 
@@ -103,54 +132,56 @@
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="bi bi-person-badge text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Personal Details</h3>
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">About {{ other_user.username }}</h3>
                 </div>
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
                         <span class="opacity-60"><i class="bi bi-mortarboard me-2"></i>Student Status</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.student_status|default:'Not set' }}</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.student_status|default:'Not set' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
                         <span class="opacity-60"><i class="bi bi-graph-up me-2"></i>Current Level</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.current_level|default:'Not set' }}</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.current_level|default:'Not set' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
                         <span class="opacity-60"><i class="bi bi-moon-stars me-2"></i>Study Time</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.preferred_study_time|default:'Not set' }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
-                        <span class="opacity-60"><i class="bi bi-gender-ambiguous me-2"></i>Gender</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.gender|default:'Not specified' }}</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.preferred_study_time|default:'Not set' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-2">
-                        <span class="opacity-60"><i class="bi bi-cake2 me-2"></i>Birthday</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ profile.birthday|date:"F j, Y"|default:'Not set' }}</span>
+                        <span class="opacity-60"><i class="bi bi-gender-ambiguous me-2"></i>Gender</span>
+                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.gender|default:'Not specified' }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Info Card -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-info-circle text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Quick Info</h3>
-                </div>
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3 p-3 rounded-lg" style="background-color: var(--bg-page);">
-                        <i class="bi bi-envelope text-sm" style="color: var(--accent-primary);"></i>
-                        <div class="flex-1">
-                            <p class="text-xs opacity-50">Email</p>
-                            <p class="text-sm font-medium" style="color: var(--text-primary);">{{ request.user.email }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 rounded-lg" style="background-color: var(--bg-page);">
-                        <i class="bi bi-calendar-check text-sm" style="color: var(--accent-primary);"></i>
-                        <div class="flex-1">
-                            <p class="text-xs opacity-50">Member Since</p>
-                            <p class="text-sm font-medium" style="color: var(--text-primary);">{{ request.user.date_joined|date:"F j, Y" }}</p>
+            <!-- Match Score Card -->
+            <div class="rounded-xl p-5 text-center" style="background: linear-gradient(135deg, var(--accent-primary)10, var(--accent-ocean)10); border: 1px solid var(--border-color);">
+                <div class="relative inline-block mx-auto">
+                    <div class="w-28 h-28 rounded-full flex items-center justify-center mx-auto" style="background: conic-gradient(from 0deg, var(--accent-primary) 0deg, var(--accent-primary) {{ match_score }}deg, var(--border-color) {{ match_score }}deg, var(--border-color) 360deg);">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center" style="background-color: var(--bg-card);">
+                            <span class="text-2xl font-bold" style="color: var(--accent-primary);">{{ match_score }}%</span>
                         </div>
                     </div>
                 </div>
+                <h3 class="font-semibold mt-3" style="color: var(--text-primary);">Compatibility Score</h3>
+                <p class="text-xs opacity-60 mt-1">Based on skill matching</p>
+                
+                {% if match_score > 70 %}
+                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--accent-secondary)15;">
+                        <i class="bi bi-stars text-sm" style="color: var(--accent-secondary);"></i>
+                        <span class="text-xs font-medium ml-1" style="color: var(--accent-secondary);">Great match! Start a conversation.</span>
+                    </div>
+                {% elif match_score > 40 %}
+                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--accent-primary)15;">
+                        <i class="bi bi-hand-thumbs-up text-sm" style="color: var(--accent-primary);"></i>
+                        <span class="text-xs font-medium ml-1" style="color: var(--accent-primary);">Good potential! Connect to learn more.</span>
+                    </div>
+                {% else %}
+                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--border-color);">
+                        <i class="bi bi-chat-dots text-sm opacity-60"></i>
+                        <span class="text-xs font-medium ml-1 opacity-60">Low match score. Still worth connecting!</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -161,7 +192,7 @@
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Skills & Expertise</h3>
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">{{ other_user.username }}'s Skills</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -171,17 +202,17 @@
                             <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
                                 <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
                             </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">I Can Teach</h4>
+                            <h4 class="font-semibold" style="color: var(--text-primary);">Can Teach</h4>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            {% if profile.skills_to_teach.all %}
-                                {% for skill in profile.skills_to_teach.all %}
+                            {% if teach_skills %}
+                                {% for skill in teach_skills %}
                                     <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                                        {{ skill.name }}
+                                        {{ skill }}
                                     </span>
                                 {% endfor %}
                             {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-primary);">Add some!</a></p>
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
                             {% endif %}
                         </div>
                     </div>
@@ -192,24 +223,24 @@
                             <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
                                 <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
                             </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">I Want to Learn</h4>
+                            <h4 class="font-semibold" style="color: var(--text-primary);">Wants to Learn</h4>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            {% if profile.skills_to_learn.all %}
-                                {% for skill in profile.skills_to_learn.all %}
+                            {% if learn_skills %}
+                                {% for skill in learn_skills %}
                                     <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
-                                        {{ skill.name }}
+                                        {{ skill }}
                                     </span>
                                 {% endfor %}
                             {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-secondary);">Add some!</a></p>
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Study Goals - Card with Quote Style -->
+            <!-- Study Goals Card -->
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="bi bi-flag-fill text-lg" style="color: var(--accent-primary);"></i>
@@ -218,12 +249,12 @@
                 <div class="relative p-5 rounded-xl" style="background: linear-gradient(135deg, var(--bg-page), var(--bg-card)); border-left: 4px solid var(--accent-primary);">
                     <i class="bi bi-quote absolute text-4xl opacity-10" style="bottom: 10px; right: 15px; color: var(--accent-primary);"></i>
                     <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
-                        {{ profile.goals|default:"No goals set yet. Click 'Edit Profile' to add your study goals!" }}
+                        {{ other_profile.goals|default:"No goals set yet." }}
                     </p>
                 </div>
             </div>
 
-            <!-- Availability - Timeline Style -->
+            <!-- Availability Card -->
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="bi bi-calendar-week text-lg" style="color: var(--accent-primary);"></i>
@@ -235,7 +266,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium mb-1" style="color: var(--text-primary);">Preferred Study Times</p>
-                        <p class="text-sm" style="color: var(--text-secondary);">{{ profile.availability|default:"Not specified. Update your profile to let others know when you're available!" }}</p>
+                        <p class="text-sm" style="color: var(--text-secondary);">{{ other_profile.availability|default:"Not specified." }}</p>
                     </div>
                 </div>
             </div>
@@ -247,9 +278,6 @@
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fadeIn {
-        animation: fadeIn 0.5s ease-out forwards;
     }
     
     /* Custom scrollbar */
@@ -266,9 +294,8 @@
         border-radius: 10px;
     }
     
-    /* Badge hover effect */
-    .badge-hover:hover {
-        transform: translateY(-2px);
+    /* Button transitions */
+    .btn {
         transition: all 0.2s ease;
     }
 </style>
