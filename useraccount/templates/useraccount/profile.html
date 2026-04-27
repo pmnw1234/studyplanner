@@ -174,17 +174,27 @@
                 <h4 class="font-semibold" style="color: var(--text-primary);">I Can Teach</h4>
             </div>
             <div class="flex flex-wrap gap-2">
-                {% with teach_skills=profile.get_skills_to_teach_list %}
-                    {% if teach_skills %}
-                        {% for skill in teach_skills %}
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                                {{ skill }}
+                {% if teach_skills_data %}
+                    {% for skill in teach_skills_data %}
+                        <div class="group relative">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1.5" 
+                                  style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                                {{ skill.name }}
+                                <span class="text-xs opacity-90">{{ skill.level }}</span>
                             </span>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-primary);">Add some!</a></p>
-                    {% endif %}
-                {% endwith %}
+                            {% if skill.category %}
+                                <span class="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all" 
+                                      style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    {% if skill.category == 'tech' %}💻
+                                    {% elif skill.category == 'language' %}🌐
+                                    {% else %}✨{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-primary);">Add some!</a></p>
+                {% endif %}
             </div>
         </div>
         
@@ -197,20 +207,106 @@
                 <h4 class="font-semibold" style="color: var(--text-primary);">I Want to Learn</h4>
             </div>
             <div class="flex flex-wrap gap-2">
-                {% with learn_skills=profile.get_skills_to_learn_list %}
-                    {% if learn_skills %}
-                        {% for skill in learn_skills %}
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
-                                {{ skill }}
+                {% if learn_skills_data %}
+                    {% for skill in learn_skills_data %}
+                        <div class="group relative">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1.5" 
+                                  style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
+                                {{ skill.name }}
+                                <span class="text-xs opacity-90">{{ skill.level }}</span>
                             </span>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-secondary);">Add some!</a></p>
-                    {% endif %}
-                {% endwith %}
+                            {% if skill.category %}
+                                <span class="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all" 
+                                      style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    {% if skill.category == 'tech' %}💻
+                                    {% elif skill.category == 'language' %}🌐
+                                    {% else %}✨{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-sm italic opacity-50">No skills listed yet. <a href="{% url 'edit_profile' %}" style="color: var(--accent-secondary);">Add some!</a></p>
+                {% endif %}
             </div>
         </div>
     </div>
+</div>
+<!-- Certifications Section -->
+<div class="rounded-xl p-5 mt-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--accent-primary)15;">
+                <i class="bi bi-award text-sm" style="color: var(--accent-primary);"></i>
+            </div>
+            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Certifications</h3>
+        </div>
+        <a href="{% url 'add_certification' %}" 
+           class="text-sm flex items-center gap-1 transition-all hover:scale-105 px-3 py-1.5 rounded-full"
+           style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+            <i class="bi bi-plus-circle"></i> Add Certification
+        </a>
+    </div>
+    
+    {% if certifications %}
+        <div class="space-y-3">
+            {% for cert in certifications %}
+            <div class="p-4 rounded-xl transition-all hover:shadow-md" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 class="font-semibold" style="color: var(--text-primary);">{{ cert.title }}</h4>
+                            {% if cert.is_expired %}
+                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #EF444420; color: #EF4444;">Expired</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm opacity-70 mb-2" style="color: var(--text-secondary);">
+                            <i class="bi bi-building me-1"></i> {{ cert.issuing_organization }}
+                        </p>
+                        <div class="flex flex-wrap gap-3 text-xs opacity-60 mb-2">
+                            <span><i class="bi bi-calendar me-1"></i> Issued: {{ cert.issue_date|date:"M Y" }}</span>
+                            {% if cert.expiry_date %}
+                                <span><i class="bi bi-hourglass-split me-1"></i> Expires: {{ cert.expiry_date|date:"M Y" }}</span>
+                            {% endif %}
+                            {% if cert.credential_id %}
+                                <span><i class="bi bi-upc-scan me-1"></i> ID: {{ cert.credential_id }}</span>
+                            {% endif %}
+                        </div>
+                        {% if cert.description %}
+                            <p class="text-sm opacity-70 mt-2">{{ cert.description }}</p>
+                        {% endif %}
+                        <div class="flex gap-3 mt-3">
+                            {% if cert.credential_url %}
+                                <a href="{{ cert.credential_url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
+                                    <i class="bi bi-link-45deg"></i> Verify Online
+                                </a>
+                            {% endif %}
+                            {% if cert.certificate_file %}
+                                <a href="{{ cert.certificate_file.url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
+                                    <i class="bi bi-file-earmark-pdf"></i> View Certificate
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{% url 'edit_certification' cert.id %}" class="p-2 rounded-lg transition-all hover:scale-105" style="background-color: var(--accent-primary)10; color: var(--accent-primary);">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'delete_certification' cert.id %}" class="p-2 rounded-lg transition-all hover:scale-105" style="background-color: #EF444410; color: #EF4444;">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-8">
+            <i class="bi bi-award text-4xl opacity-30 mb-2"></i>
+            <p class="text-sm opacity-60" style="color: var(--text-secondary);">No certifications added yet.</p>
+            <p class="text-xs opacity-50 mt-1">Showcase your credentials to build trust!</p>
+        </div>
+    {% endif %}
 </div>
 
             <!-- Study Goals - Card with Quote Style -->
