@@ -1,0 +1,22 @@
+<h2>Feed</h2>
+
+<a href="{% url 'create_post' %}">➕ Create Post</a>
+
+<hr>
+
+{% for post in posts %}
+    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        
+        <a href="{% url 'post_detail' post.id %}">
+    <h3>{{ post.title }}</h3>
+</a>
+        <p>{{ post.description }}</p>
+
+        <small>By {{ post.user.username }}</small>
+
+        <p>Type: {{ post.get_post_type_display }}</p>
+
+        <p>❤️{{ post.total_likes }} | ⭐ {{ post.total_interested }}</p>
+
+    </div>
+{% endfor %}
