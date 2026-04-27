@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post Detail</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eaf7ea;
+        }
+
+        .card {
+            width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #2e7d32;
+            color: white;
+            font-size: 12px;
+        }
+
+        .back {
+            display: block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <span class="badge">
+        {{ post.get_post_type_display }}
+    </span>
+
+    <h2>{{ post.title }}</h2>
+
+    <p>{{ post.description }}</p>
+
+    <hr>
+
+    <p>👍 Likes: {{ post.total_likes }}</p>
+    <p>⭐ Interested: {{ post.total_interested }}</p>
+
+    <p><small>Posted by: {{ post.user.username }}</small></p>
+
+    <a href="{% url 'feed' %}" class="back">← Back to Feed</a>
+
+</div>
+
+</body>
+</html>

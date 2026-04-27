@@ -3,49 +3,17 @@ from django.contrib.auth.decorators import login_required
 from .models import MatchRequest
 from django.contrib.auth.models import User
 
+
+
+from feed.models import Post   # 🔥 ADD THIS
+
 @login_required
 def feed_view(request):
+    posts = Post.objects.all().order_by('-id')
 
-    users = User.objects.exclude(id=request.user.id)
-
-    posts = []
-
-    for i, u in enumerate(users[:3]):  # get real users
-        posts.append({
-            'id': i + 1,
-            'user': u.username,
-            'user_id': u.id,   # ✅ REAL ID
-            'content': f'{u.username} is studying something cool!',
-            'likes': i * 2
-        })
-
-    liked_posts = request.session.get('liked_posts', [])
-
-    for post in posts:
-        if post['id'] in liked_posts:
-            post['likes'] += 1
-
-    user_posts = request.session.get('user_posts', [])
-
-    if request.method == 'POST':
-        content = request.POST.get('content')
-
-        if content:
-            new_post = {
-                'id': len(user_posts) + 100,
-                'user': request.user.username,
-                'content': content,
-                'likes': 0
-            }
-            user_posts.insert(0, new_post)
-            request.session['user_posts'] = user_posts
-            return redirect('feed')
-        
-
-    all_posts = user_posts + posts
-
-    return render(request, 'feedview/feed.html', {'posts': all_posts})
-
+    return render(request, 'feedview/feed.html', {
+        'posts': posts
+    })
 
 @login_required
 def inbox_view(request):
