@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'useraccount',  
     'dashboard', 
     'feedview',  # Keep feedview from feed-view branch
-    'profiles'   # Keep profiles from main branch
+    'profiles'  , # Keep profiles from main branch
+    'feed',
 ]
 
 MIDDLEWARE = [
