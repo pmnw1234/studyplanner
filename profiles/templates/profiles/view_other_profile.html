@@ -72,7 +72,7 @@
                         </a>
                     {% elif request_received %}
                         <!-- Request received from this user - show Accept/Decline -->
-                        <a href="{% url 'accept_connection' request_received_id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                        <a href="{% url 'feedview:accept' req.id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
                             <i class="bi bi-check-lg me-2"></i> Accept
                         </a>
                         <a href="{% url 'decline_connection' request_received_id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">

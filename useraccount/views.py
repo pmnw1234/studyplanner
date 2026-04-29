@@ -5,6 +5,7 @@ from django.contrib import messages
 from .forms import UserRegistrationForm, UserProfileEditForm, LoginForm
 from .models import UserProfile
 from django.contrib.auth.models import User
+from feedview.models import MatchRequest   
 
 def landing_view(request):
     """Landing page view - shown to non-authenticated users"""
@@ -65,9 +66,12 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'useraccount/profile.html', {'profile': profile})
+
+    return render(request, 'useraccount/profile.html', {
+        'profile': profile,
+        'study_partners_count': profile.study_partners_count  # ✅ IMPORTANT
+    })
 
 @login_required
 def edit_profile_view(request):

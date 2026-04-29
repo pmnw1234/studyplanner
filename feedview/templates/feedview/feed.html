@@ -1,57 +1,129 @@
 {% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Feed | SkillSwap{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto space-y-4">
+<div class="max-w-xl mx-auto py-6 space-y-6">
 
     <!-- Create Post -->
-    <div class="p-4 rounded-2xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        <form method="POST">
-            {% csrf_token %}
-            <textarea name="content" rows="2" placeholder="Share your study progress..."
-                class="w-full p-2 rounded-lg text-sm"
-                style="background-color: var(--border-color); color: var(--text-primary); border:none;"></textarea>
-            <button type="submit"
-                class="mt-2 px-4 py-2 rounded-lg text-sm"
-                style="background-color: var(--accent-primary); color:white;">
-                Post
-            </button>
-        </form>
+    <div class="p-4 rounded-2xl shadow-sm"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+        <a href="{% url 'create_post' %}"
+           class="block w-full p-3 rounded-full text-sm text-left"
+           style="background-color: var(--border-color); color: var(--text-secondary);">
+            Share your study progress...
+        </a>
+
+        <div class="flex justify-between mt-3 text-sm">
+            <span class="opacity-60">📷 Photo</span>
+            <span class="opacity-60">🎥 Video</span>
+            <span class="opacity-60">📚 Study / Skill</span>
+        </div>
     </div>
 
     <!-- Posts -->
     {% for post in posts %}
-    <div class="p-4 rounded-2xl"
+    <div class="p-4 rounded-2xl shadow-sm"
          style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
 
-        <div class="flex items-center gap-2 mb-2">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                 style="background-color: var(--border-color);">
-                <i class="bi bi-person"></i>
-            </div>
-            <span class="text-sm font-medium">{{ post.user }}</span>
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-3">
+
+            <!-- User info -->
+            <a href="{% url 'view_other_profile' post.user.id %}"
+               class="flex items-center gap-3">
+
+                <!-- Profile Picture -->
+                <div class="w-10 h-10 rounded-full overflow-hidden"
+                     style="background-color: var(--border-color);">
+
+                    {% if post.user.userprofile.profile_picture %}
+                        <img src="{{ post.user.userprofile.profile_picture.url }}"
+                             class="w-full h-full object-cover"
+                             alt="Profile Picture">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Username + Time -->
+                <div>
+                    <p class="text-sm font-semibold"
+                       style="color: var(--text-primary);">
+                        {{ post.user.username }}
+                    </p>
+
+                    <p class="text-xs opacity-50">
+                        {{ post.created_at|timesince }} ago
+                    </p>
+                </div>
+            </a>
+
+            <!-- Post Type -->
+            <span class="text-xs px-3 py-1 rounded-full"
+                  style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
+                {{ post.post_type|title }}
+            </span>
         </div>
 
-        <p class="text-sm mb-2">{{ post.content }}</p>
+        <!-- Post Content -->
+        {% if post.content %}
+        <p class="text-sm mb-3" style="color: var(--text-primary);">
+            {{ post.content }}
+        </p>
+        {% endif %}
 
-        <div class="flex gap-4 text-xs">
+        <!-- Image -->
+        {% if post.image %}
+        <img src="{{ post.image.url }}"
+             class="w-full rounded-xl mb-3 object-cover"
+             alt="Post Image">
+        {% endif %}
 
-            <!-- LIKE -->
+        <!-- Video -->
+        {% if post.video %}
+        <video controls class="w-full rounded-xl mb-3">
+            <source src="{{ post.video.url }}">
+            Your browser does not support video.
+        </video>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex justify-between items-center text-sm mt-3">
+
+            <!-- Like -->
             <form method="POST" action="{% url 'like_post' post.id %}">
                 {% csrf_token %}
-                <button class="opacity-60 hover:opacity-100">
-                    ❤️ {{ post.likes }}
+                <button type="submit"
+                        class="flex items-center gap-1 opacity-70 hover:opacity-100">
+                    ❤️ {{ post.total_likes }}
                 </button>
             </form>
 
-            <!-- INTERESTED -->
-            <a href="{% url 'send_request' post.user_id %}" 
-                class="opacity-60 hover:opacity-100">
-                    ⭐ Interested
+            <!-- Interested -->
+            {% if post.user.id != request.user.id %}
+            <a href="{% url 'send_request' post.user.id %}"
+               class="opacity-70 hover:opacity-100">
+                ⭐ Interested
             </a>
-
+            {% endif %}
         </div>
-    </div>
-    {% endfor %}
 
+    </div>
+    {% empty %}
+
+    <!-- Empty State -->
+    <div class="text-center py-10 rounded-xl"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+        <i class="bi bi-journal-text text-4xl opacity-40"></i>
+        <p class="mt-3 text-sm opacity-60">No posts yet</p>
+    </div>
+
+    {% endfor %}
 </div>
 {% endblock %}
