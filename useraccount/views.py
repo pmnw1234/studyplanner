@@ -51,23 +51,29 @@ def register_view(request):
 
 
 def login_view(request):
-    """Clean login (no duplicate logic)"""
+    """Login view that works with custom LoginForm"""
     if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
-
+        form = LoginForm(request.POST)
         if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect("dashboard_home")
+            user = form.cleaned_data.get('user')
+            if user:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.username}!')
+                print(f"✅ User logged in: {user.username}")  # Debug
+                print(f"✅ Redirecting to dashboard_home")  # Debug
+                return redirect("dashboard_home")
+            else:
+                print("❌ No user in cleaned_data")  # Debug
         else:
-            messages.error(request, "Invalid username or password.")
+            print(f"❌ Form invalid: {form.errors}")  # Debug
+            messages.error(request, "Invalid email/username or password.")
     else:
         form = LoginForm()
 
     return render(request, "login.html", {"form": form})
+   
 
-
+    return render(request, "login.html", {"form": form})
 # ======================
 # AUTHENTICATED VIEWS
 # ======================
