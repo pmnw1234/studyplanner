@@ -1,17 +1,29 @@
-from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import UserRegistrationForm, UserProfileEditForm, LoginForm
-from .models import UserProfile
 from django.contrib.auth.models import User
-from feedview.models import MatchRequest   
+
+from .forms import (
+    UserRegistrationForm,
+    UserProfileEditForm,
+    LoginForm,
+    EnhancedUserProfileEditForm,
+    CertificationForm
+)
+from .models import UserProfile, UserSkill, Certification
+from feedview.models import MatchRequest
+
+
+# ======================
+# PUBLIC VIEWS
+# ======================
 
 def landing_view(request):
-    """Landing page view - shown to non-authenticated users"""
     if request.user.is_authenticated:
         return redirect('dashboard_home')
     return render(request, 'landing.html')
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -22,9 +34,11 @@ def register_view(request):
                 email=form.cleaned_data['email'],
                 password=form.cleaned_data['password']
             )
+
             profile = form.save(commit=False)
             profile.user = user
             profile.save()
+
             login(request, user)
             messages.success(request, f'Welcome {user.username}! Registration successful.')
             return redirect('dashboard_home')
@@ -32,52 +46,103 @@ def register_view(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = UserRegistrationForm()
+
     return render(request, 'register.html', {'form': form})
 
+
 def login_view(request):
+    """Clean login (no duplicate logic)"""
     if request.method == "POST":
-        form = LoginForm(request.POST)
+        form = LoginForm(request, data=request.POST)
+
         if form.is_valid():
-            login(request, form.cleaned_data['user'])
-            messages.success(request, 'Welcome back!')
-
-        username= request.POST.get("username")
-        
-        password = request.POST.get("password")
-
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
+            user = form.get_user()
             login(request, user)
-            messages.success(request, f'Welcome back, {username}!')
-
+            messages.success(request, f'Welcome back, {user.username}!')
             return redirect("dashboard_home")
         else:
             messages.error(request, "Invalid username or password.")
     else:
         form = LoginForm()
+
     return render(request, "login.html", {"form": form})
+
+
+# ======================
+# AUTHENTICATED VIEWS
+# ======================
 
 @login_required
 def logout_view(request):
     logout(request)
     messages.success(request, "You have been successfully logged out.")
-    return redirect('login')
+    return render(request, 'landing.html')
+
 
 @login_required
 def profile_view(request):
+    """Resolved merge conflict + combined features"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    return render(request, 'useraccount/profile.html', {
+    # Teach skills
+    teach_skills_data = [
+        {
+            'name': skill.skill_name,
+            'level': skill.proficiency_level,
+            'category': skill.category
+        }
+        for skill in profile.skills.filter(skill_type='teach')
+    ]
+
+    # Learn skills
+    learn_skills_data = [
+        {
+            'name': skill.skill_name,
+            'level': skill.proficiency_level,
+            'category': skill.category
+        }
+        for skill in profile.skills.filter(skill_type='learn')
+    ]
+
+    # Certifications
+    certifications = profile.certifications.all()
+
+    context = {
         'profile': profile,
-        'study_partners_count': profile.study_partners_count  # ✅ IMPORTANT
-    })
+        'teach_skills_data': teach_skills_data,
+        'learn_skills_data': learn_skills_data,
+        'certifications': certifications,
+        'study_partners_count': profile.study_partners_count,  # merged feature
+    }
+
+    return render(request, 'useraccount/profile.html', context)
+
 
 @login_required
-def edit_profile_view(request):
+def edit_profile(request):
     profile = request.user.userprofile
+
+    # Load skills
+    teach_skills_data = [
+        {
+            'name': skill.skill_name,
+            'category': skill.category,
+            'level': skill.proficiency_level
+        }
+        for skill in UserSkill.objects.filter(user_profile=profile, skill_type='teach')
+    ]
+
+    learn_skills_data = [
+        {
+            'name': skill.skill_name,
+            'category': skill.category,
+            'level': skill.proficiency_level
+        }
+        for skill in UserSkill.objects.filter(user_profile=profile, skill_type='learn')
+    ]
+
     if request.method == 'POST':
-        form = UserProfileEditForm(request.POST, request.FILES, instance=profile)
+        form = EnhancedUserProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
@@ -85,8 +150,15 @@ def edit_profile_view(request):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = UserProfileEditForm(instance=profile)
-    return render(request, 'useraccount/edit_profile.html', {'form': form})
+        form = EnhancedUserProfileEditForm(instance=profile)
+
+    return render(request, 'useraccount/edit_profile.html', {
+        'form': form,
+        'profile': profile,
+        'teach_skills_data': teach_skills_data,
+        'learn_skills_data': learn_skills_data,
+    })
+
 
 @login_required
 def change_password_view(request):
@@ -94,7 +166,7 @@ def change_password_view(request):
         old_password = request.POST.get('old_password')
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
-        
+
         if not request.user.check_password(old_password):
             messages.error(request, 'Current password is incorrect.')
         elif new_password != confirm_password:
@@ -107,4 +179,80 @@ def change_password_view(request):
             update_session_auth_hash(request, request.user)
             messages.success(request, 'Password updated!')
             return redirect('profile')
+
     return render(request, "useraccount/change_password.html")
+
+
+# ======================
+# CERTIFICATIONS
+# ======================
+
+@login_required
+def add_certification(request):
+    profile = request.user.userprofile
+
+    if request.method == 'POST':
+        form = CertificationForm(request.POST, request.FILES)
+        if form.is_valid():
+            certification = form.save(commit=False)
+            certification.user_profile = profile
+            certification.save()
+
+            messages.success(request, f'Certification "{certification.title}" added successfully!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CertificationForm()
+
+    return render(request, 'useraccount/add_certification.html', {
+        'form': form,
+        'profile': profile,
+    })
+
+
+@login_required
+def edit_certification(request, cert_id):
+    profile = request.user.userprofile
+    certification = get_object_or_404(Certification, id=cert_id, user_profile=profile)
+
+    if request.method == 'POST':
+        form = CertificationForm(request.POST, request.FILES, instance=certification)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Certification "{certification.title}" updated successfully!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CertificationForm(instance=certification)
+
+    return render(request, 'useraccount/edit_certification.html', {
+        'form': form,
+        'certification': certification,
+        'profile': profile,
+    })
+
+
+@login_required
+def delete_certification(request, cert_id):
+    profile = request.user.userprofile
+    certification = get_object_or_404(Certification, id=cert_id, user_profile=profile)
+
+    if request.method == 'POST':
+        title = certification.title
+        certification.delete()
+        messages.success(request, f'Certification "{title}" deleted successfully!')
+        return redirect('profile')
+
+    return render(request, 'useraccount/delete_certification.html', {
+        'certification': certification,
+    })
+
+
+# ======================
+# ERROR HANDLER
+# ======================
+
+def custom_404(request, exception=None):
+    return render(request, '404.html', status=404)

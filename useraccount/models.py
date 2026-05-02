@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# REMOVE THIS LINE: from useraccount.forms import UserProfileEditForm
+
 class Skill(models.Model):
     name = models.CharField(max_length=50, unique=True)
     
@@ -31,7 +33,12 @@ class UserProfile(models.Model):
     TIME_CHOICES = [
         ('Morning', 'Morning'),
         ('Afternoon', 'Afternoon'),
+        ('Evening', 'Evening'),
         ('Night', 'Night'),
+        ('Late Night', 'Late Night'),
+        ('Flexible', 'Flexible'),
+        ('Weekend Only', 'Weekend Only'),
+        ('Weekday Only', 'Weekday Only'),
     ]
 
     # Links to the built-in Django User model
@@ -58,7 +65,7 @@ class UserProfile(models.Model):
         default='Other'
     )
     
-    # Matching Engine Fields
+    # Matching Engine Fields (keeping for backward compatibility)
     skills_to_teach = models.TextField(
         blank=True, 
         null=True,
@@ -122,25 +129,34 @@ class UserProfile(models.Model):
         verbose_name_plural = "User Profiles"
 
 
-# matching logic to calculate compatibility score between two users
-
-def get_match_summary(self, other_profile):
-    """Get summary of what matches between two users"""
-    my_teach = set(self.get_skills_to_teach_list())
-    my_learn = set(self.get_skills_to_learn_list())
-    other_teach = set(other_profile.get_skills_to_teach_list())
-    other_learn = set(other_profile.get_skills_to_learn_list())
+class UserSkill(models.Model):
+    """Store detailed skill information with categories and proficiency levels"""
     
-    i_teach_they_learn = my_teach & other_learn
-    they_teach_i_learn = other_teach & my_learn
+    SKILL_CATEGORIES = [
+        ('tech', 'Tech / Programming'),
+        ('language', 'Language'),
+        ('general', 'General Skills'),
+    ]
     
-    return {
-        'i_teach_they_learn': list(i_teach_they_learn),
-        'they_teach_i_learn': list(they_teach_i_learn),
-        'total_score': len(i_teach_they_learn) + len(they_teach_i_learn)
-    }
+    SKILL_TYPES = [
+        ('teach', 'I Can Teach'),
+        ('learn', 'I Want to Learn'),
+    ]
+    
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='skills')
+    skill_name = models.CharField(max_length=100)
+    category = models.CharField(max_length=20, choices=SKILL_CATEGORIES)
+    skill_type = models.CharField(max_length=10, choices=SKILL_TYPES)
+    proficiency_level = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user_profile', 'skill_name', 'skill_type']
+        ordering = ['skill_type', 'skill_name']
+    
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.get_skill_type_display()}: {self.skill_name} ({self.proficiency_level})"
 
-# Add this to useraccount/models.py
 
 class ConnectionRequest(models.Model):
     STATUS_CHOICES = [
@@ -157,7 +173,7 @@ class ConnectionRequest(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['from_user', 'to_user']  # Prevent duplicate requests
+        unique_together = ['from_user', 'to_user']
         ordering = ['-created_at']
     
     def __str__(self):
@@ -180,3 +196,89 @@ class Connection(models.Model):
         if self.user1 == current_user:
             return self.user2
         return self.user1
+
+def get_enhanced_match_summary(profile1, profile2):
+    """Get enhanced match summary using UserSkill model with levels"""
+    
+    # Get skills from UserSkill model
+    profile1_teach = profile1.skills.filter(skill_type='teach')
+    profile1_learn = profile1.skills.filter(skill_type='learn')
+    profile2_teach = profile2.skills.filter(skill_type='teach')
+    profile2_learn = profile2.skills.filter(skill_type='learn')
+    
+    matches = []
+    
+    # Check if profile1 teaches what profile2 wants to learn
+    for teach_skill in profile1_teach:
+        for learn_skill in profile2_learn:
+            if teach_skill.skill_name.lower() == learn_skill.skill_name.lower():
+                matches.append({
+                    'skill': teach_skill.skill_name,
+                    'teacher': profile1.user.username,
+                    'teacher_level': teach_skill.proficiency_level,
+                    'learner': profile2.user.username,
+                    'learner_level': learn_skill.proficiency_level,
+                    'type': 'teaches_to'
+                })
+    
+    # Check if profile2 teaches what profile1 wants to learn
+    for teach_skill in profile2_teach:
+        for learn_skill in profile1_learn:
+            if teach_skill.skill_name.lower() == learn_skill.skill_name.lower():
+                matches.append({
+                    'skill': teach_skill.skill_name,
+                    'teacher': profile2.user.username,
+                    'teacher_level': teach_skill.proficiency_level,
+                    'learner': profile1.user.username,
+                    'learner_level': learn_skill.proficiency_level,
+                    'type': 'teaches_to'
+                })
+    
+    return {
+        'matches': matches,
+        'total_score': len(matches)
+    }
+
+class Certification(models.Model):
+    """User certifications and credentials with file upload"""
+    
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='certifications')
+    title = models.CharField(max_length=200, help_text="e.g., 'Google Data Analytics Professional Certificate'")
+    issuing_organization = models.CharField(max_length=100, help_text="e.g., 'Google', 'Coursera', 'University'")
+    issue_date = models.DateField()
+    expiry_date = models.DateField(null=True, blank=True, help_text="Leave blank if no expiry")
+    credential_url = models.URLField(blank=True, null=True, help_text="Link to verify credential")
+    credential_id = models.CharField(max_length=100, blank=True, null=True, help_text="Certificate ID/License number")
+    
+    # File upload for certificate
+    certificate_file = models.FileField(
+        upload_to='certificates/%Y/%m/%d/',
+        blank=True,
+        null=True,
+        help_text="Upload certificate (PDF, JPG, PNG)"
+    )
+    
+    description = models.TextField(blank=True, null=True, help_text="Additional details about the certification")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-issue_date']
+    
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.title}"
+    
+    @property
+    def is_expired(self):
+        """Check if certification is expired"""
+        if self.expiry_date:
+            from datetime import date
+            return self.expiry_date < date.today()
+        return False
+    
+    @property
+    def file_extension(self):
+        """Get file extension"""
+        if self.certificate_file:
+            return self.certificate_file.name.split('.')[-1].lower()
+        return None

@@ -1,37 +1,116 @@
 <!-- Matches Tab -->
 <div id="matches-tab" class="tab-content" style="display: block !important;">
     {% if matches %}
-        <div class="space-y-3">
+        <div class="space-y-4">
             {% for match in matches %}
-            <div class="flex items-center justify-between p-4 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color); margin-bottom: 12px;">
-                <div class="flex items-center gap-4 flex-1">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
+            <div class="flex items-start justify-between p-5 rounded-xl transition-all hover:shadow-lg" style="background-color: var(--bg-card); border: 1px solid var(--border-color); margin-bottom: 12px;">
+                <div class="flex items-start gap-4 flex-1">
+                    <!-- User Avatar -->
+                    <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
                         {{ match.name|first|upper }}
                     </div>
-                    <div>
-                        <a href="{% url 'view_other_profile' match.user_id %}" class="font-medium hover:underline" style="color: var(--text-primary); text-decoration: none;">
-                            {{ match.name }}
-                        </a>
-                        <p class="text-xs opacity-60">
-                            {{ match.skill_offer }} → {{ match.skill_want }}
-                        </p>
+                    
+                    <!-- User Info -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <a href="{% url 'view_other_profile' match.user_id %}" class="font-semibold hover:underline text-base" style="color: var(--text-primary); text-decoration: none;">
+                                {{ match.name }}
+                            </a>
+                            {% if match.match_strength == 'strong' %}
+                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #10B98120; color: #10B981;">Strong Match</span>
+                            {% elif match.match_strength == 'medium' %}
+                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #F59E0B20; color: #F59E0B;">Good Match</span>
+                            {% else %}
+                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #6B728020; color: #6B7280;">Potential Match</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Teaching Skills -->
+                        {% if match.skills_they_teach %}
+                        <div class="mb-3">
+                            <p class="text-xs font-medium mb-1.5" style="color: var(--accent-primary);">
+                                <i class="bi bi-star-fill text-xs mr-1"></i> They Can Teach:
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in match.skills_they_teach %}
+                                    <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--accent-primary)10; color: var(--text-primary); border: 1px solid var(--border-color);">
+                                        {{ skill.name }} 
+                                        <span class="opacity-60">({{ skill.level }})</span>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Learning Skills -->
+                        {% if match.skills_they_want %}
+                        <div class="mb-3">
+                            <p class="text-xs font-medium mb-1.5" style="color: var(--accent-secondary);">
+                                <i class="bi bi-lightbulb text-xs mr-1"></i> They Want to Learn:
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in match.skills_they_want %}
+                                    <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--accent-secondary)10; color: var(--text-primary); border: 1px solid var(--border-color);">
+                                        {{ skill.name }}
+                                        <span class="opacity-60">({{ skill.level }})</span>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Direct Matches -->
+                        {% if match.direct_matches %}
+                        <div class="mt-2 p-3 rounded-lg" style="background: linear-gradient(135deg, #10B98110, #3B82F610); border: 1px solid var(--border-color);">
+                            <p class="text-xs font-semibold mb-2" style="color: #10B981;">
+                                <i class="bi bi-check-circle-fill text-xs mr-1"></i> Direct Matches Found:
+                            </p>
+                            <div class="space-y-2">
+                                {% for direct in match.direct_matches %}
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex-1">
+                                            <span class="font-medium">{{ direct.skill_name }}</span>
+                                            <div class="text-xs opacity-60 mt-0.5">
+                                                You teach ({{ direct.user_teach_level }}) → They learn ({{ direct.they_learn_level }})
+                                            </div>
+                                        </div>
+                                        {% if direct.level_compatible %}
+                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #10B98120; color: #10B981;">
+                                                Level Compatible ✓
+                                            </span>
+                                        {% else %}
+                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #F59E0B20; color: #F59E0B;">
+                                                Level Gap
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-bold" style="color: #c49a2a;">{{ match.score }}%</span>
+                
+                <!-- Match Score & Actions -->
+                <div class="flex flex-col items-end gap-3 ml-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold" style="color: #c49a2a;">{{ match.score }}%</div>
+                        <div class="text-xs opacity-60">Match Score</div>
+                    </div>
                     <a href="{% url 'view_other_profile' match.user_id %}" 
-                       class="px-4 py-2 rounded-xl text-sm"
+                       class="px-5 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 whitespace-nowrap"
                        style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; text-decoration: none;">
-                        View Profile
+                        Connect
                     </a>
                 </div>
             </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="text-center py-12">
-            <i class="bi bi-people text-4xl opacity-50"></i>
-            <p class="mt-2">No matches yet. Add skills to your profile!</p>
+        <div class="text-center py-16">
+            <i class="bi bi-people text-5xl opacity-30 mb-3"></i>
+            <p class="mt-2" style="color: var(--text-secondary);">No matches yet.</p>
+            <p class="text-sm opacity-60 mt-1">Add more skills to your profile to find better matches!</p>
         </div>
     {% endif %}
 </div>
