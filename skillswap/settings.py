@@ -25,13 +25,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',  # Added from main branch
 
     # Your apps
     'useraccount',
     'dashboard',
-    'feedview',
-    'profiles',
-    'direct_message',  
+    'feedview',  # Keep feedview from feed-view branch
+    'profiles',  # Keep profiles from main branch
+    'direct_message',  # Added from dashboard branch
+    'feed',  # Added from main branch
 ]
 
 
@@ -126,3 +128,10 @@ MEDIA_ROOT = BASE_DIR / 'media'   # ✅ cleaner
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_home'
 LOGOUT_REDIRECT_URL = 'landing'
+
+
+# ======================
+# DEFAULT PRIMARY KEY
+# ======================
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,12 +1,155 @@
-<h2>Inbox</h2>
+{% extends 'base.html' %}
 
-{% for req in requests %}
-    <div>
-        <strong>{{ req.sender.username }}</strong> wants to connect
+{% block title %}Matches | SkillSwap{% endblock %}
 
-        <a href="{% url 'accept' req.id %}">Accept</a>
-        <a href="{% url 'decline' req.id %}">Decline</a>
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6">
+
+    <!-- Header -->
+    <h1 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">
+        Match Requests
+    </h1>
+
+    <div class="space-y-4">
+
+        {% for req in requests %}
+        <div class="flex items-center justify-between p-4 rounded-xl transition-all hover:scale-[1.01]"
+             style="background-color: #1E293B; border: 1px solid #334155;">
+
+            <!-- LEFT -->
+            <div class="flex items-center gap-4">
+
+                <!-- PROFILE IMAGE -->
+                <a href="{% url 'view_other_profile' req.sender.id %}">
+                    <div class="w-12 h-12 rounded-full overflow-hidden">
+                        {% if req.sender.userprofile.profile_picture %}
+                            <img src="{{ req.sender.userprofile.profile_picture.url }}"
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center"
+                                 style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                </a>
+
+                <!-- USER INFO -->
+                <div>
+                    <p class="text-sm">
+                        <a href="{% url 'view_other_profile' req.sender.id %}"
+                           class="font-semibold hover:underline"
+                           style="color: #FACC15;">
+                            {{ req.sender.username }}
+                        </a>
+                        <span style="color: #E2E8F0;"> sent you a match request</span>
+                    </p>
+
+                    <p class="text-xs text-gray-400">
+                        {{ req.created_at|timesince }} ago
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="flex items-center gap-2">
+
+                {% if req.status == 'accepted' %}
+                    <span class="px-3 py-1 text-xs rounded-full bg-green-500 text-white">
+                        Accepted
+                    </span>
+
+                {% elif req.status == 'declined' %}
+                    <span class="px-3 py-1 text-xs rounded-full bg-gray-500 text-white">
+                        Declined
+                    </span>
+
+                {% else %}
+                    <!-- ACCEPT -->
+                    <form method="POST" action="{% url 'accept' req.id %}">
+                        {% csrf_token %}
+                        <button class="px-4 py-1 text-sm rounded-full bg-green-500 text-white hover:scale-105 transition">
+                            Accept
+                        </button>
+                    </form>
+
+                    <!-- DECLINE -->
+                    <form method="POST" action="{% url 'decline' req.id %}">
+                        {% csrf_token %}
+                        <button class="px-4 py-1 text-sm rounded-full bg-red-500 text-white hover:scale-105 transition">
+                            Decline
+                        </button>
+                    </form>
+                {% endif %}
+
+            </div>
+        </div>
+        {% empty %}
+
+        <!-- EMPTY STATE -->
+        <div class="text-center py-10 rounded-xl"
+             style="background-color: #1E293B; border: 1px solid #334155;">
+            <i class="bi bi-people text-4xl text-gray-500"></i>
+            <p class="mt-3 text-sm text-gray-400">No match requests yet</p>
+        </div>
+
+        {% endfor %}
+
     </div>
-{% empty %}
-    <p>No requests</p>
-{% endfor %}
+</div>
+
+
+<!-- ✅ AJAX SCRIPT (LIKE FACEBOOK) -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ACCEPT
+    document.querySelectorAll('.accept-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const requestId = this.dataset.id;
+            const card = this.closest('.rounded-xl');
+
+            fetch(`/feed/accept/${requestId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    card.remove();
+                }
+            });
+        });
+    });
+
+    // DECLINE
+    document.querySelectorAll('.decline-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const requestId = this.dataset.id;
+            const card = this.closest('.rounded-xl');
+
+            fetch(`/feed/decline/${requestId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    card.remove();
+                }
+            });
+        });
+    });
+
+});
+</script>
+
+{% endblock %}
