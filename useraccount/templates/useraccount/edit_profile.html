@@ -25,8 +25,8 @@
             </div>
             <div class="w-12 h-0.5 rounded-full" style="background: linear-gradient(90deg, var(--accent-primary), var(--border-color));"></div>
             <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style="background-color: var(--border-color); color: var(--text-secondary);">2</div>
-                <span class="text-xs ml-2 hidden sm:inline" style="color: var(--text-secondary);">Skills</span>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">2</div>
+                <span class="text-xs ml-2 hidden sm:inline" style="color: var(--text-primary);">Skills</span>
             </div>
             <div class="w-12 h-0.5 rounded-full" style="background-color: var(--border-color);"></div>
             <div class="flex items-center">
@@ -39,8 +39,11 @@
     <!-- Main Form Card -->
     <div class="rounded-2xl overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
         
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="profileForm">
             {% csrf_token %}
+            
+            <!-- Hidden field to store JSON skills data -->
+            <input type="hidden" name="skills_data" id="skills_data">
             
             <!-- ===== SECTION 1: BASIC INFO ===== -->
             <div class="p-6 md:p-8 border-b" style="border-color: var(--border-color);">
@@ -53,6 +56,16 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- First Name & Last Name -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    
                     <!-- Profile Picture -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium mb-3" style="color: var(--text-primary);">
@@ -78,47 +91,39 @@
                         </div>
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">Student Status</span>
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Student Status</label>
                         {{ form.student_status }}
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">Birthday</span>
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Birthday</label>
                         {{ form.birthday }}
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">Gender</span>
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Gender</label>
                         {{ form.gender }}
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">Current Level</span>
-                        </label>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Current Level</label>
                         {{ form.current_level }}
                     </div>
                 </div>
             </div>
             
-            <!-- ===== SECTION 2: SKILLS ===== -->
+            <!-- ===== SECTION 2: SKILLS WITH CATEGORY FIRST ===== -->
             <div class="p-6 md:p-8 border-b" style="border-color: var(--border-color); background: linear-gradient(135deg, var(--bg-page)30, transparent);">
                 <div class="flex items-center gap-2 mb-6">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--accent-secondary)15;">
                         <i class="bi bi-code-square text-sm" style="color: var(--accent-secondary);"></i>
                     </div>
-                    <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Skills & Interests</h2>
+                    <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Skills & Proficiency</h2>
                     <span class="text-xs px-2 py-0.5 rounded-full ml-2" style="background-color: var(--accent-secondary)10; color: var(--accent-secondary);">Important for matching</span>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Teach Skills -->
                     <div class="p-5 rounded-xl transition-all hover:shadow-md" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                         <div class="flex items-center gap-2 mb-4">
@@ -126,15 +131,25 @@
                                 <i class="bi bi-star-fill text-white text-xs"></i>
                             </div>
                             <h3 class="font-semibold" style="color: var(--text-primary);">I Can Teach</h3>
+                            <span class="text-xs ml-auto px-2 py-0.5 rounded-full" style="background-color: var(--accent-primary)10; color: var(--accent-primary);">Your expertise</span>
                         </div>
-                        {{ form.skills_to_teach }}
-                        <div class="flex flex-wrap gap-1 mt-3">
-                            <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">Python</span>
-                            <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">JavaScript</span>
-                            <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">React</span>
-                            <span class="text-xs px-2 py-1 rounded-full opacity-50">+ add yours</span>
+                        
+                        <div id="teach-skills-container" class="space-y-4">
+                            <!-- Skills will be dynamically added here -->
                         </div>
-                        <p class="text-xs mt-2 opacity-50">Separate with commas (e.g., Python, Guitar, Spanish)</p>
+                        
+                        <button type="button" onclick="addTeachSkill()" 
+                                class="mt-4 text-sm flex items-center gap-1 hover:opacity-70 transition px-3 py-2 rounded-lg w-full justify-center"
+                                style="background-color: var(--accent-primary)10; color: var(--accent-primary); border: 1px dashed var(--accent-primary);">
+                            <i class="bi bi-plus-circle"></i> Add another skill to teach
+                        </button>
+                        
+                        <div class="mt-4 p-3 rounded-lg" style="background-color: var(--accent-primary)05;">
+                            <p class="text-xs opacity-70 flex items-center gap-1">
+                                <i class="bi bi-info-circle"></i> 
+                                First select the category, then enter your skill name and proficiency level
+                            </p>
+                        </div>
                     </div>
                     
                     <!-- Learn Skills -->
@@ -144,14 +159,18 @@
                                 <i class="bi bi-lightbulb-fill text-white text-xs"></i>
                             </div>
                             <h3 class="font-semibold" style="color: var(--text-primary);">I Want to Learn</h3>
+                            <span class="text-xs ml-auto px-2 py-0.5 rounded-full" style="background-color: var(--accent-secondary)10; color: var(--accent-secondary);">Your goal</span>
                         </div>
-                        {{ form.skills_to_learn }}
-                        <div class="flex flex-wrap gap-1 mt-3">
-                            <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">Django</span>
-                            <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">Machine Learning</span>
-                            <span class="text-xs px-2 py-1 rounded-full opacity-50">+ add yours</span>
+                        
+                        <div id="learn-skills-container" class="space-y-4">
+                            <!-- Skills will be dynamically added here -->
                         </div>
-                        <p class="text-xs mt-2 opacity-50">Separate with commas (e.g., Data Science, French, Cooking)</p>
+                        
+                        <button type="button" onclick="addLearnSkill()" 
+                                class="mt-4 text-sm flex items-center gap-1 hover:opacity-70 transition px-3 py-2 rounded-lg w-full justify-center"
+                                style="background-color: var(--accent-secondary)10; color: var(--accent-secondary); border: 1px dashed var(--accent-secondary);">
+                            <i class="bi bi-plus-circle"></i> Add another skill to learn
+                        </button>
                     </div>
                 </div>
             </div>
@@ -167,34 +186,26 @@
                 </div>
                 
                 <div class="space-y-6">
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">
-                                <i class="bi bi-bullseye me-1" style="color: var(--accent-primary);"></i> My Study Goals
-                            </span>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            <i class="bi bi-bullseye me-1" style="color: var(--accent-primary);"></i> My Study Goals
                         </label>
-                        <div class="relative">
-                            {{ form.goals }}
-                            <i class="bi bi-quote absolute text-xl opacity-20" style="bottom: 12px; right: 12px;"></i>
-                        </div>
+                        {{ form.goals }}
                         <p class="text-xs mt-1 opacity-50">What do you want to achieve? (e.g., "Master Python in 3 months")</p>
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">
-                                <i class="bi bi-calendar-week me-1" style="color: var(--accent-primary);"></i> Availability
-                            </span>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            <i class="bi bi-calendar-week me-1" style="color: var(--accent-primary);"></i> Availability (When are you free?)
                         </label>
                         {{ form.availability }}
-                        <p class="text-xs mt-1 opacity-50">When are you free to study? (e.g., "Weekends 2-5 PM, Monday evenings")</p>
+                        <p class="text-xs mt-1 opacity-50">e.g., "Weekends 2-5 PM, Monday evenings"</p>
                     </div>
                     
-                    <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium" style="color: var(--text-primary);">
-                                <i class="bi bi-clock me-1" style="color: var(--accent-primary);"></i> Preferred Study Time
-                            </span>
+                    <!-- Time Availability Dropdown -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            <i class="bi bi-clock me-1" style="color: var(--accent-primary);"></i> Preferred Study Time
                         </label>
                         {{ form.preferred_study_time }}
                     </div>
@@ -230,7 +241,7 @@
 
 <style>
     /* Form input styling */
-    input, select, textarea {
+    input:not([type="file"]), select, textarea {
         width: 100%;
         padding: 10px 14px;
         border-radius: 12px;
@@ -247,13 +258,11 @@
         box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
     }
     
-    /* Textarea specific */
     textarea {
         min-height: 100px;
         resize: vertical;
     }
     
-    /* Select dropdown styling */
     select {
         cursor: pointer;
         appearance: none;
@@ -262,17 +271,6 @@
         background-position: right 14px center;
     }
     
-    /* Label styling */
-    .label {
-        padding: 0 0 6px 0;
-    }
-    
-    .label-text {
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-    
-    /* File input styling */
     input[type="file"] {
         padding: 8px;
         background-color: var(--bg-page);
@@ -288,59 +286,243 @@
         margin-right: 12px;
     }
     
-    /* Button hover effects */
     .btn {
         transition: all 0.2s ease;
     }
     
-    /* Checkbox and radio groups */
-    .checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-top: 8px;
+    .skill-entry {
+        transition: all 0.2s ease;
     }
     
-    .checkbox-group label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    
-    input[type="checkbox"], input[type="radio"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--accent-primary);
-    }
-    
-    /* Smooth animations */
-    .rounded-xl, .btn, input, select, textarea {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-        background: var(--border-color);
-        border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: var(--accent-primary);
-        border-radius: 10px;
+    .skill-entry:hover {
+        transform: translateX(4px);
     }
 </style>
 
 <script>
-    // Real-time skill tag preview (optional)
-    const teachInput = document.querySelector('input[name="skills_to_teach"]');
-    const learnInput = document.querySelector('input[name="skills_to_learn"]');
+    let teachCounter = {{ teach_skills_data|length }};
+    let learnCounter = {{ learn_skills_data|length }};
     
-    function updatePreview(input, containerId) {
-        // This is optional - you can remove if not needed
+    // Load existing skills from Django context
+    const existingTeachSkills = {% if teach_skills_data %}{{ teach_skills_data|safe }}{% else %}[]{% endif %};
+    const existingLearnSkills = {% if learn_skills_data %}{{ learn_skills_data|safe }}{% else %}[]{% endif %};
+    
+    // Get level options based on category
+    function getLevelOptions(category, prefix, index, currentLevel = 'Beginner') {
+        if (category === 'language') {
+            return `
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="A1" ${currentLevel === 'A1' ? 'checked' : ''}>
+                    <span class="text-sm">A1 (Beginner)</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="A2" ${currentLevel === 'A2' ? 'checked' : ''}>
+                    <span class="text-sm">A2 (Elementary)</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="B1" ${currentLevel === 'B1' ? 'checked' : ''}>
+                    <span class="text-sm">B1 (Intermediate)</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="B2" ${currentLevel === 'B2' ? 'checked' : ''}>
+                    <span class="text-sm">B2 (Upper Intermediate)</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="C1" ${currentLevel === 'C1' ? 'checked' : ''}>
+                    <span class="text-sm">C1 (Advanced)</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="C2" ${currentLevel === 'C2' ? 'checked' : ''}>
+                    <span class="text-sm">C2 (Proficient)</span>
+                </label>
+            `;
+        } else if (category === 'general') {
+            return `
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Beginner" ${currentLevel === 'Beginner' ? 'checked' : ''}>
+                    <span class="text-sm">Beginner</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Intermediate" ${currentLevel === 'Intermediate' ? 'checked' : ''}>
+                    <span class="text-sm">Intermediate</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Advanced" ${currentLevel === 'Advanced' ? 'checked' : ''}>
+                    <span class="text-sm">Advanced</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Expert" ${currentLevel === 'Expert' ? 'checked' : ''}>
+                    <span class="text-sm">Expert</span>
+                </label>
+            `;
+        } else {
+            // Tech category
+            return `
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Beginner" ${currentLevel === 'Beginner' ? 'checked' : ''}>
+                    <span class="text-sm">Beginner</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Intermediate" ${currentLevel === 'Intermediate' ? 'checked' : ''}>
+                    <span class="text-sm">Intermediate</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="${prefix}_skill_level_${index}" value="Advanced" ${currentLevel === 'Advanced' ? 'checked' : ''}>
+                    <span class="text-sm">Advanced</span>
+                </label>
+            `;
+        }
     }
+    
+    // Update level options when category changes
+    function updateLevelOptions(selectElement, prefix, index) {
+        const category = selectElement.value;
+        const skillEntry = selectElement.closest('.skill-entry');
+        const levelContainer = skillEntry.querySelector('.level-container');
+        const currentLevelRadio = skillEntry.querySelector('input[type="radio"]:checked');
+        const currentLevel = currentLevelRadio ? currentLevelRadio.value : 'Beginner';
+        
+        const levelOptions = getLevelOptions(category, prefix, index, currentLevel);
+        levelContainer.innerHTML = `
+            <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Proficiency Level:</label>
+            <div class="level-options flex gap-4 flex-wrap">
+                ${levelOptions}
+            </div>
+        `;
+    }
+    
+    // Create skill entry HTML
+    function createSkillEntry(prefix, index, skillData = null) {
+        const name = skillData ? skillData.name : '';
+        const category = skillData ? skillData.category : 'tech';
+        const level = skillData ? skillData.level : 'Beginner';
+        
+        return `
+            <div class="skill-entry ${prefix}-entry p-4 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Category</label>
+                        <select name="${prefix}_skill_category_${index}" class="w-full px-3 py-2 rounded-lg skill-category-select" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);" onchange="updateLevelOptions(this, '${prefix}', ${index})">
+                            <option value="tech" ${category === 'tech' ? 'selected' : ''}>Tech / Programming</option>
+                            <option value="language" ${category === 'language' ? 'selected' : ''}>Language</option>
+                            <option value="general" ${category === 'general' ? 'selected' : ''}>General Skills</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Skill Name</label>
+                        <input type="text" name="${prefix}_skill_name_${index}" value="${name.replace(/"/g, '&quot;')}" 
+                               placeholder="e.g., Python, Spanish, Baking" 
+                               class="w-full px-3 py-2 rounded-lg" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                    </div>
+                </div>
+                <div class="level-container" data-category="${category}">
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Proficiency Level:</label>
+                    <div class="level-options flex gap-4 flex-wrap">
+                        ${getLevelOptions(category, prefix, index, level)}
+                    </div>
+                </div>
+                <button type="button" class="remove-skill text-red-500 hover:text-red-700 text-sm mt-3 flex items-center gap-1" onclick="this.closest('.skill-entry').remove()">
+                    <i class="bi bi-trash"></i> Remove skill
+                </button>
+            </div>
+        `;
+    }
+    
+    // Add teach skill
+    function addTeachSkill() {
+        const container = document.getElementById('teach-skills-container');
+        const newSkill = createSkillEntry('teach', teachCounter, null);
+        container.insertAdjacentHTML('beforeend', newSkill);
+        teachCounter++;
+    }
+    
+    // Add learn skill
+    function addLearnSkill() {
+        const container = document.getElementById('learn-skills-container');
+        const newSkill = createSkillEntry('learn', learnCounter, null);
+        container.insertAdjacentHTML('beforeend', newSkill);
+        learnCounter++;
+    }
+    
+    // Load existing skills on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const teachContainer = document.getElementById('teach-skills-container');
+        const learnContainer = document.getElementById('learn-skills-container');
+        
+        // Load teach skills
+        if (existingTeachSkills.length > 0) {
+            teachContainer.innerHTML = '';
+            existingTeachSkills.forEach((skill, index) => {
+                teachContainer.insertAdjacentHTML('beforeend', createSkillEntry('teach', index, skill));
+                teachCounter = index + 1;
+            });
+        } else {
+            teachContainer.innerHTML = createSkillEntry('teach', 0, null);
+            teachCounter = 1;
+        }
+        
+        // Load learn skills
+        if (existingLearnSkills.length > 0) {
+            learnContainer.innerHTML = '';
+            existingLearnSkills.forEach((skill, index) => {
+                learnContainer.insertAdjacentHTML('beforeend', createSkillEntry('learn', index, skill));
+                learnCounter = index + 1;
+            });
+        } else {
+            learnContainer.innerHTML = createSkillEntry('learn', 0, null);
+            learnCounter = 1;
+        }
+    });
+    
+    // Collect skills data before form submission
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const teachSkills = [];
+        const learnSkills = [];
+        
+        // Collect teach skills
+        document.querySelectorAll('.teach-entry').forEach(entry => {
+            const categorySelect = entry.querySelector('.skill-category-select');
+            const nameInput = entry.querySelector('input[type="text"]');
+            const levelRadio = entry.querySelector('input[type="radio"]:checked');
+            
+            if (nameInput && nameInput.value.trim()) {
+                teachSkills.push({
+                    name: nameInput.value.trim(),
+                    category: categorySelect ? categorySelect.value : 'tech',
+                    level: levelRadio ? levelRadio.value : 'Beginner'
+                });
+            }
+        });
+        
+        // Collect learn skills
+        document.querySelectorAll('.learn-entry').forEach(entry => {
+            const categorySelect = entry.querySelector('.skill-category-select');
+            const nameInput = entry.querySelector('input[type="text"]');
+            const levelRadio = entry.querySelector('input[type="radio"]:checked');
+            
+            if (nameInput && nameInput.value.trim()) {
+                learnSkills.push({
+                    name: nameInput.value.trim(),
+                    category: categorySelect ? categorySelect.value : 'tech',
+                    level: levelRadio ? levelRadio.value : 'Beginner'
+                });
+            }
+        });
+        
+        // Set the JSON data to hidden field
+        const skillsData = {
+            teach: teachSkills,
+            learn: learnSkills
+        };
+        document.getElementById('skills_data').value = JSON.stringify(skillsData);
+        
+        // Remove all dynamic skill inputs to avoid duplicate submission
+        const allSkillInputs = document.querySelectorAll('[name^="teach_"], [name^="learn_"]');
+        allSkillInputs.forEach(input => {
+            if (input.type !== 'hidden') {
+                input.remove();
+            }
+        });
+    });
 </script>
 {% endblock %}

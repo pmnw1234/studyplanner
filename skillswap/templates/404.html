@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Page Not Found | SkillSwap{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-20">
+    <div class="max-w-2xl w-full text-center">
+        
+        <!-- KiiiKiii 404 Logo -->
+        <div class="mb-8">
+            <div class="relative">
+                <div class="text-8xl font-bold mb-4" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                    404
+                </div>
+                <div class="absolute -top-3 -right-3 animate-bounce">
+                    <span class="text-2xl">🎵</span>
+                </div>
+            </div>
+            <h1 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">Not Found in the System</h1>
+            <p class="text-sm opacity-70" style="color: var(--text-secondary);">
+                "404, the new era, era..."
+            </p>
+        </div>
+        
+        <!-- YouTube Video Embed with Autoplay -->
+        <div class="rounded-2xl overflow-hidden mb-6 shadow-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <iframe 
+                width="100%" 
+                height="315" 
+                src="https://www.youtube.com/embed/zhHB4dZTChw?autoplay=1&mute=1&start=84&loop=1&playlist=zhHB4dZTChw&controls=1&modestbranding=1&rel=0&showinfo=0"
+                title="KiiiKiii - 404 (New Era)" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        
+        <!-- Funky Card -->
+        <div class="rounded-2xl p-6 mb-6" style="background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-page) 100%); border: 1px solid var(--border-color);">
+            
+            <!-- Music Visualizer -->
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" style="animation-delay: 0.4s;"></div>
+                <span class="text-xs ml-2 opacity-60">Now Playing: KiiiKiii - 404 (New Era)</span>
+            </div>
+            
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                The page you're looking for exists <strong class="italic">"somewhere outside the coordinates"</strong> 🎶
+            </p>
+            
+            <div class="py-4 px-3 rounded-xl mb-4" style="background-color: var(--bg-page);">
+                <p class="text-xs font-mono opacity-50 mb-1">🎧 Lyrics of the moment:</p>
+                <p class="text-sm italic" style="color: var(--accent-primary);">
+                    "Put down your phone, look me in my eyes<br>
+                    Even if you can't find me, I'm everywhere"
+                </p>
+            </div>
+            
+            <!-- Animated Visualizer Bars -->
+            <div class="flex items-center justify-center gap-1 h-12 mb-4">
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 20px;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 40px; animation-delay: 0.1s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 25px; animation-delay: 0.2s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 50px; animation-delay: 0.3s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 30px; animation-delay: 0.4s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 45px; animation-delay: 0.5s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 20px; animation-delay: 0.6s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 35px; animation-delay: 0.7s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 25px; animation-delay: 0.8s;"></div>
+                <div class="w-1.5 bg-gradient-to-t from-[#8b6914] to-[#c49a2a] rounded-full animate-pulse" style="height: 48px; animation-delay: 0.9s;"></div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex gap-3 justify-center">
+            <a href="javascript:history.back()" 
+               class="px-6 py-2.5 rounded-full text-sm font-medium transition-all hover:scale-105 flex items-center gap-2"
+               style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                <i class="bi bi-arrow-left"></i> Go Back
+            </a>
+            <a href="{% url 'dashboard_home' %}" 
+               class="px-6 py-2.5 rounded-full text-sm font-medium transition-all hover:scale-105 flex items-center gap-2"
+               style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </div>
+        
+        <!-- Hidden Easter Egg -->
+        <div class="mt-6 text-xs opacity-40">
+            <p>"Turn off the Wi-Fi, embrace the new era" 🌟</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .animate-bounce {
+        animation: bounce 1s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+    .animate-pulse {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+</style>
+{% endblock %}

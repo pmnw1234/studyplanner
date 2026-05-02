@@ -66,11 +66,19 @@
             <!-- Post Type -->
             <span class="text-xs px-3 py-1 rounded-full"
                   style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
-                {{ post.post_type|title }}
+                {{ post.get_post_type_display|default:post.post_type|title }}
             </span>
         </div>
 
-        <!-- Post Content -->
+        <!-- Title (from old version, now integrated nicely) -->
+        {% if post.title %}
+        <h3 class="text-sm font-semibold mb-2"
+            style="color: var(--text-primary);">
+            {{ post.title }}
+        </h3>
+        {% endif %}
+
+        <!-- Content -->
         {% if post.content %}
         <p class="text-sm mb-3" style="color: var(--text-primary);">
             {{ post.content }}
@@ -105,15 +113,17 @@
             </form>
 
             <!-- Interested -->
-            {% if post.user.id != request.user.id %}
+            {% if post.user and post.user.id and post.user != request.user %}
             <a href="{% url 'send_request' post.user.id %}"
                class="opacity-70 hover:opacity-100">
                 ⭐ Interested
             </a>
             {% endif %}
+
         </div>
 
     </div>
+
     {% empty %}
 
     <!-- Empty State -->

@@ -1,9 +1,8 @@
 from django import forms
-from .models import UserProfile, Skill
+from .models import UserProfile, Skill, UserSkill, Certification
 from django.contrib.auth.models import User
-from django import forms
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+import json
 
 class UserRegistrationForm(forms.ModelForm):
     # User fields (not in UserProfile model)
@@ -35,6 +34,7 @@ class UserRegistrationForm(forms.ModelForm):
             'skills_to_teach': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. Python, JavaScript, SQL (separate with commas)'}),
             'skills_to_learn': forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'e.g. React, Django, Machine Learning (separate with commas)'}),
         }
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['current_level'].required = False
@@ -64,7 +64,7 @@ class UserRegistrationForm(forms.ModelForm):
         
         return cleaned_data
 
-# Rest of your forms remain the same...
+
 class UserProfileEditForm(forms.ModelForm):
     first_name = forms.CharField(
         required=False, 
@@ -124,6 +124,7 @@ class UserProfileEditForm(forms.ModelForm):
             profile.save()
         return profile
 
+
 class LoginForm(forms.Form):
     email = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Email or Username'})
@@ -138,7 +139,6 @@ class LoginForm(forms.Form):
         password = cleaned_data.get('password')
         
         if email_or_username and password:
-            # 1. Try to find user by email first
             user = None
             if '@' in email_or_username:
                 try:
@@ -146,34 +146,85 @@ class LoginForm(forms.Form):
                     username = user_obj.username
                     user = authenticate(username=username, password=password)
                 except User.DoesNotExist:
-                    pass # User not found by email
+                    pass
             
-            # 2. If not found by email, try as a regular username
             if user is None:
                 user = authenticate(username=email_or_username, password=password)
             
-            # 3. If still None, authentication failed
             if not user:
                 raise forms.ValidationError("Invalid email/username or password.")
             
             cleaned_data['user'] = user
         return cleaned_data
-    email = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Email or Username'})
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Password'})
-    )
+
+
+class EnhancedUserProfileEditForm(UserProfileEditForm):
+    """Extended version that saves skills with categories and proficiency levels"""
+    skills_data = forms.CharField(widget=forms.HiddenInput(), required=False)
     
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('email')
-        password = cleaned_data.get('password')
+    def save(self, commit=True):
+        profile = super().save(commit=False)
         
-        if email and password:
-            from django.contrib.auth import authenticate
-            user = authenticate(username=email, password=password)
-            if not user:
-                raise forms.ValidationError("Invalid email/username or password.")
-            cleaned_data['user'] = user
-        return cleaned_data
+        if commit:
+            profile.save()
+        
+        # Process skills data
+        skills_data = self.cleaned_data.get('skills_data')
+        if skills_data:
+            try:
+                data = json.loads(skills_data)
+                
+                # Clear existing skills for this user
+                UserSkill.objects.filter(user_profile=profile).delete()
+                
+                # Save teach skills with categories and levels
+                for skill in data.get('teach', []):
+                    if skill.get('name') and skill.get('name').strip():
+                        UserSkill.objects.create(
+                            user_profile=profile,
+                            skill_name=skill['name'].strip(),
+                            category=skill.get('category', 'tech'),
+                            skill_type='teach',
+                            proficiency_level=skill.get('level', 'Beginner')
+                        )
+                
+                # Save learn skills with categories and levels
+                for skill in data.get('learn', []):
+                    if skill.get('name') and skill.get('name').strip():
+                        UserSkill.objects.create(
+                            user_profile=profile,
+                            skill_name=skill['name'].strip(),
+                            category=skill.get('category', 'tech'),
+                            skill_type='learn',
+                            proficiency_level=skill.get('level', 'Beginner')
+                        )
+                
+                # Also maintain text fields for backward compatibility
+                teach_names = [s['name'].strip() for s in data.get('teach', []) if s.get('name') and s['name'].strip()]
+                learn_names = [s['name'].strip() for s in data.get('learn', []) if s.get('name') and s['name'].strip()]
+                profile.skills_to_teach = ', '.join(teach_names) if teach_names else ''
+                profile.skills_to_learn = ', '.join(learn_names) if learn_names else ''
+                
+                if commit:
+                    profile.save()
+                    
+            except json.JSONDecodeError:
+                pass
+        
+        return profile
+
+
+class CertificationForm(forms.ModelForm):
+    class Meta:
+        model = Certification
+        fields = ['title', 'issuing_organization', 'issue_date', 'expiry_date', 'credential_url', 'credential_id', 'certificate_file', 'description']
+        widgets = {
+            'issue_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full px-4 py-2 rounded-xl', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full px-4 py-2 rounded-xl', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'title': forms.TextInput(attrs={'class': 'w-full px-4 py-2 rounded-xl', 'placeholder': 'e.g., Google Data Analytics Certificate', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'issuing_organization': forms.TextInput(attrs={'class': 'w-full px-4 py-2 rounded-xl', 'placeholder': 'e.g., Google, Coursera', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'credential_url': forms.URLInput(attrs={'class': 'w-full px-4 py-2 rounded-xl', 'placeholder': 'https://...', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'credential_id': forms.TextInput(attrs={'class': 'w-full px-4 py-2 rounded-xl', 'placeholder': 'Certificate ID', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full px-4 py-2 rounded-xl', 'placeholder': 'Additional details about this certification...', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);'}),
+            'certificate_file': forms.FileInput(attrs={'class': 'w-full px-4 py-2 rounded-xl', 'style': 'background-color: var(--bg-card); border: 1px solid var(--border-color);', 'accept': '.pdf,.jpg,.jpeg,.png'}),
+        }

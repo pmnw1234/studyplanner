@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Certification | SkillSwap{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6 md:py-10">
+    
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                <i class="bi bi-award text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Add Certification</h1>
+                <p class="text-sm opacity-70" style="color: var(--text-secondary);">Showcase your credentials and expertise</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="rounded-2xl overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="p-6 md:p-8 space-y-6">
+                <!-- Certification Title -->
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Certification Title <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Issuing Organization -->
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Issuing Organization <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.issuing_organization }}
+                    {% if form.issuing_organization.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.issuing_organization.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Issue Date & Expiry Date -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            Issue Date <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.issue_date }}
+                        {% if form.issue_date.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.issue_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            Expiry Date <span class="text-xs opacity-50">(Optional)</span>
+                        </label>
+                        {{ form.expiry_date }}
+                        {% if form.expiry_date.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.expiry_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Credential ID & URL -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            Credential ID <span class="text-xs opacity-50">(Optional)</span>
+                        </label>
+                        {{ form.credential_id }}
+                        {% if form.credential_id.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.credential_id.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                            Verification URL <span class="text-xs opacity-50">(Optional)</span>
+                        </label>
+                        {{ form.credential_url }}
+                        {% if form.credential_url.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.credential_url.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Certificate File Upload -->
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Certificate File <span class="text-xs opacity-50">(Optional - PDF, JPG, PNG)</span>
+                    </label>
+                    {{ form.certificate_file }}
+                    {% if form.certificate_file.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.certificate_file.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs opacity-50 mt-1">Upload your certificate file (max 5MB). Supported formats: PDF, JPG, PNG</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Description <span class="text-xs opacity-50">(Optional)</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="p-6 md:p-8 border-t" style="border-color: var(--border-color); background-color: var(--bg-page);">
+                <div class="flex flex-col sm:flex-row gap-3 justify-end">
+                    <a href="{% url 'profile' %}" class="btn btn-ghost px-6 rounded-full">
+                        <i class="bi bi-arrow-left me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn px-8 rounded-full border-none text-white shadow-md transition-all hover:shadow-lg hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                        <i class="bi bi-check-lg me-1"></i> Add Certification
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
