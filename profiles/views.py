@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from useraccount.models import UserProfile, Connection, ConnectionRequest
-
+from feedview.models import MatchRequest
 
 def calculate_match_percentage(my_teach, my_learn, other_teach, other_learn):
     """
@@ -36,173 +36,245 @@ def calculate_match_percentage(my_teach, my_learn, other_teach, other_learn):
 
 @login_required
 def view_other_profile(request, user_id):
-    """View another user's profile"""
-    
     other_user = get_object_or_404(User, id=user_id)
-    
-    # Create profile if it doesn't exist
-    other_profile, created = UserProfile.objects.get_or_create(user=other_user)
-    
+    other_profile, _ = UserProfile.objects.get_or_create(user=other_user)
+
     current_user = request.user
-    current_profile, created = UserProfile.objects.get_or_create(user=current_user)
-    
-    # Get skills as lists
+    current_profile, _ = UserProfile.objects.get_or_create(user=current_user)
+
+    is_own_profile = current_user == other_user
+
     my_teach = current_profile.get_skills_to_teach_list()
     my_learn = current_profile.get_skills_to_learn_list()
     other_teach = other_profile.get_skills_to_teach_list()
     other_learn = other_profile.get_skills_to_learn_list()
-    
-    # Calculate match score using the new function
-    match_percentage = calculate_match_percentage(my_teach, my_learn, other_teach, other_learn)
-    
-    # Check connection status
-    is_connected = Connection.objects.filter(
-        user1=current_user, user2=other_user
-    ).exists() or Connection.objects.filter(
-        user1=other_user, user2=current_user
+
+    match_score = calculate_match_percentage(
+        my_teach,
+        my_learn,
+        other_teach,
+        other_learn
+    )
+
+    # already friends = accepted match request exists
+    is_connected = MatchRequest.objects.filter(
+        sender=current_user,
+        receiver=other_user,
+        status='accepted'
+    ).exists() or MatchRequest.objects.filter(
+        sender=other_user,
+        receiver=current_user,
+        status='accepted'
     ).exists()
-    
-    # Check if request already sent by current user
-    request_sent = ConnectionRequest.objects.filter(
-        from_user=current_user, to_user=other_user, status='pending'
+
+    # request sent by me
+    request_sent = MatchRequest.objects.filter(
+        sender=current_user,
+        receiver=other_user,
+        status='pending'
     ).exists()
-    
-    # Check if request received from other user
-    received_request = ConnectionRequest.objects.filter(
-        from_user=other_user, to_user=current_user, status='pending'
+
+    # request received from them
+    received_request = MatchRequest.objects.filter(
+        sender=other_user,
+        receiver=current_user,
+        status='pending'
     ).first()
+
     request_received = received_request is not None
     request_received_id = received_request.id if received_request else None
-    
-    # Debug output (will show in terminal)
-    print(f"\n{'='*50}")
-    print(f"📊 MATCH CALCULATION: {current_user.username} vs {other_user.username}")
-    print(f"{'='*50}")
-    print(f"You teach: {my_teach}")
-    print(f"You learn: {my_learn}")
-    print(f"Their teach: {other_teach}")
-    print(f"Their learn: {other_learn}")
-    
-    # Calculate matches for display
-    my_teach_set = {s.lower().strip() for s in my_teach}
-    my_learn_set = {s.lower().strip() for s in my_learn}
-    other_teach_set = {s.lower().strip() for s in other_teach}
-    other_learn_set = {s.lower().strip() for s in other_learn}
-    
-    they_can_teach_me = list(my_learn_set & other_teach_set)
-    i_can_teach_them = list(my_teach_set & other_learn_set)
-    
-    print(f"\n✅ They can teach you: {they_can_teach_me}")
-    print(f"✅ You can teach them: {i_can_teach_them}")
-    print(f"🎯 Match Score: {match_percentage}%")
-    print(f"{'='*50}\n")
-    
+
     context = {
         'other_user': other_user,
         'other_profile': other_profile,
-        'match_score': match_percentage,
+        'match_score': match_score,
         'teach_skills': other_teach,
         'learn_skills': other_learn,
+
+        'is_own_profile': is_own_profile,
         'is_connected': is_connected,
         'request_sent': request_sent,
         'request_received': request_received,
         'request_received_id': request_received_id,
     }
-    
+
     return render(request, 'profiles/view_other_profile.html', context)
 
 
+# @login_required
+# def send_connection_request(request, user_id):
+#     """Send a connection request to another user"""
+    
+#     to_user = get_object_or_404(User, id=user_id)
+#     from_user = request.user
+    
+#     # Don't send request to yourself
+#     if from_user == to_user:
+#         messages.warning(request, "You cannot send a connection request to yourself!")
+#         return redirect('dashboard_home')
+    
+#     # Ensure profile exists for both users
+#     UserProfile.objects.get_or_create(user=to_user)
+#     UserProfile.objects.get_or_create(user=from_user)
+    
+#     # Check if already connected
+#     if Connection.objects.filter(
+#         user1=from_user, user2=to_user
+#     ).exists() or Connection.objects.filter(
+#         user1=to_user, user2=from_user
+#     ).exists():
+#         messages.warning(request, f"You are already connected with {to_user.username}!")
+#         return redirect('view_other_profile', user_id=user_id)
+    
+#     # Check if request already exists
+#     existing_request = ConnectionRequest.objects.filter(
+#         from_user=from_user, to_user=to_user, status='pending'
+#     ).exists()
+    
+#     if existing_request:
+#         messages.warning(request, f"Request already sent to {to_user.username}!")
+#         return redirect('view_other_profile', user_id=user_id)
+    
+#     # Create new request
+#     ConnectionRequest.objects.create(
+#         from_user=from_user,
+#         to_user=to_user,
+#         status='pending'
+#     )
+    
+#     messages.success(request, f"Connection request sent to {to_user.username}!")
+#     return redirect('view_other_profile', user_id=user_id)
+
 @login_required
 def send_connection_request(request, user_id):
-    """Send a connection request to another user"""
-    
-    to_user = get_object_or_404(User, id=user_id)
-    from_user = request.user
-    
-    # Don't send request to yourself
-    if from_user == to_user:
-        messages.warning(request, "You cannot send a connection request to yourself!")
-        return redirect('dashboard_home')
-    
-    # Ensure profile exists for both users
-    UserProfile.objects.get_or_create(user=to_user)
-    UserProfile.objects.get_or_create(user=from_user)
-    
-    # Check if already connected
-    if Connection.objects.filter(
-        user1=from_user, user2=to_user
-    ).exists() or Connection.objects.filter(
-        user1=to_user, user2=from_user
-    ).exists():
-        messages.warning(request, f"You are already connected with {to_user.username}!")
+    other_user = get_object_or_404(User, id=user_id)
+
+    if request.user == other_user:
         return redirect('view_other_profile', user_id=user_id)
-    
-    # Check if request already exists
-    existing_request = ConnectionRequest.objects.filter(
-        from_user=from_user, to_user=to_user, status='pending'
-    ).exists()
-    
-    if existing_request:
-        messages.warning(request, f"Request already sent to {to_user.username}!")
+
+    # check existing request both directions
+    existing = MatchRequest.objects.filter(
+        sender=request.user,
+        receiver=other_user
+    ).first()
+
+    reverse_existing = MatchRequest.objects.filter(
+        sender=other_user,
+        receiver=request.user
+    ).first()
+
+    # already sent by me
+    if existing:
+        if existing.status == 'pending':
+            return redirect('view_other_profile', user_id=user_id)
+
+        elif existing.status == 'declined':
+            existing.status = 'pending'
+            existing.save()
+            return redirect('view_other_profile', user_id=user_id)
+
+        elif existing.status == 'accepted':
+            return redirect('view_other_profile', user_id=user_id)
+
+    # already sent by them
+    if reverse_existing:
         return redirect('view_other_profile', user_id=user_id)
-    
-    # Create new request
-    ConnectionRequest.objects.create(
-        from_user=from_user,
-        to_user=to_user,
+
+    # create new request
+    MatchRequest.objects.create(
+        sender=request.user,
+        receiver=other_user,
         status='pending'
     )
-    
-    messages.success(request, f"Connection request sent to {to_user.username}!")
-    return redirect('view_other_profile', user_id=user_id)
 
+    return redirect('view_other_profile', user_id=user_id)
 
 @login_required
 def accept_connection(request, request_id):
-    """Accept a connection request"""
-    
-    connection_request = get_object_or_404(ConnectionRequest, id=request_id, to_user=request.user, status='pending')
-    
-    # Create connection
-    Connection.objects.get_or_create(
-        user1=connection_request.from_user,
-        user2=connection_request.to_user
+    req = get_object_or_404(
+        MatchRequest,
+        id=request_id,
+        receiver=request.user
     )
+
+    req.status = 'accepted'
+    req.save()
+
+    sender_profile, _ = UserProfile.objects.get_or_create(user=req.sender)
+    receiver_profile, _ = UserProfile.objects.get_or_create(user=req.receiver)
+
+    sender_profile.study_partners_count += 1
+    receiver_profile.study_partners_count += 1
+
+    sender_profile.save()
+    receiver_profile.save()
+
+    return redirect('view_other_profile', user_id=req.sender.id)
+# @login_required
+# def accept_connection(request, request_id):
+#     """Accept a connection request"""
     
-    # Update request status
-    connection_request.status = 'accepted'
-    connection_request.save()
+#     connection_request = get_object_or_404(ConnectionRequest, id=request_id, to_user=request.user, status='pending')
     
-    messages.success(request, f"You are now connected with {connection_request.from_user.username}!")
-    return redirect('dashboard_home')
+#     # Create connection
+#     Connection.objects.get_or_create(
+#         user1=connection_request.from_user,
+#         user2=connection_request.to_user
+#     )
+    
+#     # Update request status
+#     connection_request.status = 'accepted'
+#     connection_request.save()
+    
+#     messages.success(request, f"You are now connected with {connection_request.from_user.username}!")
+#     return redirect('dashboard_home')
 
 
+# @login_required
+# def decline_connection(request, request_id):
+#     """Decline a connection request"""
+    
+#     connection_request = get_object_or_404(ConnectionRequest, id=request_id, to_user=request.user, status='pending')
+    
+#     connection_request.status = 'declined'
+#     connection_request.save()
+    
+#     messages.info(request, f"Connection request from {connection_request.from_user.username} declined.")
+#     return redirect('dashboard_home')
 @login_required
 def decline_connection(request, request_id):
-    """Decline a connection request"""
-    
-    connection_request = get_object_or_404(ConnectionRequest, id=request_id, to_user=request.user, status='pending')
-    
-    connection_request.status = 'declined'
-    connection_request.save()
-    
-    messages.info(request, f"Connection request from {connection_request.from_user.username} declined.")
-    return redirect('dashboard_home')
+    req = get_object_or_404(
+        MatchRequest,
+        id=request_id,
+        receiver=request.user
+    )
 
+    req.status = 'declined'
+    req.save()
 
+    return redirect('view_other_profile', user_id=req.sender.id)
 @login_required
 def cancel_request(request, user_id):
-    """Cancel a sent connection request"""
-    
-    to_user = get_object_or_404(User, id=user_id)
-    connection_request = ConnectionRequest.objects.filter(
-        from_user=request.user, to_user=to_user, status='pending'
-    ).first()
-    
-    if connection_request:
-        connection_request.delete()
-        messages.info(request, f"Connection request to {to_user.username} cancelled.")
-    else:
-        messages.warning(request, "No pending request found.")
-    
+    MatchRequest.objects.filter(
+        sender=request.user,
+        receiver_id=user_id,
+        status='pending'
+    ).delete()
+
     return redirect('view_other_profile', user_id=user_id)
+# @login_required
+# def cancel_request(request, user_id):
+#     """Cancel a sent connection request"""
+    
+#     to_user = get_object_or_404(User, id=user_id)
+#     connection_request = ConnectionRequest.objects.filter(
+#         from_user=request.user, to_user=to_user, status='pending'
+#     ).first()
+    
+#     if connection_request:
+#         connection_request.delete()
+#         messages.info(request, f"Connection request to {to_user.username} cancelled.")
+#     else:
+#         messages.warning(request, "No pending request found.")
+    
+#     return redirect('view_other_profile', user_id=user_id)

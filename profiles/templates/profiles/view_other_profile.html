@@ -54,40 +54,63 @@
                 
                 <!-- CONNECTION BUTTONS - Fixed logic -->
                 <div class="pb-2 flex gap-2">
-                    {% if is_connected %}
-                        <!-- Already connected -->
-                        <span class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: var(--accent-secondary); color: white; cursor: default;">
-                            <i class="bi bi-check-lg me-2"></i> Connected
-                        </span>
-                        <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: var(--border-color); color: var(--text-primary);">
-                            <i class="bi bi-chat-dots me-2"></i> Message
-                        </a>
-                    {% elif request_sent %}
-                        <!-- Request already sent by you - show Cancel button -->
-                        <a href="{% url 'cancel_request' other_user.id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: #F59E0B; color: white;">
-                            <i class="bi bi-clock-history me-2"></i> Request Sent
-                        </a>
-                        <a href="{% url 'cancel_request' other_user.id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">
-                            <i class="bi bi-x-lg me-2"></i> Cancel
-                        </a>
-                    {% elif request_received %}
-                        <!-- Request received from this user - show Accept/Decline -->
-                        <a href="{% url 'feedview:accept' req.id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                            <i class="bi bi-check-lg me-2"></i> Accept
-                        </a>
-                        <a href="{% url 'decline_connection' request_received_id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">
-                            <i class="bi bi-x-lg me-2"></i> Decline
-                        </a>
-                    {% else %}
-                        <!-- No connection - show Connect button -->
-                        <a href="{% url 'send_connection_request' other_user.id %}" class="btn btn-sm md:btn-md border-none px-6 rounded-full transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                            <i class="bi bi-person-plus me-2"></i> Connect
-                        </a>
-                        <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full transition-all hover:scale-105" style="background-color: var(--border-color); color: var(--text-primary);">
-                            <i class="bi bi-chat-dots me-2"></i> Message
-                        </a>
-                    {% endif %}
-                </div>
+
+    {% if not is_own_profile %}
+
+        {% if is_connected %}
+            <span class="btn btn-sm md:btn-md px-6 rounded-full"
+                  style="background-color: #10B981; color:white;">
+                <i class="bi bi-check-lg me-2"></i> Friends
+            </span>
+
+            <a href="#"
+               class="btn btn-sm md:btn-md px-5 rounded-full"
+               style="background-color: var(--border-color); color: var(--text-primary);">
+                <i class="bi bi-chat-dots me-2"></i> Message
+            </a>
+
+        {% elif request_sent %}
+            <span class="btn btn-sm md:btn-md px-6 rounded-full"
+                  style="background-color: #F59E0B; color:white;">
+                <i class="bi bi-clock-history me-2"></i> Request Sent
+            </span>
+
+            <a href="{% url 'cancel_request' other_user.id %}"
+               class="btn btn-sm md:btn-md px-5 rounded-full"
+               style="background-color: #EF4444; color:white;">
+                <i class="bi bi-x-lg me-2"></i> Cancel
+            </a>
+
+        {% elif request_received %}
+            <a href="{% url 'accept_connection' request_received_id %}"
+               class="btn btn-sm md:btn-md px-6 rounded-full"
+               style="background-color: #10B981; color:white;">
+                Accept
+            </a>
+
+            <a href="{% url 'decline_connection' request_received_id %}"
+               class="btn btn-sm md:btn-md px-5 rounded-full"
+               style="background-color: #EF4444; color:white;">
+                Decline
+            </a>
+
+        {% else %}
+            <a href="{% url 'send_connection_request' other_user.id %}"
+               class="btn btn-sm md:btn-md border-none px-6 rounded-full"
+               style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
+                <i class="bi bi-person-plus me-2"></i> Connect
+            </a>
+
+            <a href="#"
+               class="btn btn-sm md:btn-md px-5 rounded-full"
+               style="background-color: var(--border-color); color: var(--text-primary);">
+                <i class="bi bi-chat-dots me-2"></i> Message
+            </a>
+        {% endif %}
+
+    {% endif %}
+
+</div>
             </div>
         </div>
     </div>
