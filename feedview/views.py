@@ -4,21 +4,166 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from .forms import (
+from useraccount.forms import (
     UserRegistrationForm,
     UserProfileEditForm,
     LoginForm,
     EnhancedUserProfileEditForm,
     CertificationForm
 )
-from .models import UserProfile, UserSkill, Certification
-from feedview.models import MatchRequest
+from useraccount.models import UserProfile, UserSkill, Certification
+from feedview.models import MatchRequest, Post
+
+@login_required
+def feed_view(request):
+    users = User.objects.exclude(id=request.user.id)
+    db_posts = Post.objects.all().order_by('-created_at')
+
+    posts = []
+
+    for p in db_posts:
+        posts.append({
+            'id': p.id,
+            'user': p.user,
+            'user_id': p.user.id,
+            'content': p.content,
+            'likes': p.total_likes(),
+            'image': p.image.url if p.image else None,
+            'video': p.video.url if p.video else None,
+            'post_type': p.post_type,
+            'created_at': p.created_at,
+        })
+
+    return render(request, 'feedview/feed.html', {
+        'posts': posts,
+        'users': users,
+    })
 
 
-# ======================
-# PUBLIC VIEWS
-# ======================
+@login_required
+def inbox_view(request):
+    requests = MatchRequest.objects.filter(
+        receiver=request.user
+    ).order_by('-created_at')
 
+    return render(request, 'feedview/inbox.html', {
+        'requests': requests
+    })
+
+
+@login_required
+def create_post(request):
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        post_type = request.POST.get('post_type')
+        image = request.FILES.get('image')
+        video = request.FILES.get('video')
+
+        Post.objects.create(
+            user=request.user,
+            content=content,
+            post_type=post_type,
+            image=image,
+            video=video
+        )
+
+        return redirect('feed')
+
+    return render(request, 'feedview/create_post.html')
+
+
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    existing_like = post.likes.filter(user=request.user).first()
+
+    if existing_like:
+        existing_like.delete()
+    else:
+        post.likes.create(user=request.user)
+
+    return redirect('feed')
+
+
+@login_required
+def send_request(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    if request.user == other_user:
+        return redirect('feed')
+
+    existing = MatchRequest.objects.filter(
+        sender=request.user,
+        receiver=other_user
+    ).first()
+
+    reverse_existing = MatchRequest.objects.filter(
+        sender=other_user,
+        receiver=request.user
+    ).first()
+
+    if existing:
+        if existing.status == 'pending':
+            return redirect('feed')
+
+        elif existing.status == 'declined':
+            existing.status = 'pending'
+            existing.save()
+            return redirect('feed')
+
+        elif existing.status == 'accepted':
+            return redirect('feed')
+
+    if reverse_existing:
+        return redirect('feed')
+
+    MatchRequest.objects.create(
+        sender=request.user,
+        receiver=other_user,
+        status='pending'
+    )
+
+    return redirect('feed')
+
+
+
+@login_required
+def accept_request(request, request_id):
+    req = get_object_or_404(
+        MatchRequest,
+        id=request_id,
+        receiver=request.user
+    )
+
+    req.status = 'accepted'
+    req.save()
+
+    sender_profile, _ = UserProfile.objects.get_or_create(user=req.sender)
+    receiver_profile, _ = UserProfile.objects.get_or_create(user=req.receiver)
+
+    sender_profile.study_partners_count += 1
+    receiver_profile.study_partners_count += 1
+
+    sender_profile.save()
+    receiver_profile.save()
+
+    return redirect('inbox')
+
+
+
+@login_required
+def decline_request(request, request_id):
+    req = get_object_or_404(
+        MatchRequest,
+        id=request_id,
+        receiver=request.user
+    )
+
+    req.status = 'declined'
+    req.save()
+
+    return redirect('inbox')
 def landing_view(request):
     """Landing page view - shown to non-authenticated users"""
     if request.user.is_authenticated:
