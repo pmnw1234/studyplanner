@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Content -->
+        <textarea name="content"
+                  class="textarea textarea-bordered w-full"
+                  placeholder="Share your study progress..."></textarea>
+
+        <!-- Post Type -->
+        <select name="post_type" class="select select-bordered w-full">
+            <option value="study">Study Partner</option>
+            <option value="skill">Skill Swap</option>
+        </select>
+
+        <!-- Image Upload -->
+        <div>
+            <label for="imageUpload"
+                   class="btn w-full cursor-pointer">
+                📷 Upload Image
+            </label>
+            <input type="file"
+                   id="imageUpload"
+                   name="image"
+                   accept="image/*"
+                   class="hidden"
+                   onchange="previewImage(event)">
+
+            <img id="imagePreview"
+                 class="hidden mt-3 rounded-xl w-full max-h-96 object-cover">
+        </div>
+
+        <!-- Video Upload -->
+        <div>
+            <label for="videoUpload"
+                   class="btn w-full cursor-pointer">
+                🎥 Upload Video
+            </label>
+            <input type="file"
+                   id="videoUpload"
+                   name="video"
+                   accept="video/*"
+                   class="hidden"
+                   onchange="previewVideo(event)">
+
+            <video id="videoPreview"
+                   controls
+                   class="hidden mt-3 rounded-xl w-full max-h-96">
+            </video>
+        </div>
+
+        <button class="btn btn-primary w-full">
+            Post
+        </button>
+    </form>
+
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+    }
+}
+
+function previewVideo(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('videoPreview');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+    }
+}
+</script>
+{% endblock %}
