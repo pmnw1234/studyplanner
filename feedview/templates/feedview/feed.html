@@ -112,13 +112,18 @@
                 </button>
             </form>
 
-            <!-- Interested -->
-            {% if post.user and post.user.id and post.user != request.user %}
-            <a href="{% url 'send_request' post.user.id %}"
-               class="opacity-70 hover:opacity-100">
-                ⭐ Interested
-            </a>
-            {% endif %}
+            {% if post.user != request.user %}
+    {% comment %} {% if post.request_sent %}
+        <span class="opacity-70 text-yellow-400">
+            Request Sent
+        </span>
+    {% else %} {% endcomment %}
+        <a href="{% url 'send_request' post.user.id %}"
+           class="opacity-70 hover:opacity-100">
+            ⭐ Interested
+        </a>
+    {% endif %}
+{% comment %} {% endif %} {% endcomment %}
 
         </div>
 

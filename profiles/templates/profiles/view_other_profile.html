@@ -58,10 +58,12 @@
     {% if not is_own_profile %}
 
         {% if is_connected %}
-            <span class="btn btn-sm md:btn-md px-6 rounded-full"
-                  style="background-color: #10B981; color:white;">
+            <button
+                onclick="document.getElementById('unfriendModal').showModal()"
+                class="btn btn-sm md:btn-md px-6 rounded-full"
+                style="background-color: #10B981; color:white;">
                 <i class="bi bi-check-lg me-2"></i> Friends
-            </span>
+            </button>
 
             <a href="#"
                class="btn btn-sm md:btn-md px-5 rounded-full"
@@ -383,7 +385,29 @@
         </div>
     </div>
 </div>
+<dialog id="unfriendModal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Unfriend User</h3>
+        <p class="py-4">
+            Are you sure you want to unfriend {{ other_user.username }}?
+        </p>
 
+        <div class="modal-action">
+            <!-- YES -->
+            <form method="POST" action="{% url 'unfriend_user' other_user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error">
+                    Yes
+                </button>
+            </form>
+
+            <!-- NO -->
+            <form method="dialog">
+                <button class="btn">No</button>
+            </form>
+        </div>
+    </div>
+</dialog>
 <style>
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(15px); }

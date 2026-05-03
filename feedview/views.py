@@ -17,26 +17,18 @@ from feedview.models import MatchRequest, Post
 @login_required
 def feed_view(request):
     users = User.objects.exclude(id=request.user.id)
-    db_posts = Post.objects.all().order_by('-created_at')
+    posts = Post.objects.all().order_by('-created_at')
 
-    posts = []
-
-    for p in db_posts:
-        posts.append({
-            'id': p.id,
-            'user': p.user,
-            'user_id': p.user.id,
-            'content': p.content,
-            'likes': p.total_likes(),
-            'image': p.image.url if p.image else None,
-            'video': p.video.url if p.video else None,
-            'post_type': p.post_type,
-            'created_at': p.created_at,
-        })
+    for post in posts:
+        post.request_sent = MatchRequest.objects.filter(
+            sender=request.user,
+            receiver=post.user,
+            status='pending'
+        ).exists()
 
     return render(request, 'feedview/feed.html', {
         'posts': posts,
-        'users': users,
+        'users': users
     })
 
 
@@ -76,10 +68,10 @@ def create_post(request):
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
-    existing_like = post.likes.filter(user=request.user).first()
+    like = post.likes.filter(user=request.user).first()
 
-    if existing_like:
-        existing_like.delete()
+    if like:
+        like.delete()
     else:
         post.likes.create(user=request.user)
 
@@ -88,39 +80,33 @@ def like_post(request, post_id):
 
 @login_required
 def send_request(request, user_id):
-    other_user = get_object_or_404(User, id=user_id)
+    receiver = get_object_or_404(User, id=user_id)
 
-    if request.user == other_user:
+    # can't send to yourself
+    if receiver == request.user:
         return redirect('feed')
 
+    # already sent by me
     existing = MatchRequest.objects.filter(
         sender=request.user,
-        receiver=other_user
-    ).first()
-
-    reverse_existing = MatchRequest.objects.filter(
-        sender=other_user,
-        receiver=request.user
+        receiver=receiver
     ).first()
 
     if existing:
-        if existing.status == 'pending':
-            return redirect('feed')
+        return redirect('feed')
 
-        elif existing.status == 'declined':
-            existing.status = 'pending'
-            existing.save()
-            return redirect('feed')
+    # reverse request exists (they already sent me)
+    reverse_request = MatchRequest.objects.filter(
+        sender=receiver,
+        receiver=request.user
+    ).first()
 
-        elif existing.status == 'accepted':
-            return redirect('feed')
-
-    if reverse_existing:
+    if reverse_request:
         return redirect('feed')
 
     MatchRequest.objects.create(
         sender=request.user,
-        receiver=other_user,
+        receiver=receiver,
         status='pending'
     )
 
