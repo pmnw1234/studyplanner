@@ -1,4 +1,6 @@
+{% load custom_filters %}
 {% extends 'base.html' %}
+
 
 {% block title %}{{ other_user.username }}'s Profile | SkillSwap{% endblock %}
 
@@ -7,7 +9,8 @@
     
     <!-- Profile Header -->
     <div class="relative rounded-2xl mb-8 overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        
+       
+       
         <!-- Abstract Background Pattern -->
         <div class="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none">
             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -154,6 +157,86 @@
                     </div>
                 </div>
             </div>
+            <!-- 🔥 REPLACE HERE -->
+<!-- REVIEW SECTION -->
+<div class="mt-8 p-6 rounded-xl shadow"
+     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+    <h2 class="text-lg font-bold mb-4">Customer Reviews</h2>
+
+    <!-- Average Rating -->
+    <div class="mb-4">
+        <strong>{{ avg_rating|floatformat:1 }}/5</strong>
+        <span class="text-sm opacity-60">
+            Based on {{ review_count }} reviews
+        </span>
+    </div>
+
+    {% load custom_filters %}
+
+{% for star in "54321" %}
+<div class="flex items-center text-sm mb-1">
+    <span class="w-12">{{ star }} ★</span>
+
+    <div class="flex-1 bg-gray-200 h-2 mx-2 rounded">
+        <div class="bg-yellow-400 h-2 rounded"
+             style="width:
+             {% if review_count > 0 %}
+             {% widthratio rating_dict|get_item:star review_count 100 %}
+             {% else %}
+             0
+             {% endif %}%">
+        </div>
+    </div>
+
+    <span class="text-xs">
+        {{ rating_dict|get_item:star }}
+    </span>
+</div>
+{% endfor %}
+    <!-- Add Review Button -->
+    {% if request.user != other_user %}
+        <a href="{% url 'add_review' other_user.username %}"
+           class="inline-block mt-3 px-4 py-2 rounded text-white"
+           style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+            Write a Review
+        </a>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="mt-6 space-y-4">
+        {% for review in reviews %}
+            <div class="p-4 rounded-xl"
+                 style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+
+                <div class="flex justify-between items-center mb-2">
+                    <strong>{{ review.reviewer.username }}</strong>
+
+                    <span style="color: gold;">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+
+                <p class="text-sm opacity-70">{{ review.comment }}</p>
+
+                <small class="text-xs opacity-50">
+                    {{ review.created_at|date:"M d, Y" }}
+                </small>
+            </div>
+        {% empty %}
+            <p class="text-sm opacity-60">No reviews yet.</p>
+        {% endfor %}
+    </div>
+</div>
+        </div>
+    </div>
+</div>
 
             <!-- Match Score Card -->
             <div class="rounded-xl p-5 text-center" style="background: linear-gradient(135deg, var(--accent-primary)10, var(--accent-ocean)10); border: 1px solid var(--border-color);">
@@ -357,9 +440,10 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+
+           
+
+
 
 <style>
     @keyframes fadeIn {

@@ -15,6 +15,8 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('feed/', include('feedview.urls')),  # Keep feedview from feed-view branch
     path('profiles/', include('profiles.urls')),  # Keep profiles from main branch
+    
+
 ]
 
 # Add this at the very bottom
