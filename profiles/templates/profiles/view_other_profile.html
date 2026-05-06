@@ -55,6 +55,7 @@
                 <!-- CONNECTION BUTTONS - Fixed logic -->
                 <div class="pb-2 flex gap-2">
 
+
     {% if not is_own_profile %}
 
         {% if is_connected %}
@@ -113,6 +114,44 @@
     {% endif %}
 
 </div>
+              
+                  {% if not is_own_profile %}
+                        {% if is_connected %}
+                            <!-- Already connected -->
+                            <span class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: #10B981; color: white; cursor: default;">
+                                <i class="bi bi-check-lg me-2"></i> Connected
+                            </span>
+                            <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: var(--border-color); color: var(--text-primary);">
+                                <i class="bi bi-chat-dots me-2"></i> Message
+                            </a>
+                        {% elif request_sent %}
+                            <!-- Request already sent by you - show Cancel button -->
+                            <span class="btn btn-sm md:btn-md px-6 rounded-full" style="background-color: #F59E0B; color: white; cursor: default;">
+                                <i class="bi bi-clock-history me-2"></i> Request Sent
+                            </span>
+                            <a href="{% url 'cancel_request' other_user.id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">
+                                <i class="bi bi-x-lg me-2"></i> Cancel
+                            </a>
+                        {% elif request_received %}
+                            <!-- Request received from this user - show Accept/Decline -->
+                            <a href="{% url 'accept_connection' request_received_id %}" class="btn btn-sm md:btn-md px-6 rounded-full" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                                <i class="bi bi-check-lg me-2"></i> Accept
+                            </a>
+                            <a href="{% url 'decline_connection' request_received_id %}" class="btn btn-sm md:btn-md px-5 rounded-full" style="background-color: #EF4444; color: white;">
+                                <i class="bi bi-x-lg me-2"></i> Decline
+                            </a>
+                        {% else %}
+                            <!-- No connection - show Connect button -->
+                            <a href="{% url 'send_connection_request' other_user.id %}" class="btn btn-sm md:btn-md border-none px-6 rounded-full transition-all hover:scale-105" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                                <i class="bi bi-person-plus me-2"></i> Connect
+                            </a>
+                            <a href="#" class="btn btn-sm md:btn-md px-5 rounded-full transition-all hover:scale-105" style="background-color: var(--border-color); color: var(--text-primary);">
+                                <i class="bi bi-chat-dots me-2"></i> Message
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
@@ -215,143 +254,145 @@
         <div class="lg:col-span-2 space-y-6">
             
             <!-- Skills Section -->
-          <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-    <div class="flex items-center gap-2 mb-4">
-        <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
-        <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">{{ other_user.username }}'s Skills</h3>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- Can Teach -->
-        <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-            <div class="flex items-center gap-2 mb-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
-                    <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">{{ other_user.username }}'s Skills</h3>
                 </div>
-                <h4 class="font-semibold" style="color: var(--text-primary);">Can Teach</h4>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                {% if teach_skills %}
-                    {% for skill in teach_skills %}
-                        <div class="group relative">
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
-                                  style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                                {{ skill.name }}
-                                <span class="text-xs opacity-80">{{ skill.level }}</span>
-                            </span>
-                            {% if skill.category %}
-                                <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
-                                      style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
-                                    {% if skill.category == 'tech' %}💻
-                                    {% elif skill.category == 'language' %}🌐
-                                    {% else %}✨{% endif %}
-                                </span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Can Teach -->
+                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)08, var(--bg-page)); border: 1px solid var(--border-color);">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
+                                <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
+                            </div>
+                            <h4 class="font-semibold" style="color: var(--text-primary);">Can Teach</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            {% if teach_skills %}
+                                {% for skill in teach_skills %}
+                                    <div class="group relative">
+                                        <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
+                                              style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                                            {{ skill.name }}
+                                            <span class="text-xs opacity-80">{{ skill.level }}</span>
+                                        </span>
+                                        {% if skill.category %}
+                                            <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
+                                                  style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                                {% if skill.category == 'tech' %}💻
+                                                {% elif skill.category == 'language' %}🌐
+                                                {% else %}✨{% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
                             {% endif %}
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-sm italic opacity-50">No skills listed yet.</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Wants to Learn -->
-        <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-secondary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-            <div class="flex items-center gap-2 mb-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
-                    <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
-                </div>
-                <h4 class="font-semibold" style="color: var(--text-primary);">Wants to Learn</h4>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                {% if learn_skills %}
-                    {% for skill in learn_skills %}
-                        <div class="group relative">
-                            <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
-                                  style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
-                                {{ skill.name }}
-                                <span class="text-xs opacity-80">{{ skill.level }}</span>
-                            </span>
-                            {% if skill.category %}
-                                <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
-                                      style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
-                                    {% if skill.category == 'tech' %}💻
-                                    {% elif skill.category == 'language' %}🌐
-                                    {% else %}✨{% endif %}
-                                </span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-sm italic opacity-50">No skills listed yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Certifications Section -->
-<div class="rounded-xl p-5 mt-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-    <div class="flex items-center gap-2 mb-4">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--accent-primary)15;">
-            <i class="bi bi-award text-sm" style="color: var(--accent-primary);"></i>
-        </div>
-        <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Certifications & Credentials</h3>
-    </div>
-    
-    {% if certifications %}
-        <div class="space-y-3">
-            {% for cert in certifications %}
-            <div class="p-4 rounded-xl transition-all hover:shadow-md" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: var(--accent-primary)10;">
-                        <i class="bi bi-patch-check text-lg" style="color: var(--accent-primary);"></i>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <h4 class="font-semibold" style="color: var(--text-primary);">{{ cert.title }}</h4>
-                            {% if cert.is_expired %}
-                                <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #EF444420; color: #EF4444;">Expired</span>
-                            {% endif %}
+                    
+                    <!-- Wants to Learn -->
+                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-secondary)08, var(--bg-page)); border: 1px solid var(--border-color);">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
+                                <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
+                            </div>
+                            <h4 class="font-semibold" style="color: var(--text-primary);">Wants to Learn</h4>
                         </div>
-                        <p class="text-sm opacity-70 mb-2" style="color: var(--text-secondary);">
-                            <i class="bi bi-building me-1"></i> {{ cert.issuing_organization }}
-                        </p>
-                        <div class="flex flex-wrap gap-3 text-xs opacity-60 mb-2">
-                            <span><i class="bi bi-calendar me-1"></i> Issued: {{ cert.issue_date|date:"M Y" }}</span>
-                            {% if cert.expiry_date %}
-                                <span><i class="bi bi-hourglass-split me-1"></i> Expires: {{ cert.expiry_date|date:"M Y" }}</span>
-                            {% endif %}
-                            {% if cert.credential_id %}
-                                <span><i class="bi bi-upc-scan me-1"></i> ID: {{ cert.credential_id }}</span>
-                            {% endif %}
-                        </div>
-                        {% if cert.description %}
-                            <p class="text-sm opacity-70 mt-2">{{ cert.description }}</p>
-                        {% endif %}
-                        <div class="flex gap-3 mt-3">
-                            {% if cert.credential_url %}
-                                <a href="{{ cert.credential_url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
-                                    <i class="bi bi-link-45deg"></i> Verify Online
-                                </a>
-                            {% endif %}
-                            {% if cert.certificate_file %}
-                                <a href="{{ cert.certificate_file.url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
-                                    <i class="bi bi-file-earmark-pdf"></i> View Certificate
-                                </a>
+                        <div class="flex flex-wrap gap-2">
+                            {% if learn_skills %}
+                                {% for skill in learn_skills %}
+                                    <div class="group relative">
+                                        <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
+                                              style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
+                                            {{ skill.name }}
+                                            <span class="text-xs opacity-80">{{ skill.level }}</span>
+                                        </span>
+                                        {% if skill.category %}
+                                            <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
+                                                  style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                                {% if skill.category == 'tech' %}💻
+                                                {% elif skill.category == 'language' %}🌐
+                                                {% else %}✨{% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-center py-8">
-            <i class="bi bi-award text-4xl opacity-30 mb-2"></i>
-            <p class="text-sm opacity-60" style="color: var(--text-secondary);">No certifications added yet.</p>
-        </div>
-    {% endif %}
-</div>
+
+            <!-- Certifications Section -->
+            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--accent-primary)15;">
+                        <i class="bi bi-award text-sm" style="color: var(--accent-primary);"></i>
+                    </div>
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Certifications & Credentials</h3>
+                </div>
+                
+                {% if certifications %}
+                    <div class="space-y-3">
+                        {% for cert in certifications %}
+                        <div class="p-4 rounded-xl transition-all hover:shadow-md" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: var(--accent-primary)10;">
+                                    <i class="bi bi-patch-check text-lg" style="color: var(--accent-primary);"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                        <h4 class="font-semibold" style="color: var(--text-primary);">{{ cert.title }}</h4>
+                                        {% if cert.is_expired %}
+                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #EF444420; color: #EF4444;">Expired</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-sm opacity-70 mb-2" style="color: var(--text-secondary);">
+                                        <i class="bi bi-building me-1"></i> {{ cert.issuing_organization }}
+                                    </p>
+                                    <div class="flex flex-wrap gap-3 text-xs opacity-60 mb-2">
+                                        <span><i class="bi bi-calendar me-1"></i> Issued: {{ cert.issue_date|date:"M Y" }}</span>
+                                        {% if cert.expiry_date %}
+                                            <span><i class="bi bi-hourglass-split me-1"></i> Expires: {{ cert.expiry_date|date:"M Y" }}</span>
+                                        {% endif %}
+                                        {% if cert.credential_id %}
+                                            <span><i class="bi bi-upc-scan me-1"></i> ID: {{ cert.credential_id }}</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if cert.description %}
+                                        <p class="text-sm opacity-70 mt-2">{{ cert.description }}</p>
+                                    {% endif %}
+                                    <div class="flex gap-3 mt-3">
+                                        {% if cert.credential_url %}
+                                            <a href="{{ cert.credential_url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
+                                                <i class="bi bi-link-45deg"></i> Verify Online
+                                            </a>
+                                        {% endif %}
+                                        {% if cert.certificate_file %}
+                                            <a href="{{ cert.certificate_file.url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
+                                                <i class="bi bi-file-earmark-pdf"></i> View Certificate
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="bi bi-award text-4xl opacity-30 mb-2"></i>
+                        <p class="text-sm opacity-60" style="color: var(--text-secondary);">No certifications added yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+
             <!-- Study Goals Card -->
             <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <div class="flex items-center gap-2 mb-4">

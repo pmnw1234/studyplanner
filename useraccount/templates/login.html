@@ -35,6 +35,15 @@
         }
         .error {
             color: red;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .errorlist {
+            color: red;
+            list-style: none;
+            padding: 0;
+            font-size: 12px;
+            margin: 5px 0 0 0;
         }
     </style>
 </head>
@@ -46,16 +55,26 @@
     <form method="POST">
         {% csrf_token %}
         
+        <!-- Changed from 'username' to 'email' to match the form -->
+        <input type="text" name="email" placeholder="Email or Username" required>
+        <input type="password" name="password" placeholder="Password" required>
         
-        <input type="text" name="username" placeholder="Enter your Username" required>
-        <input type="password" name="password" placeholder="Enter your  Password" required>
+        <!-- Display form errors -->
+        {% if form.errors %}
+            <div class="error">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         
         <button type="submit">Login</button>
     </form>
-
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
 
     <p>Don't have an account? 
         <a href="{% url 'register' %}">Register</a>
