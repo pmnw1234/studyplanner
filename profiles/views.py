@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from useraccount.models import UserProfile, Connection, ConnectionRequest
 from feedview.models import MatchRequest
-from useraccount.models import UserProfile, UserSkill, ConnectionRequest, Connection
+from useraccount.models import UserProfile, UserSkill, ConnectionRequest, Connection, Certification
+from django.db.models import Q
 
 # --- HELPER FUNCTIONS ---
 
@@ -91,25 +92,26 @@ def view_other_profile(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
     other_profile, _ = UserProfile.objects.get_or_create(user=other_user)
 
-
     current_user = request.user
     current_profile, _ = UserProfile.objects.get_or_create(user=current_user)
 
     is_own_profile = current_user == other_user
 
+    # skills
     my_teach = current_profile.get_skills_to_teach_list()
     my_learn = current_profile.get_skills_to_learn_list()
     other_teach = other_profile.get_skills_to_teach_list()
     other_learn = other_profile.get_skills_to_learn_list()
 
-    match_score = calculate_match_percentage(
-        my_teach,
-        my_learn,
-        other_teach,
-        other_learn
+    match_percentage = calculate_match_percentage(
+        my_teach, my_learn,
+        other_teach, other_learn
     )
 
-    # already friends = accepted match request exists
+    # ====================
+    # MATCH REQUEST LOGIC
+    # ====================
+
     is_connected = MatchRequest.objects.filter(
         sender=current_user,
         receiver=other_user,
@@ -120,14 +122,12 @@ def view_other_profile(request, user_id):
         status='accepted'
     ).exists()
 
-    # request sent by me
     request_sent = MatchRequest.objects.filter(
         sender=current_user,
         receiver=other_user,
         status='pending'
     ).exists()
 
-    # request received from them
     received_request = MatchRequest.objects.filter(
         sender=other_user,
         receiver=current_user,
@@ -137,42 +137,25 @@ def view_other_profile(request, user_id):
     request_received = received_request is not None
     request_received_id = received_request.id if received_request else None
 
-    current_profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    
-    # Get skills
-    my_teach_skills = current_profile.skills.filter(skill_type='teach')
-    my_learn_skills = current_profile.skills.filter(skill_type='learn')
-    other_teach_skills = other_profile.skills.filter(skill_type='teach')
-    other_learn_skills = other_profile.skills.filter(skill_type='learn')
-    
-    # Calculate Scores
-    enhanced_score, direct_matches = calculate_enhanced_match_score(current_profile, other_profile)
-    
-    # Check connection status
-    is_connected = Connection.objects.filter(user1=request.user, user2=other_user).exists() or \
-                   Connection.objects.filter(user1=other_user, user2=request.user).exists()
-    
-    request_sent = ConnectionRequest.objects.filter(from_user=request.user, to_user=other_user, status='pending').exists()
-    received_req = ConnectionRequest.objects.filter(from_user=other_user, to_user=request.user, status='pending').first()
-
+    certifications = Certification.objects.filter(
+        user_profile=other_profile
+    )
 
     context = {
         'other_user': other_user,
         'other_profile': other_profile,
-        'match_score': match_score,
+        'match_score': match_percentage,
         'teach_skills': other_teach,
         'learn_skills': other_learn,
+        'certifications': certifications,
+
         'is_own_profile': is_own_profile,
-        'match_score': enhanced_score,
         'is_connected': is_connected,
         'request_sent': request_sent,
-        'request_received': received_req is not None,
-        'request_received_id': received_req.id if received_req else None,
-        'direct_matches': direct_matches,
-        'teach_skills': other_teach_skills,
-        'learn_skills': other_learn_skills,
-        'certifications': other_profile.certifications.all(),
+        'request_received': request_received,
+        'request_received_id': request_received_id,
     }
+
     return render(request, 'profiles/view_other_profile.html', context)
 
 
@@ -225,9 +208,9 @@ def send_connection_request(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
 
     if request.user == other_user:
-        return redirect('view_other_profile', user_id=user_id)
+        messages.warning(request, "You cannot connect with yourself.")
+        return redirect('dashboard_home')
 
-    # check existing request both directions
     existing = MatchRequest.objects.filter(
         sender=request.user,
         receiver=other_user
@@ -238,37 +221,36 @@ def send_connection_request(request, user_id):
         receiver=request.user
     ).first()
 
-    # already sent by me
-    if existing:
-        if existing.status == 'pending':
-            return redirect('view_other_profile', user_id=user_id)
-
-        elif existing.status == 'declined':
-            existing.status = 'pending'
-            existing.save()
-            return redirect('view_other_profile', user_id=user_id)
-
-        elif existing.status == 'accepted':
-            return redirect('view_other_profile', user_id=user_id)
-
-    # already sent by them
-    if reverse_existing:
+    # already friends
+    if existing and existing.status == 'accepted':
+        messages.info(request, "Already friends.")
         return redirect('view_other_profile', user_id=user_id)
 
-    # create new request
-    MatchRequest.objects.create(
-        sender=request.user,
-        receiver=other_user,
-        status='pending'
-    )
+    if reverse_existing and reverse_existing.status == 'accepted':
+        messages.info(request, "Already friends.")
+        return redirect('view_other_profile', user_id=user_id)
 
-    to_user = get_object_or_404(User, id=user_id)
-    if request.user == to_user:
-        messages.warning(request, "You cannot connect with yourself!")
-        return redirect('dashboard_home')
-    
-    ConnectionRequest.objects.get_or_create(from_user=request.user, to_user=to_user, status='pending')
-    messages.success(request, f"Request sent to {to_user.username}!")
+    # pending request exists
+    if existing and existing.status == 'pending':
+        messages.info(request, "Request already sent.")
+        return redirect('view_other_profile', user_id=user_id)
+
+    if reverse_existing and reverse_existing.status == 'pending':
+        messages.info(request, "This user already sent you a request.")
+        return redirect('view_other_profile', user_id=user_id)
+
+    # reuse old declined request
+    if existing:
+        existing.status = 'pending'
+        existing.save()
+    else:
+        MatchRequest.objects.create(
+            sender=request.user,
+            receiver=other_user,
+            status='pending'
+        )
+
+    messages.success(request, "Request sent.")
     return redirect('view_other_profile', user_id=user_id)
 
 @login_required
@@ -292,6 +274,43 @@ def accept_connection(request, request_id):
     receiver_profile.save()
 
     return redirect('view_other_profile', user_id=req.sender.id)
+
+@login_required
+def unfriend_user(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    # Find accepted friendship/match
+    friendship = MatchRequest.objects.filter(
+        Q(sender=request.user, receiver=other_user) |
+        Q(sender=other_user, receiver=request.user),
+        status='accepted'
+    ).first()
+
+    if friendship:
+        friendship.delete()
+
+        # get profiles
+        sender_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        receiver_profile, _ = UserProfile.objects.get_or_create(user=other_user)
+
+        # decrease count safely
+        sender_profile.study_partners_count = max(
+            0, sender_profile.study_partners_count - 1
+        )
+        receiver_profile.study_partners_count = max(
+            0, receiver_profile.study_partners_count - 1
+        )
+
+        sender_profile.save()
+        receiver_profile.save()
+
+    return redirect('view_other_profile', user_id=user_id)
+
+
+@login_required
+def block_user(request, user_id):
+    messages.success(request, "User blocked.")
+    return redirect('dashboard_home')
 # @login_required
 # def accept_connection(request, request_id):
 #     """Accept a connection request"""
