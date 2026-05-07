@@ -4,19 +4,13 @@
 
 {% block content %}
 
-<div style="background:white; padding:15px; border-radius:10px; width:500px; margin:auto; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-
-   
-
-</div>
 <div class="space-y-6 md:space-y-8">
-    
+
     {% include 'dashboard/components/welcome_header.html' %}
     {% include 'dashboard/components/stats_cards.html' %}
-     
-    
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         <!-- LEFT COLUMN -->
         <div class="space-y-6">
             {% include 'dashboard/components/profile_card.html' %}
@@ -26,8 +20,7 @@
 
         <!-- RIGHT COLUMN -->
         <div class="lg:col-span-2 space-y-6">
-            
-         
+
             <!-- AI Match Button -->
             <div class="mb-2">
                 <button id="aiMatchBtn" class="w-full py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; border: none;">
@@ -38,7 +31,7 @@
                     </div>
                 </button>
             </div>
-            
+
             <!-- Tabs -->
             <div class="flex gap-6 border-b pb-2" style="border-color: var(--border-color);">
                 <button class="tab-button active-tab text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
@@ -56,23 +49,23 @@
             <div id="matches-tab" class="tab-content">
                 {% include 'dashboard/components/matches_tab.html' %}
             </div>
-            
+
             <div id="saved-tab" class="tab-content" style="display: none;">
                 {% include 'dashboard/components/saved_items.html' %}
             </div>
-            
+
             <div id="activity-tab" class="tab-content" style="display: none;">
                 {% for activity in user_activities %}
                 <div class="flex items-center justify-between gap-3 p-3 rounded-xl mb-2"
                      style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                    
+
                     <div class="flex items-center gap-3 flex-1">
                         <i class="bi bi-person text-sm opacity-50"></i>
                         <div>
                             <p class="text-sm">
                                 {% if activity.user_id %}
-                                    <a href="{% url 'view_other_profile' activity.user_id %}" 
-                                       class="font-medium hover:underline" 
+                                    <a href="{% url 'view_other_profile' activity.user_id %}"
+                                       class="font-medium hover:underline"
                                        style="color: var(--accent-primary);">
                                         {{ activity.sender }}
                                     </a>
@@ -84,7 +77,7 @@
                             <p class="text-xs opacity-50">{{ activity.time }} ago</p>
                         </div>
                     </div>
-                    
+
                     {% if activity.status == 'pending' and activity.id %}
                     <div class="flex gap-2">
                         <a href="{% url 'accept_connection' activity.id %}"
@@ -100,11 +93,11 @@
                     </div>
                     {% elif activity.status %}
                         <span class="text-xs px-2 py-1 rounded capitalize"
-                              style="background-color: 
+                              style="background-color:
                                 {% if activity.status == 'accepted' %}#22c55e
                                 {% elif activity.status == 'declined' %}#ef4444
-                                {% else %}#f59e0b{% endif %}; 
-                              color: white;">
+                                {% else %}#f59e0b{% endif %};
+                               color: white;">
                             {{ activity.status }}
                         </span>
                     {% endif %}
@@ -116,7 +109,7 @@
                 </div>
                 {% endfor %}
             </div>
-            
+
             {% include 'dashboard/partials/quick_actions.html' %}
         </div>
     </div>
@@ -125,7 +118,7 @@
 <!-- AI Modal -->
 <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all duration-300">
     <div class="rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        
+
         <div class="text-center mb-6">
             <div class="inline-block p-3 rounded-full mb-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
                 <i class="bi bi-robot text-2xl text-white"></i>
@@ -133,13 +126,13 @@
             <h3 class="text-xl font-semibold" style="color: var(--text-primary);">AI is finding your perfect matches...</h3>
             <p class="text-sm opacity-60 mt-1">Analyzing skills and learning goals</p>
         </div>
-        
+
         <div class="relative h-1 rounded-full overflow-hidden mb-8" style="background-color: var(--border-color);">
             <div id="scanLine" class="absolute top-0 left-0 h-full rounded-full transition-all duration-50" style="background: linear-gradient(90deg, #8b6914, #c49a2a); width: 0%;"></div>
         </div>
-        
+
         <div id="bubbleContainer" class="flex flex-wrap justify-center gap-4 min-h-[120px] mb-6"></div>
-        
+
         <div class="text-center">
             <p id="matchStatus" class="text-sm opacity-70">Scanning profiles...</p>
         </div>
@@ -154,22 +147,22 @@
         opacity: 1 !important;
         border-bottom: 2px solid var(--accent-primary);
     }
-    
+
     .tab-content {
         display: block;
     }
-    
+
     .bubble-item {
         animation: bubblePop 0.4s ease-out;
         cursor: pointer;
         transition: transform 0.3s, box-shadow 0.3s;
     }
-    
+
     .bubble-item:hover {
         transform: translateY(-8px) scale(1.05);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
     }
-    
+
     .bubble-avatar {
         width: 55px;
         height: 55px;
@@ -177,7 +170,7 @@
         object-fit: cover;
         border: 3px solid white;
     }
-    
+
     @keyframes bubblePop {
         0% {
             opacity: 0;
@@ -191,11 +184,11 @@
             transform: scale(1) translateY(0);
         }
     }
-    
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
-    
+
     .animate-spin {
         animation: spin 0.8s linear infinite;
     }
@@ -206,19 +199,19 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Get all tab buttons
         const tabButtons = document.querySelectorAll('.tab-button');
-        
+
         // Get all tab content containers
         const matchesTab = document.getElementById('matches-tab');
         const savedTab = document.getElementById('saved-tab');
         const activityTab = document.getElementById('activity-tab');
-        
+
         // Function to show selected tab and hide others
         function showTab(tabName) {
             // Hide all tabs
             if (matchesTab) matchesTab.style.display = 'none';
             if (savedTab) savedTab.style.display = 'none';
             if (activityTab) activityTab.style.display = 'none';
-            
+
             // Show selected tab
             if (tabName === 'matches' && matchesTab) {
                 matchesTab.style.display = 'block';
@@ -227,13 +220,13 @@
             } else if (tabName === 'activity' && activityTab) {
                 activityTab.style.display = 'block';
             }
-            
+
             // Update button styles
             tabButtons.forEach(button => {
                 button.classList.remove('active-tab');
                 button.style.opacity = '0.5';
                 button.style.borderBottom = 'none';
-                
+
                 if (button.getAttribute('data-tab') === tabName) {
                     button.classList.add('active-tab');
                     button.style.opacity = '1';
@@ -241,7 +234,7 @@
                 }
             });
         }
-        
+
         // Add click event to each tab button
         tabButtons.forEach(button => {
             button.addEventListener('click', function(e) {
@@ -250,7 +243,7 @@
                 showTab(tabName);
             });
         });
-        
+
         // Show matches tab by default
         showTab('matches');
     });
@@ -273,7 +266,7 @@
 
     const matchesDataElement = document.getElementById('matches-data');
     let userMatches = [];
-    
+
     if (matchesDataElement) {
         try {
             userMatches = JSON.parse(matchesDataElement.textContent);
@@ -293,23 +286,23 @@
         const duration = 2500;
         const interval = 20;
         const step = (interval / duration) * 100;
-        
+
         if (bubbleContainer) bubbleContainer.innerHTML = '';
         if (matchStatus) matchStatus.textContent = '🎯 Scanning your skills...';
-        
+
         const searchSteps = [
             { text: '📚 Analyzing your skills to teach...', delay: 500 },
             { text: '🎯 Finding matching learning goals...', delay: 1000 },
             { text: '🤝 Calculating compatibility scores...', delay: 1500 },
             { text: '✨ Found your best matches!', delay: 2000 }
         ];
-        
+
         searchSteps.forEach(step => {
             setTimeout(() => {
                 if (matchStatus) matchStatus.textContent = step.text;
             }, step.delay);
         });
-        
+
         const scanInterval = setInterval(() => {
             progress += step;
             if (progress >= 100) {
@@ -327,7 +320,7 @@
     function showMatchBubbles() {
         if (bubbleContainer) bubbleContainer.innerHTML = '';
         if (matchStatus) matchStatus.textContent = '🎉 Click any profile to view! 🎉';
-        
+
         if (!userMatches || userMatches.length === 0) {
             if (bubbleContainer) {
                 bubbleContainer.innerHTML = `
@@ -342,12 +335,14 @@
             }
             return;
         }
-        
+
         userMatches.forEach((match, index) => {
             setTimeout(() => {
                 const bubble = document.createElement('div');
                 const color = avatarColors[index % avatarColors.length];
+
                 bubble.className = 'bubble-item';
+
                 bubble.style.cssText = `
                     display: flex;
                     flex-direction: column;
@@ -361,8 +356,9 @@
                     cursor: pointer;
                     transition: transform 0.3s, box-shadow 0.3s;
                 `;
-                
+
                 let avatarHtml = '';
+
                 if (match.profile_picture) {
                     avatarHtml = `<img src="${match.profile_picture}" alt="${match.name}" class="bubble-avatar">`;
                 } else {
@@ -372,7 +368,7 @@
                         </div>
                     `;
                 }
-                
+
                 bubble.innerHTML = `
                     ${avatarHtml}
                     <span class="font-semibold text-sm">${match.name || 'User'}</span>
@@ -381,16 +377,17 @@
                         ${match.skill_offer || '?'} → ${match.skill_want || '?'}
                     </div>
                 `;
-                
+
                 bubble.onclick = () => {
                     window.location.href = `/profile/${match.user_id}/`;
                 };
-                
+
                 if (bubbleContainer) bubbleContainer.appendChild(bubble);
-                
+
                 setTimeout(() => {
                     bubble.style.transform = 'translateY(-5px)';
                 }, 100);
+
             }, index * 150);
         });
     }
@@ -407,20 +404,22 @@
             if (aiIcon) aiIcon.classList.add('hidden');
             if (aiBtnText) aiBtnText.textContent = 'Scanning...';
             if (aiSpinner) aiSpinner.classList.remove('hidden');
-            
+
             if (aiModal) {
                 aiModal.classList.remove('hidden');
+
                 const modalTransform = aiModal.querySelector('.transform');
+
                 if (modalTransform) {
                     modalTransform.classList.remove('scale-95');
                     modalTransform.classList.add('scale-100');
                 }
             }
-            
+
             setTimeout(() => {
                 animateBubbleSearch();
             }, 300);
-            
+
             setTimeout(() => {
                 if (aiIcon) aiIcon.classList.remove('hidden');
                 if (aiBtnText) aiBtnText.textContent = 'Find AI Matches';
@@ -436,11 +435,12 @@
             }
         });
     }
-    
+
     window.removeSavedItem = function(index) {
         if (confirm('Remove this saved item?')) {
             console.log('Remove item at index:', index);
         }
     };
 </script>
+
 {% endblock %}

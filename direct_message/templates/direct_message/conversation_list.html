@@ -1,0 +1,631 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Messages Container */
+    .messages-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0;
+        min-height: calc(100vh - 60px);
+    }
+    
+    /* Sticky Header */
+    .sticky-header {
+        position: sticky;
+        top: 60px;
+        z-index: 100;
+        background-color: var(--bg-card, #ffffff);
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        padding: 12px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* Filter Tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .filter-tab {
+        flex: 1;
+        max-width: 200px;
+        padding: 10px 16px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: var(--bg-page, #f9fafb);
+        color: var(--text-secondary, #6b7280);
+        border: 1px solid var(--border-color, #e5e7eb);
+    }
+    
+    .filter-tab.active {
+        background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
+        color: white;
+        border-color: transparent;
+    }
+    
+    .filter-tab i {
+        font-size: 14px;
+        margin-right: 8px;
+    }
+    
+    /* Search Bar */
+    .search-wrapper {
+        width: 100%;
+    }
+    
+    .search-bar {
+        display: flex;
+        align-items: center;
+        background-color: var(--bg-page, #f9fafb);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 30px;
+        padding: 10px 16px;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .search-bar:focus-within {
+        border-color: var(--accent-primary, #8b6914);
+        box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
+    }
+    
+    .search-bar i {
+        color: var(--text-secondary, #6b7280);
+        font-size: 16px;
+    }
+    
+    .search-bar input {
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+        color: var(--text-primary, #111827);
+        font-size: 14px;
+    }
+    
+    .search-bar input::placeholder {
+        color: var(--text-secondary, #6b7280);
+        font-size: 13px;
+    }
+    
+    /* Conversations List */
+    .conversations-list {
+        width: 100%;
+        background-color: var(--bg-page, #f9fafb);
+    }
+    
+    /* Conversation Item */
+    .conversation-item {
+        background-color: var(--bg-card, #ffffff);
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .conversation-item:hover {
+        background-color: var(--bg-hover, #f3f4f6);
+    }
+    
+    .conversation-link {
+        text-decoration: none;
+        display: block;
+        padding: 16px 20px;
+    }
+    
+    /* Profile Picture */
+    .profile-picture {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    
+    .avatar-placeholder {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    
+    /* Flex Layout Fix */
+    .d-flex {
+        display: flex;
+    }
+    
+    .gap-3 {
+        gap: 1rem;
+    }
+    
+    /* Conversation Content */
+    .conversation-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Header Row */
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+        gap: 12px;
+    }
+    
+    .user-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary, #111827);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .user-name-bold {
+        font-weight: 800;
+    }
+    
+    /* Timestamp */
+    .timestamp {
+        font-size: 11px;
+        color: var(--text-secondary, #6b7280);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* Message Preview */
+    .message-preview {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .message-icon {
+        font-size: 12px;
+        color: var(--text-secondary, #6b7280);
+        opacity: 0.5;
+        flex-shrink: 0;
+    }
+    
+    .message-text {
+        font-size: 13px;
+        color: var(--text-secondary, #6b7280);
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+        flex: 1;
+    }
+    
+    .message-text-bold {
+        font-weight: 700;
+        color: var(--text-primary, #111827);
+    }
+    
+    /* Unread Badge */
+    .unread-badge {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #000000;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 30px;
+        font-size: 11px;
+        min-width: 26px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 14px 12px;
+    }
+    
+    .empty-state i {
+        font-size: 20px;
+        color: var(--text-secondary, #6b7280);
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h5 {
+        color: var(--text-primary, #111827);
+        margin-bottom: 8px;
+        font-size: 18px;
+    }
+    
+    .empty-state p {
+        color: var(--text-secondary, #6b7280);
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 4px 12px rgba(139, 105, 20, 0.3);
+    }
+    
+    /* Loading State */
+    .loading-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border-color, #e5e7eb);
+        border-top-color: var(--accent-primary, #8b6914);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .conversation-item {
+        animation: fadeIn 0.3s ease forwards;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .messages-container {
+            max-width: 95%;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .messages-container {
+            max-width: 100%;
+        }
+        
+        .sticky-header {
+            top: 56px;
+            padding: 10px 16px;
+        }
+        
+        .filter-tabs {
+            gap: 8px;
+        }
+        
+        .filter-tab {
+            padding: 8px 12px;
+            font-size: 12px;
+            max-width: 150px;
+        }
+        
+        .filter-tab i {
+            font-size: 12px;
+        }
+        
+        .conversation-link {
+            padding: 12px 16px;
+        }
+        
+        .profile-picture,
+        .avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            font-size: 1.1rem;
+        }
+        
+        .user-name {
+            font-size: 14px;
+        }
+        
+        .timestamp {
+            font-size: 10px;
+        }
+        
+        .message-text {
+            font-size: 12px;
+        }
+        
+        .unread-badge {
+            padding: 2px 8px;
+            font-size: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <!-- Sticky Header with Filters -->
+    <div class="sticky-header">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <div class="filter-tab active" data-filter="all">
+                <i class="bi bi-chat-dots"></i> All Messages
+            </div>
+            <div class="filter-tab" data-filter="unread">
+                <i class="bi bi-envelope-exclamation"></i> Unread
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-wrapper">
+            <div class="search-bar">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name...">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conversations List -->
+    <div class="conversations-list" id="conversationsList">
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary, #6b7280);">Loading conversations...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allConversations = [];
+    let currentFilter = 'all';
+
+    async function loadConversations() {
+        const container = document.getElementById('conversationsList');
+        
+        try {
+            const response = await fetch('/api/messages/conversations/');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data && data.conversations && data.conversations.length > 0) {
+                allConversations = data.conversations;
+                applyFilterAndDisplay();
+            } else {
+                showEmptyState();
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showError();
+        }
+    }
+    
+    function applyFilterAndDisplay() {
+        let filtered = [...allConversations];
+        
+        // Apply unread filter
+        if (currentFilter === 'unread') {
+            filtered = filtered.filter(conv => conv.unread_count > 0);
+        }
+        
+        // Apply search filter
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (searchTerm) {
+            filtered = filtered.filter(conv => {
+                const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
+                return userName.toLowerCase().includes(searchTerm);
+            });
+        }
+        
+        if (filtered.length === 0) {
+            if (currentFilter === 'unread' && allConversations.length > 0) {
+                showNoUnreadState();
+            } else if (searchTerm) {
+                showNoResultsState();
+            } else {
+                showEmptyState();
+            }
+        } else {
+            displayConversations(filtered);
+        }
+    }
+    
+    function displayConversations(conversations) {
+        const container = document.getElementById('conversationsList');
+        
+        let html = '';
+        
+        conversations.forEach(conv => {
+            // User info
+            const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
+            const userInitial = (conv.first_name ? conv.first_name[0] : conv.username[0]).toUpperCase();
+            const hasProfilePic = conv.profile_picture && conv.profile_picture !== '';
+            const profilePicUrl = conv.profile_picture || '';
+            
+            // Message info
+            const lastMessage = conv.last_message || 'No messages yet';
+            const lastMessageTime = conv.last_message_time || '';
+            const unreadCount = conv.unread_count || 0;
+            const isUnread = unreadCount > 0;
+            
+            // Truncate message
+            const truncatedMessage = lastMessage.length > 60 ? lastMessage.substring(0, 57) + '...' : lastMessage;
+            
+            html += `
+                <div class="conversation-item">
+                    <a href="/api/messages/get/${conv.user_id}/" class="conversation-link">
+                        <div class="d-flex gap-3">
+                            <!-- Profile Picture -->
+                            ${hasProfilePic ? 
+                                `<img src="${escapeHtml(profilePicUrl)}" class="profile-picture" alt="${escapeHtml(userName)}">` :
+                                `<div class="avatar-placeholder">${escapeHtml(userInitial)}</div>`
+                            }
+                            
+                            <!-- Content -->
+                            <div class="conversation-content">
+                                <div class="conversation-header">
+                                    <div class="user-name ${isUnread ? 'user-name-bold' : ''}">
+                                        ${escapeHtml(userName)}
+                                        ${isUnread ? `<span class="unread-badge">${unreadCount}</span>` : ''}
+                                    </div>
+                                    ${lastMessageTime ? `<div class="timestamp">${escapeHtml(lastMessageTime)}</div>` : ''}
+                                </div>
+                                
+                                <div class="message-preview">
+                                    <i class="bi bi-chat-dots message-icon"></i>
+                                    <div class="message-text ${isUnread ? 'message-text-bold' : ''}">
+                                        ${escapeHtml(truncatedMessage)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    function showEmptyState() {
+        const container = document.getElementById('conversationsList');
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-chat-square-heart"></i>
+                <h5>No messages yet</h5>
+                <p>Start a conversation with your alumni connections</p>
+                <a href="/dashboard/" class="btn-primary-custom">
+                    <i class="bi bi-people"></i> Find Connections
+                </a>
+            </div>
+        `;
+    }
+    
+    function showNoUnreadState() {
+        const container = document.getElementById('conversationsList');
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-envelope-check"></i>
+                <h5>All caught up! 🎉</h5>
+                <p>You have no unread messages</p>
+            </div>
+        `;
+    }
+    
+    function showNoResultsState() {
+        const container = document.getElementById('conversationsList');
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-search"></i>
+                <h5>No results found</h5>
+                <p>Try a different name</p>
+            </div>
+        `;
+    }
+    
+    function showError() {
+        const container = document.getElementById('conversationsList');
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-wifi-off"></i>
+                <h5>Connection error</h5>
+                <p>Please check your internet connection</p>
+                <button onclick="location.reload()" class="btn-primary-custom">
+                    <i class="bi bi-arrow-repeat"></i> Try Again
+                </button>
+            </div>
+        `;
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Search handler with debounce
+    let searchTimeout;
+    function handleSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilterAndDisplay();
+        }, 300);
+    }
+    
+    function setFilter(filter) {
+        currentFilter = filter;
+        
+        // Update active tab UI
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            if (tab.dataset.filter === filter) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        
+        applyFilterAndDisplay();
+    }
+    
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        loadConversations();
+        
+        // Search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', handleSearch);
+        }
+        
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                setFilter(tab.dataset.filter);
+            });
+        });
+    });
+</script>
+{% endblock %}

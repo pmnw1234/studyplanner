@@ -94,7 +94,7 @@ class UserProfile(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-
+    study_partners_count = models.IntegerField(default=0)
     def __str__(self):
         return f"{self.user.username}'s Profile"
     
@@ -178,6 +178,7 @@ class ConnectionRequest(models.Model):
     
     def __str__(self):
         return f"{self.from_user.username} → {self.to_user.username} ({self.status})"
+
 
 
 class Connection(models.Model):

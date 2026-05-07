@@ -275,6 +275,8 @@ def dashboard_home(request):
             'user_id': req.sender.id,
             'time': timesince(req.created_at) if hasattr(req, 'created_at') else "recently"
         })
+
+        
     
     if matches and not requests:
         # Count strong matches
