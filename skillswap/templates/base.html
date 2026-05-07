@@ -125,42 +125,40 @@
         .profile-btn:hover {
             opacity: 0.8 !important;
         }
-        
-        /* Unread message badge styles */
-        .nav-item-with-badge {
-            position: relative;
-        }
-        
-        #unreadMessageBadge {
-            position: absolute;
-            top: -8px;
-            right: -15px;
-            font-size: 10px;
-            padding: 2px 6px;
-            background-color: #ef4444 !important;
-            color: white !important;
-            border-radius: 9999px;
-            line-height: 1;
-            min-width: 18px;
-            text-align: center;
-        }
-        
-        #unreadMessageBadgeMobile {
-            font-size: 10px;
-            padding: 2px 6px;
-            background-color: #ef4444 !important;
-            color: white !important;
-            border-radius: 9999px;
-            margin-left: 8px;
-            display: inline-block;
-        }
-        
-        .menu li a {
-            position: relative;
-        }
+
+        /* Sidebar open state */
+#sidebar.open {
+    left: 0;
+}
     </style>
     {% block extra_css %}{% endblock %}
 </head>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sidebar = document.getElementById("sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
+    const toggleBtn = document.getElementById("sidebar-toggle");
+
+    function toggleSidebar() {
+        sidebar.classList.toggle("open");
+        backdrop.classList.toggle("hidden");
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove("open");
+        backdrop.classList.add("hidden");
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", toggleSidebar);
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener("click", closeSidebar);
+    }
+});
+</script>
 <body class="no-tap-highlight">
     
     <!-- Responsive Navbar with Mobile Menu -->
@@ -170,7 +168,10 @@
                 
                 <!-- Left side - Logo -->
                 <div class="navbar-start">
-                    <a class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2" href="{% url 'dashboard_home' %}" style="color: var(--text-primary);">
+                    <a id="sidebar-toggle"
+   class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2 cursor-pointer"
+   href="javascript:void(0);"
+   style="color: var(--text-primary);">
                         <i class="bi bi-intersect text-lg md:text-2xl" style="color: var(--accent-primary);"></i>
                         <span class="ml-1 md:ml-2 hidden sm:inline">SkillSwap</span>
                         <span class="ml-1 sm:hidden">SS</span>
@@ -453,4 +454,33 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+<!-- Sidebar Backdrop -->
+<div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full bg-gray-900 text-white z-50 p-5 transition-all duration-300">
+
+    <h2 class="text-lg font-bold mb-4">Skill Menu</h2>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-bar-chart text-blue-400 text-lg"></i>
+        <span>Progress</span>
+    </a>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-book text-green-400 text-lg"></i>
+        <span>My Library</span>
+    </a>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-trophy text-yellow-400 text-lg"></i>
+        <span>Leaderboard</span>
+    </a>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-pencil-square text-pink-400 text-lg"></i>
+        <span>Assignments</span>
+    </a>
+
+</div>
 </html>

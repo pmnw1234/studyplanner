@@ -4,118 +4,153 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
-    
+
     <!-- Profile Header -->
-    <div class="relative rounded-2xl mb-8 overflow-hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        
+    <div class="relative rounded-2xl mb-8 overflow-hidden"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
         <!-- Abstract Background Pattern -->
         <div class="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none">
             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <path fill="var(--accent-primary)" d="M47.5,-72.3C60.8,-63.2,70.2,-46.3,76.1,-28.5C82,-10.7,84.3,8,79.1,24.5C73.9,41,61.2,55.3,46.2,65.4C31.2,75.5,13.9,81.4,-3.8,79.8C-21.5,78.2,-39.6,69.1,-53.5,56.3C-67.4,43.5,-77.1,27,-80.5,8.7C-83.9,-9.6,-81,-29.7,-71.3,-46.5C-61.6,-63.3,-45.2,-76.8,-27.8,-81.1C-10.4,-85.4,7.9,-80.4,25.5,-74.2C34.2,-70.4,34.2,-81.4,47.5,-72.3Z" transform="translate(100 100)"/>
+                <path fill="var(--accent-primary)"
+                      d="M47.5,-72.3C60.8,-63.2,70.2,-46.3,76.1,-28.5C82,-10.7,84.3,8,79.1,24.5C73.9,41,61.2,55.3,46.2,65.4C31.2,75.5,13.9,81.4,-3.8,79.8C-21.5,78.2,-39.6,69.1,-53.5,56.3C-67.4,43.5,-77.1,27,-80.5,8.7C-83.9,-9.6,-81,-29.7,-71.3,-46.5C-61.6,-63.3,-45.2,-76.8,-27.8,-81.1C-10.4,-85.4,7.9,-80.4,25.5,-74.2C34.2,-70.4,34.2,-81.4,47.5,-72.3Z"
+                      transform="translate(100 100)" />
             </svg>
         </div>
-        
+
         <!-- Cover gradient -->
-        <div class="h-28 md:h-32" style="background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-ocean) 100%);"></div>
-        
+        <div class="h-28 md:h-32"
+             style="background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-ocean) 100%);">
+        </div>
+
         <div class="relative px-6 pb-6">
+
             <!-- Avatar Section -->
             <div class="flex flex-col md:flex-row items-center md:items-end -mt-14 gap-4 md:gap-6">
+
                 <div class="relative">
-                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-full ring-4 ring-white overflow-hidden shadow-xl" style="background-color: var(--bg-card);">
+                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-full ring-4 ring-white overflow-hidden shadow-xl"
+                         style="background-color: var(--bg-card);">
+
                         {% if other_profile.profile_picture %}
-                            <img src="{{ other_profile.profile_picture.url }}" alt="{{ other_user.username }}" class="object-cover w-full h-full" />
+                            <img src="{{ other_profile.profile_picture.url }}"
+                                 alt="{{ other_user.username }}"
+                                 class="object-cover w-full h-full" />
                         {% else %}
-                            <div class="w-full h-full flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+                            <div class="w-full h-full flex items-center justify-center"
+                                 style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
                                 <i class="bi bi-person-fill text-5xl text-white"></i>
                             </div>
                         {% endif %}
                     </div>
+
                     <div class="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full ring-2 ring-white"></div>
                 </div>
-                
+
                 <div class="flex-1 text-center md:text-left">
-                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">{{ other_user.get_full_name|default:other_user.username }}</h1>
-                    <p class="text-sm opacity-60 mt-1">@{{ other_user.username }}</p>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight"
+                        style="color: var(--text-primary);">
+                        {{ other_user.get_full_name|default:other_user.username }}
+                    </h1>
+
+                    <p class="text-sm opacity-60 mt-1">
+                        @{{ other_user.username }}
+                    </p>
+
                     <div class="flex flex-wrap items-center gap-2 mt-2 justify-center md:justify-start">
-                        <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">
-                            <i class="bi bi-mortarboard-fill me-1"></i> {{ other_profile.student_status|default:'Student' }}
+
+                        <span class="badge border-none px-3 py-1 text-xs rounded-full"
+                              style="background-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-mortarboard-fill me-1"></i>
+                            {{ other_profile.student_status|default:'Student' }}
                         </span>
-                        <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--border-color); color: var(--text-secondary);">
-                            <i class="bi bi-calendar3 me-1"></i> Joined {{ other_user.date_joined|date:"M Y" }}
+
+                        <span class="badge border-none px-3 py-1 text-xs rounded-full"
+                              style="background-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            Joined {{ other_user.date_joined|date:"M Y" }}
                         </span>
+
                         {% if other_profile.current_level %}
-                        <span class="badge border-none px-3 py-1 text-xs rounded-full" style="background-color: var(--accent-primary)20; color: var(--accent-primary);">
-                            <i class="bi bi-graph-up me-1"></i> {{ other_profile.current_level }}
-                        </span>
+                            <span class="badge border-none px-3 py-1 text-xs rounded-full"
+                                  style="background-color: var(--accent-primary)20; color: var(--accent-primary);">
+                                <i class="bi bi-graph-up me-1"></i>
+                                {{ other_profile.current_level }}
+                            </span>
                         {% endif %}
+
                     </div>
                 </div>
-                
-                <!-- CONNECTION BUTTONS - Fixed logic -->
+
+                <!-- CONNECTION BUTTONS -->
                 <div class="pb-2 flex gap-2">
 
-
-    {% if not is_own_profile %}
-
-        {% if is_connected %}
-            <button
-                onclick="document.getElementById('unfriendModal').showModal()"
-                class="btn btn-sm md:btn-md px-6 rounded-full"
-                style="background-color: #10B981; color:white;">
-                <i class="bi bi-check-lg me-2"></i> Friends
-            </button>
-
-            <a href="#"
-               class="btn btn-sm md:btn-md px-5 rounded-full"
-               style="background-color: var(--border-color); color: var(--text-primary);">
-                <i class="bi bi-chat-dots me-2"></i> Message
-            </a>
-
-        {% elif request_sent %}
-            <span class="btn btn-sm md:btn-md px-6 rounded-full"
-                  style="background-color: #F59E0B; color:white;">
-                <i class="bi bi-clock-history me-2"></i> Request Sent
-            </span>
-
-            <a href="{% url 'cancel_request' other_user.id %}"
-               class="btn btn-sm md:btn-md px-5 rounded-full"
-               style="background-color: #EF4444; color:white;">
-                <i class="bi bi-x-lg me-2"></i> Cancel
-            </a>
-
-        {% elif request_received %}
-            <a href="{% url 'accept_connection' request_received_id %}"
-               class="btn btn-sm md:btn-md px-6 rounded-full"
-               style="background-color: #10B981; color:white;">
-                Accept
-            </a>
-
-            <a href="{% url 'decline_connection' request_received_id %}"
-               class="btn btn-sm md:btn-md px-5 rounded-full"
-               style="background-color: #EF4444; color:white;">
-                Decline
-            </a>
-
-        {% else %}
-            <a href="{% url 'send_connection_request' other_user.id %}"
-               class="btn btn-sm md:btn-md border-none px-6 rounded-full"
-               style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
-                <i class="bi bi-person-plus me-2"></i> Connect
-            </a>
-
-            <a href="#"
-               class="btn btn-sm md:btn-md px-5 rounded-full"
-               style="background-color: var(--border-color); color: var(--text-primary);">
-                <i class="bi bi-chat-dots me-2"></i> Message
-            </a>
-        {% endif %}
-
-    {% endif %}
+                    {% if not is_own_profile %}
 
 </div>
               
                   
+                        {% if is_connected %}
+
+                            <button
+                                onclick="document.getElementById('unfriendModal').showModal()"
+                                class="btn btn-sm md:btn-md px-6 rounded-full"
+                                style="background-color: #10B981; color:white;">
+                                <i class="bi bi-check-lg me-2"></i> Friends
+                            </button>
+
+                            <a href="#"
+                               class="btn btn-sm md:btn-md px-5 rounded-full"
+                               style="background-color: var(--border-color); color: var(--text-primary);">
+                                <i class="bi bi-chat-dots me-2"></i> Message
+                            </a>
+
+                        {% elif request_sent %}
+
+                            <span class="btn btn-sm md:btn-md px-6 rounded-full"
+                                  style="background-color: #F59E0B; color:white;">
+                                <i class="bi bi-clock-history me-2"></i> Request Sent
+                            </span>
+
+                            <a href="{% url 'cancel_request' other_user.id %}"
+                               class="btn btn-sm md:btn-md px-5 rounded-full"
+                               style="background-color: #EF4444; color:white;">
+                                <i class="bi bi-x-lg me-2"></i> Cancel
+                            </a>
+
+                        {% elif request_received %}
+
+                            <a href="{% url 'accept_connection' request_received_id %}"
+                               class="btn btn-sm md:btn-md px-6 rounded-full"
+                               style="background-color: #10B981; color:white;">
+                                Accept
+                            </a>
+
+                            <a href="{% url 'decline_connection' request_received_id %}"
+                               class="btn btn-sm md:btn-md px-5 rounded-full"
+                               style="background-color: #EF4444; color:white;">
+                                Decline
+                            </a>
+
+                        {% else %}
+
+                            <a href="{% url 'send_connection_request' other_user.id %}"
+                               class="btn btn-sm md:btn-md border-none px-6 rounded-full"
+                               style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
+                                <i class="bi bi-person-plus me-2"></i> Connect
+                            </a>
+
+                            <a href="#"
+                               class="btn btn-sm md:btn-md px-5 rounded-full"
+                               style="background-color: var(--border-color); color: var(--text-primary);">
+                                <i class="bi bi-chat-dots me-2"></i> Message
+                            </a>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
 
             </div>
         </div>
@@ -123,283 +158,467 @@
 
     <!-- Stats Row -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-primary)15;">
-                <i class="bi bi-journal-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
+
+        <div class="rounded-xl p-4 text-center transition-all hover:scale-105"
+             style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background-color: var(--accent-primary)15;">
+                <i class="bi bi-journal-bookmark-fill text-lg"
+                   style="color: var(--accent-primary);"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ teach_skills|length|default:'0' }}</p>
+
+            <p class="text-2xl font-bold"
+               style="color: var(--text-primary);">
+                {{ teach_skills|length|default:'0' }}
+            </p>
+
             <p class="text-xs opacity-50">Skills to Teach</p>
         </div>
-        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-secondary)15;">
-                <i class="bi bi-book-half text-lg" style="color: var(--accent-secondary);"></i>
+
+        <div class="rounded-xl p-4 text-center transition-all hover:scale-105"
+             style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background-color: var(--accent-secondary)15;">
+                <i class="bi bi-book-half text-lg"
+                   style="color: var(--accent-secondary);"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ learn_skills|length|default:'0' }}</p>
+
+            <p class="text-2xl font-bold"
+               style="color: var(--text-primary);">
+                {{ learn_skills|length|default:'0' }}
+            </p>
+
             <p class="text-xs opacity-50">Skills to Learn</p>
         </div>
-        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: #F59E0B15;">
+
+        <div class="rounded-xl p-4 text-center transition-all hover:scale-105"
+             style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background-color: #F59E0B15;">
                 <i class="bi bi-people text-lg" style="color: #F59E0B;"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ match_score }}%</p>
+
+            <p class="text-2xl font-bold"
+               style="color: var(--text-primary);">
+                {{ match_score }}%
+            </p>
+
             <p class="text-xs opacity-50">Match with You</p>
         </div>
-        <div class="rounded-xl p-4 text-center transition-all hover:scale-105" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2" style="background-color: var(--accent-ocean)15;">
-                <i class="bi bi-calendar-check text-lg" style="color: var(--accent-ocean);"></i>
+
+        <div class="rounded-xl p-4 text-center transition-all hover:scale-105"
+             style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background-color: var(--accent-ocean)15;">
+                <i class="bi bi-calendar-check text-lg"
+                   style="color: var(--accent-ocean);"></i>
             </div>
-            <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ other_profile.preferred_study_time|default:'Any' }}</p>
+
+            <p class="text-2xl font-bold"
+               style="color: var(--text-primary);">
+                {{ other_profile.preferred_study_time|default:'Any' }}
+            </p>
+
             <p class="text-xs opacity-50">Study Time</p>
         </div>
+
     </div>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         <!-- LEFT COLUMN -->
         <div class="space-y-6">
-            <!-- Personal Details Card -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+            <!-- Personal Details -->
+            <div class="rounded-xl p-5"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
                 <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-person-badge text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">About {{ other_user.username }}</h3>
+                    <i class="bi bi-person-badge text-lg"
+                       style="color: var(--accent-primary);"></i>
+
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                        style="color: var(--text-primary);">
+                        About {{ other_user.username }}
+                    </h3>
                 </div>
+
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
-                        <span class="opacity-60"><i class="bi bi-mortarboard me-2"></i>Student Status</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.student_status|default:'Not set' }}</span>
+
+                    <div class="flex justify-between items-center py-2 border-b"
+                         style="border-color: var(--border-color);">
+                        <span class="opacity-60">
+                            <i class="bi bi-mortarboard me-2"></i>Student Status
+                        </span>
+
+                        <span class="font-medium"
+                              style="color: var(--text-primary);">
+                            {{ other_profile.student_status|default:'Not set' }}
+                        </span>
                     </div>
-                    <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
-                        <span class="opacity-60"><i class="bi bi-graph-up me-2"></i>Current Level</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.current_level|default:'Not set' }}</span>
+
+                    <div class="flex justify-between items-center py-2 border-b"
+                         style="border-color: var(--border-color);">
+                        <span class="opacity-60">
+                            <i class="bi bi-graph-up me-2"></i>Current Level
+                        </span>
+
+                        <span class="font-medium"
+                              style="color: var(--text-primary);">
+                            {{ other_profile.current_level|default:'Not set' }}
+                        </span>
                     </div>
-                    <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-color);">
-                        <span class="opacity-60"><i class="bi bi-moon-stars me-2"></i>Study Time</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.preferred_study_time|default:'Not set' }}</span>
+
+                    <div class="flex justify-between items-center py-2 border-b"
+                         style="border-color: var(--border-color);">
+                        <span class="opacity-60">
+                            <i class="bi bi-moon-stars me-2"></i>Study Time
+                        </span>
+
+                        <span class="font-medium"
+                              style="color: var(--text-primary);">
+                            {{ other_profile.preferred_study_time|default:'Not set' }}
+                        </span>
                     </div>
+
                     <div class="flex justify-between items-center py-2">
-                        <span class="opacity-60"><i class="bi bi-gender-ambiguous me-2"></i>Gender</span>
-                        <span class="font-medium" style="color: var(--text-primary);">{{ other_profile.gender|default:'Not specified' }}</span>
+                        <span class="opacity-60">
+                            <i class="bi bi-gender-ambiguous me-2"></i>Gender
+                        </span>
+
+                        <span class="font-medium"
+                              style="color: var(--text-primary);">
+                            {{ other_profile.gender|default:'Not specified' }}
+                        </span>
                     </div>
+
                 </div>
             </div>
 
-            <!-- Match Score Card -->
-            <div class="rounded-xl p-5 text-center" style="background: linear-gradient(135deg, var(--accent-primary)10, var(--accent-ocean)10); border: 1px solid var(--border-color);">
+            <!-- Reviews -->
+            <div class="mt-8 p-6 rounded-xl shadow"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+                <h2 class="text-lg font-bold mb-4">Customer Reviews</h2>
+
+                <div class="mb-4">
+                    <strong>{{ avg_rating|floatformat:1 }}/5</strong>
+
+                    <span class="text-sm opacity-60">
+                        Based on {{ review_count }} reviews
+                    </span>
+                </div>
+
+                <!-- Star rating bars - simplified without custom filter -->
+                {% for star in "54321" %}
+                    <div class="flex items-center text-sm mb-1">
+                        <span class="w-12">{{ star }} ★</span>
+                        <div class="flex-1 bg-gray-200 h-2 mx-2 rounded">
+                            <div class="bg-yellow-400 h-2 rounded" 
+                                 style="width: {% if review_count > 0 %}{% widthratio rating_dict|default:0 review_count 100 %}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                        <span class="text-xs">{{ rating_dict|default:0 }}</span>
+                    </div>
+                {% endfor %}
+
+            
+
+                <div class="mt-6 space-y-4">
+
+                    {% for review in reviews %}
+
+                        <div class="p-4 rounded-xl"
+                             style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+
+                            <div class="flex justify-between items-center mb-2">
+
+                                <strong>{{ review.reviewer.username }}</strong>
+
+                                <span style="color: gold;">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+
+                            </div>
+
+                            <p class="text-sm opacity-70">
+                                {{ review.comment }}
+                            </p>
+
+                            <small class="text-xs opacity-50">
+                                {{ review.created_at|date:"M d, Y" }}
+                            </small>
+
+                        </div>
+
+                    {% empty %}
+
+                        <p class="text-sm opacity-60">
+                            No reviews yet.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- Match Score -->
+            <div class="rounded-xl p-5 text-center"
+                 style="background: linear-gradient(135deg, var(--accent-primary)10, var(--accent-ocean)10); border: 1px solid var(--border-color);">
+
                 <div class="relative inline-block mx-auto">
-                    <div class="w-28 h-28 rounded-full flex items-center justify-center mx-auto" style="background: conic-gradient(from 0deg, var(--accent-primary) 0deg, var(--accent-primary) {{ match_score }}deg, var(--border-color) {{ match_score }}deg, var(--border-color) 360deg);">
-                        <div class="w-20 h-20 rounded-full flex items-center justify-center" style="background-color: var(--bg-card);">
-                            <span class="text-2xl font-bold" style="color: var(--accent-primary);">{{ match_score }}%</span>
+
+                    <div class="w-28 h-28 rounded-full flex items-center justify-center mx-auto"
+                         style="background: conic-gradient(from 0deg, var(--accent-primary) 0deg, var(--accent-primary) {{ match_score }}deg, var(--border-color) {{ match_score }}deg, var(--border-color) 360deg);">
+
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center"
+                             style="background-color: var(--bg-card);">
+
+                            <span class="text-2xl font-bold"
+                                  style="color: var(--accent-primary);">
+                                {{ match_score }}%
+                            </span>
+
                         </div>
                     </div>
                 </div>
-                <h3 class="font-semibold mt-3" style="color: var(--text-primary);">Compatibility Score</h3>
-                <p class="text-xs opacity-60 mt-1">Based on skill matching</p>
-                
-                {% if match_score > 70 %}
-                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--accent-secondary)15;">
-                        <i class="bi bi-stars text-sm" style="color: var(--accent-secondary);"></i>
-                        <span class="text-xs font-medium ml-1" style="color: var(--accent-secondary);">Great match! Start a conversation.</span>
-                    </div>
-                {% elif match_score > 40 %}
-                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--accent-primary)15;">
-                        <i class="bi bi-hand-thumbs-up text-sm" style="color: var(--accent-primary);"></i>
-                        <span class="text-xs font-medium ml-1" style="color: var(--accent-primary);">Good potential! Connect to learn more.</span>
-                    </div>
-                {% else %}
-                    <div class="mt-3 p-2 rounded-lg" style="background-color: var(--border-color);">
-                        <i class="bi bi-chat-dots text-sm opacity-60"></i>
-                        <span class="text-xs font-medium ml-1 opacity-60">Low match score. Still worth connecting!</span>
-                    </div>
-                {% endif %}
+
+                <h3 class="font-semibold mt-3"
+                    style="color: var(--text-primary);">
+                    Compatibility Score
+                </h3>
+
+                <p class="text-xs opacity-60 mt-1">
+                    Based on skill matching
+                </p>
+
             </div>
+
         </div>
 
-        <!-- RIGHT COLUMN - Skills & Goals -->
+        <!-- RIGHT COLUMN -->
         <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Skills Section -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+            <!-- Skills -->
+            <div class="rounded-xl p-5"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
                 <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-code-square text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">{{ other_user.username }}'s Skills</h3>
+                    <i class="bi bi-code-square text-lg"
+                       style="color: var(--accent-primary);"></i>
+
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                        style="color: var(--text-primary);">
+                        {{ other_user.username }}'s Skills
+                    </h3>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <!-- Can Teach -->
-                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary)20;">
-                                <i class="bi bi-star-fill text-sm" style="color: var(--accent-primary);"></i>
-                            </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">Can Teach</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% if teach_skills %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Teach Skills -->
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-page);">
+                        <h4 class="font-medium mb-2 flex items-center gap-2" style="color: var(--accent-primary);">
+                            <i class="bi bi-megaphone-fill"></i> Teaches
+                        </h4>
+                        {% if teach_skills %}
+                            <div class="flex flex-wrap gap-2">
                                 {% for skill in teach_skills %}
-                                    <div class="group relative">
-                                        <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
-                                              style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                                            {{ skill.name }}
-                                            <span class="text-xs opacity-80">{{ skill.level }}</span>
-                                        </span>
-                                        {% if skill.category %}
-                                            <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
-                                                  style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
-                                                {% if skill.category == 'tech' %}💻
-                                                {% elif skill.category == 'language' %}🌐
-                                                {% else %}✨{% endif %}
-                                            </span>
-                                        {% endif %}
-                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs" 
+                                          style="background-color: var(--accent-primary)15; color: var(--accent-primary);">
+                                        {{ skill }}
+                                    </span>
                                 {% endfor %}
-                            {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Wants to Learn -->
-                    <div class="p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-secondary)08, var(--bg-page)); border: 1px solid var(--border-color);">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-secondary)20;">
-                                <i class="bi bi-lightbulb-fill text-sm" style="color: var(--accent-secondary);"></i>
                             </div>
-                            <h4 class="font-semibold" style="color: var(--text-primary);">Wants to Learn</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% if learn_skills %}
+                        {% else %}
+                            <p class="text-sm opacity-60">No skills listed to teach.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Learn Skills -->
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-page);">
+                        <h4 class="font-medium mb-2 flex items-center gap-2" style="color: var(--accent-ocean);">
+                            <i class="bi bi-book-half"></i> Wants to Learn
+                        </h4>
+                        {% if learn_skills %}
+                            <div class="flex flex-wrap gap-2">
                                 {% for skill in learn_skills %}
-                                    <div class="group relative">
-                                        <span class="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 inline-flex items-center gap-1" 
-                                              style="background: linear-gradient(135deg, var(--accent-secondary), #34D399); color: white;">
-                                            {{ skill.name }}
-                                            <span class="text-xs opacity-80">{{ skill.level }}</span>
-                                        </span>
-                                        {% if skill.category %}
-                                            <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition" 
-                                                  style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
-                                                {% if skill.category == 'tech' %}💻
-                                                {% elif skill.category == 'language' %}🌐
-                                                {% else %}✨{% endif %}
-                                            </span>
-                                        {% endif %}
-                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs" 
+                                          style="background-color: var(--accent-ocean)15; color: var(--accent-ocean);">
+                                        {{ skill }}
+                                    </span>
                                 {% endfor %}
-                            {% else %}
-                                <p class="text-sm italic opacity-50">No skills listed yet.</p>
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% else %}
+                            <p class="text-sm opacity-60">No skills listed to learn.</p>
+                        {% endif %}
                     </div>
                 </div>
+
             </div>
 
-            <!-- Certifications Section -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <!-- Certifications -->
+            <div class="rounded-xl p-5"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
                 <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: var(--accent-primary)15;">
-                        <i class="bi bi-award text-sm" style="color: var(--accent-primary);"></i>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                         style="background-color: var(--accent-primary)15;">
+                        <i class="bi bi-award text-sm"
+                           style="color: var(--accent-primary);"></i>
                     </div>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Certifications & Credentials</h3>
+
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                        style="color: var(--text-primary);">
+                        Certifications & Credentials
+                    </h3>
                 </div>
-                
+
                 {% if certifications %}
                     <div class="space-y-3">
+
                         {% for cert in certifications %}
-                        <div class="p-4 rounded-xl transition-all hover:shadow-md" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: var(--accent-primary)10;">
-                                    <i class="bi bi-patch-check text-lg" style="color: var(--accent-primary);"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                        <h4 class="font-semibold" style="color: var(--text-primary);">{{ cert.title }}</h4>
-                                        {% if cert.is_expired %}
-                                            <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #EF444420; color: #EF4444;">Expired</span>
-                                        {% endif %}
+
+                            <div class="p-4 rounded-xl transition-all hover:shadow-md"
+                                 style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+
+                                <div class="flex items-start gap-3">
+
+                                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                         style="background-color: var(--accent-primary)10;">
+                                        <i class="bi bi-patch-check text-lg"
+                                           style="color: var(--accent-primary);"></i>
                                     </div>
-                                    <p class="text-sm opacity-70 mb-2" style="color: var(--text-secondary);">
-                                        <i class="bi bi-building me-1"></i> {{ cert.issuing_organization }}
-                                    </p>
-                                    <div class="flex flex-wrap gap-3 text-xs opacity-60 mb-2">
-                                        <span><i class="bi bi-calendar me-1"></i> Issued: {{ cert.issue_date|date:"M Y" }}</span>
-                                        {% if cert.expiry_date %}
-                                            <span><i class="bi bi-hourglass-split me-1"></i> Expires: {{ cert.expiry_date|date:"M Y" }}</span>
+
+                                    <div class="flex-1">
+
+                                        <h4 class="font-semibold"
+                                            style="color: var(--text-primary);">
+                                            {{ cert.title }}
+                                        </h4>
+
+                                        <p class="text-sm opacity-70">
+                                            {{ cert.issuing_organization }}
+                                        </p>
+
+                                        {% if cert.date_earned %}
+                                            <p class="text-xs opacity-50 mt-1">
+                                                Earned: {{ cert.date_earned|date:"M Y" }}
+                                            </p>
                                         {% endif %}
-                                        {% if cert.credential_id %}
-                                            <span><i class="bi bi-upc-scan me-1"></i> ID: {{ cert.credential_id }}</span>
-                                        {% endif %}
+
                                     </div>
-                                    {% if cert.description %}
-                                        <p class="text-sm opacity-70 mt-2">{{ cert.description }}</p>
-                                    {% endif %}
-                                    <div class="flex gap-3 mt-3">
-                                        {% if cert.credential_url %}
-                                            <a href="{{ cert.credential_url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
-                                                <i class="bi bi-link-45deg"></i> Verify Online
-                                            </a>
-                                        {% endif %}
-                                        {% if cert.certificate_file %}
-                                            <a href="{{ cert.certificate_file.url }}" target="_blank" class="text-xs flex items-center gap-1 hover:underline" style="color: var(--accent-primary);">
-                                                <i class="bi bi-file-earmark-pdf"></i> View Certificate
-                                            </a>
-                                        {% endif %}
-                                    </div>
+
                                 </div>
                             </div>
-                        </div>
+
                         {% endfor %}
+
                     </div>
+
                 {% else %}
+
                     <div class="text-center py-8">
                         <i class="bi bi-award text-4xl opacity-30 mb-2"></i>
-                        <p class="text-sm opacity-60" style="color: var(--text-secondary);">No certifications added yet.</p>
+
+                        <p class="text-sm opacity-60"
+                           style="color: var(--text-secondary);">
+                            No certifications added yet.
+                        </p>
                     </div>
+
                 {% endif %}
             </div>
 
-            <!-- Study Goals Card -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <!-- Study Goals -->
+            <div class="rounded-xl p-5"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
                 <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-flag-fill text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Study Goals</h3>
+                    <i class="bi bi-flag-fill text-lg"
+                       style="color: var(--accent-primary);"></i>
+
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                        style="color: var(--text-primary);">
+                        Study Goals
+                    </h3>
                 </div>
-                <div class="relative p-5 rounded-xl" style="background: linear-gradient(135deg, var(--bg-page), var(--bg-card)); border-left: 4px solid var(--accent-primary);">
-                    <i class="bi bi-quote absolute text-4xl opacity-10" style="bottom: 10px; right: 15px; color: var(--accent-primary);"></i>
-                    <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
+
+                <div class="relative p-5 rounded-xl"
+                     style="background: linear-gradient(135deg, var(--bg-page), var(--bg-card)); border-left: 4px solid var(--accent-primary);">
+
+                    <p class="text-sm leading-relaxed"
+                       style="color: var(--text-secondary);">
                         {{ other_profile.goals|default:"No goals set yet." }}
                     </p>
+
                 </div>
             </div>
 
-            <!-- Availability Card -->
-            <div class="rounded-xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <!-- Availability -->
+            <div class="rounded-xl p-5"
+                 style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
                 <div class="flex items-center gap-2 mb-4">
-                    <i class="bi bi-calendar-week text-lg" style="color: var(--accent-primary);"></i>
-                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">Availability</h3>
+                    <i class="bi bi-calendar-week text-lg"
+                       style="color: var(--accent-primary);"></i>
+
+                    <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                        style="color: var(--text-primary);">
+                        Availability
+                    </h3>
                 </div>
-                <div class="flex items-start gap-3 p-4 rounded-xl" style="background: linear-gradient(135deg, var(--accent-primary)05, var(--bg-page));">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: var(--accent-primary)15;">
-                        <i class="bi bi-clock-history" style="color: var(--accent-primary);"></i>
+
+                <div class="flex items-start gap-3 p-4 rounded-xl"
+                     style="background: linear-gradient(135deg, var(--accent-primary)05, var(--bg-page));">
+
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                         style="background-color: var(--accent-primary)15;">
+                        <i class="bi bi-clock-history"
+                           style="color: var(--accent-primary);"></i>
                     </div>
+
                     <div>
-                        <p class="text-sm font-medium mb-1" style="color: var(--text-primary);">Preferred Study Times</p>
-                        <p class="text-sm" style="color: var(--text-secondary);">{{ other_profile.availability|default:"Not specified." }}</p>
+                        <p class="text-sm font-medium mb-1"
+                           style="color: var(--text-primary);">
+                            Preferred Study Times
+                        </p>
+
+                        <p class="text-sm"
+                           style="color: var(--text-secondary);">
+                            {{ other_profile.availability|default:"Not specified." }}
+                        </p>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
+<!-- UNFRIEND MODAL -->
 <dialog id="unfriendModal" class="modal">
     <div class="modal-box">
-        <h3 class="font-bold text-lg">Unfriend User</h3>
+
+        <h3 class="font-bold text-lg">
+            Unfriend User
+        </h3>
+
         <p class="py-4">
             Are you sure you want to unfriend {{ other_user.username }}?
         </p>
 
         <div class="modal-action">
-            <!-- YES -->
+
             <form method="POST" action="{% url 'unfriend_user' other_user.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-error">
@@ -407,34 +626,47 @@
                 </button>
             </form>
 
-            <!-- NO -->
             <form method="dialog">
-                <button class="btn">No</button>
+                <button class="btn">
+                    No
+                </button>
             </form>
+
         </div>
     </div>
 </dialog>
+
 <style>
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
+
     ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
     }
+
     ::-webkit-scrollbar-track {
         background: var(--border-color);
         border-radius: 10px;
     }
+
     ::-webkit-scrollbar-thumb {
         background: var(--accent-primary);
         border-radius: 10px;
     }
-    
+
     .btn {
         transition: all 0.2s ease;
     }
 </style>
+
 {% endblock %}

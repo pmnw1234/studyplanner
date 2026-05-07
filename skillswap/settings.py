@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'feedview',  # Keep feedview from feed-view branch
     'profiles',  # Keep profiles from main branch
     'direct_message',  # Added from dashboard branch
-    'feed',  # Added from main branch
+    
 ]
 
 
