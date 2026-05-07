@@ -52,28 +52,6 @@ def register_view(request):
 
 
 def login_view(request):
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        user = authenticate(
-            request,
-            username=username,
-            password=password
-        )
-
-        if user is not None:
-            login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
-            return redirect("dashboard_home")
-        else:
-            return render(request, "login.html", {
-                "error": "Invalid username or password"
-            })
-
-    return render(request, "login.html")
-
     """Login view that works with custom LoginForm"""
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -92,10 +70,6 @@ def login_view(request):
             messages.error(request, "Invalid email/username or password.")
     else:
         form = LoginForm()
-
-    return render(request, "login.html", {"form": form})
-   
-
 
     return render(request, "login.html", {"form": form})
 # ======================

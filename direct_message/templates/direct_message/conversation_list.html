@@ -5,6 +5,9 @@
 
 {% block extra_css %}
 <style>
+    .view-profile-btn{
+    display:none !important;
+}
     /* Messages Container */
     .messages-container {
         max-width: 900px;
@@ -324,6 +327,7 @@
         }
     }
     
+    
     @media (max-width: 768px) {
         .messages-container {
             max-width: 100%;
@@ -495,7 +499,7 @@
             
             html += `
                 <div class="conversation-item">
-                    <a href="/api/messages/get/${conv.user_id}/" class="conversation-link">
+                    <a href="/api/messages/chat/${conv.user_id}/" class="conversation-link">
                         <div class="d-flex gap-3">
                             <!-- Profile Picture -->
                             ${hasProfilePic ? 

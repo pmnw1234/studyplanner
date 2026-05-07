@@ -9,43 +9,77 @@ import json
 from .models import Message
 from useraccount.models import Connection
 
-
 @login_required
 @require_http_methods(["POST"])
 def send_message(request, user_id):
+
     receiver = get_object_or_404(User, id=user_id)
     sender = request.user
-    
-    is_connected = Connection.objects.filter(
-        Q(user1=sender, user2=receiver) |
-        Q(user1=receiver, user2=sender)
-    ).exists()
-    
-    if not is_connected:
-        return JsonResponse({'error': 'You can only message connected users'}, status=403)
-    
-    try:
-        data = json.loads(request.body)
-        message_text = data.get('message', '').strip()
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    
-    if not message_text:
-        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
-    
+
+    message_text = request.POST.get("message", "").strip()
+
+    image = request.FILES.get("image")
+    video = request.FILES.get("video")
+    file = request.FILES.get("file")
+
+    if not message_text and not image and not video and not file:
+        return JsonResponse({
+            'error': 'Message cannot be empty'
+        }, status=400)
+
     message = Message.objects.create(
         sender=sender,
         receiver=receiver,
-        message=message_text
+        message=message_text,
+        image=image,
+        video=video,
+        file=file
     )
-    
+
     return JsonResponse({
         'success': True,
-        'message_id': message.id,
         'message': message.message,
+        'image': message.image.url if message.image else None,
+        'video': message.video.url if message.video else None,
+        'file': message.file.url if message.file else None,
         'time': message.created_at.strftime("%I:%M %p"),
-        'sender': sender.username
     })
+# @login_required
+# @require_http_methods(["POST"])
+# def send_message(request, user_id):
+#     receiver = get_object_or_404(User, id=user_id)
+#     sender = request.user
+    
+#     is_connected = Connection.objects.filter(
+#         Q(user1=sender, user2=receiver) |
+#         Q(user1=receiver, user2=sender)
+#     ).exists()
+    
+#     if not is_connected:
+#         return JsonResponse({'error': 'You can only message connected users'}, status=403)
+    
+#     try:
+#         data = json.loads(request.body)
+#         message_text = data.get('message', '').strip()
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+#     if not message_text:
+#         return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+    
+#     message = Message.objects.create(
+#         sender=sender,
+#         receiver=receiver,
+#         message=message_text
+#     )
+    
+#     return JsonResponse({
+#         'success': True,
+#         'message_id': message.id,
+#         'message': message.message,
+#         'time': message.created_at.strftime("%I:%M %p"),
+#         'sender': sender.username
+#     })
 
 
 @login_required
@@ -79,7 +113,10 @@ def get_messages(request, user_id):
             'time': msg.created_at.strftime("%I:%M %p"),
             'date': msg.created_at.strftime("%Y-%m-%d"),
             'is_mine': msg.sender == current_user,
-            'is_read': msg.is_read
+            'is_read': msg.is_read,
+            'image': msg.image.url if msg.image else None,
+            'video': msg.video.url if msg.video else None,
+            'file': msg.file.url if msg.file else None,
         })
     
     return JsonResponse({
@@ -161,3 +198,12 @@ from django.shortcuts import render
 def conversation_list_view(request):
     """Render the conversation list page"""
     return render(request, 'direct_message/conversation_list.html')
+
+
+@login_required
+def chat_view(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    return render(request, 'direct_message/chat.html', {
+        'other_user': other_user
+    })

@@ -8,7 +8,23 @@ class Message(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+    image = models.ImageField(
+        upload_to='messages/images/',
+        blank=True,
+        null=True
+    )
+
+    video = models.FileField(
+        upload_to='messages/videos/',
+        blank=True,
+        null=True
+    )
+
+    file = models.FileField(
+        upload_to='messages/files/',
+        blank=True,
+        null=True
+    )
     class Meta:
         ordering = ['created_at']
     
