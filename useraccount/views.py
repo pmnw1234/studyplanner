@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
 
 from .forms import (
     UserRegistrationForm,
@@ -52,28 +51,6 @@ def register_view(request):
 
 
 def login_view(request):
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        user = authenticate(
-            request,
-            username=username,
-            password=password
-        )
-
-        if user is not None:
-            login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
-            return redirect("dashboard_home")
-        else:
-            return render(request, "login.html", {
-                "error": "Invalid username or password"
-            })
-
-    return render(request, "login.html")
-
     """Login view that works with custom LoginForm"""
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -94,10 +71,8 @@ def login_view(request):
         form = LoginForm()
 
     return render(request, "login.html", {"form": form})
-   
 
 
-    return render(request, "login.html", {"form": form})
 # ======================
 # AUTHENTICATED VIEWS
 # ======================

@@ -11,4 +11,5 @@ urlpatterns = [
     path('decline/<int:request_id>/', views.decline_connection, name='decline_connection'),
     path('<int:user_id>/unfriend/', views.unfriend_user, name='unfriend_user'),
     path('<int:user_id>/block/', views.block_user, name='block_user'),
+    
 ]
