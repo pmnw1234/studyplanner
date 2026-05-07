@@ -12,9 +12,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('useraccount.urls')),
     path('dashboard/', include('dashboard.urls')),
-    path('feed/', include('feedview.urls')),
-    path('profile/', include('profiles.urls')),   # ✅ consistent naming
-    path('api/messages/', include('direct_message.urls')),  # ✅ keep new feature
+    path('feed/', include('feedview.urls')),  # Keep feedview from feed-view branch
+    path('profiles/', include('profiles.urls')),  # Keep profiles from main branch
+    
+
 ]
 
 # Override Django's debug 404
