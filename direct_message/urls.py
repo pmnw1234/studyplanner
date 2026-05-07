@@ -9,4 +9,5 @@ urlpatterns = [
     path('read/<int:message_id>/', views.mark_as_read, name='mark_as_read'),
     path('read-all/<int:user_id>/', views.mark_all_as_read, name='mark_all_as_read'),
     path('', views.conversation_list_view, name='conversation_list'),
+    path('chat/<int:user_id>/', views.chat_view, name='chat_view'),
 ]

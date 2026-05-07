@@ -1,0 +1,536 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn{
+    display:none !important;
+}
+    .chat-wrapper{
+        max-width:900px;
+        margin:0 auto;
+        height:calc(100vh - 90px);
+        display:flex;
+        flex-direction:column;
+        background:var(--bg-card);
+        border-radius:20px;
+        overflow:hidden;
+        border:1px solid var(--border-color);
+    }
+
+    /* HEADER */
+    .chat-header{
+        padding:15px 18px;
+        border-bottom:1px solid var(--border-color);
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        background:var(--bg-card);
+    }
+
+    .chat-user{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        text-decoration:none;
+    }
+
+    .chat-avatar{
+        width:50px;
+        height:50px;
+        border-radius:50%;
+        object-fit:cover;
+    }
+
+    .avatar-placeholder{
+        width:50px;
+        height:50px;
+        border-radius:50%;
+        background:linear-gradient(
+            135deg,
+            var(--accent-primary),
+            var(--accent-ocean)
+        );
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:white;
+        font-size:20px;
+        font-weight:bold;
+    }
+
+    .chat-user-info h3{
+        margin:0;
+        font-size:16px;
+        color:var(--text-primary);
+    }
+
+    .chat-user-info p{
+        margin:0;
+        font-size:12px;
+        color:var(--text-secondary);
+    }
+
+    .view-profile-btn{
+        padding:8px 16px;
+        border-radius:30px;
+        border:none;
+        background:linear-gradient(
+            135deg,
+            var(--accent-primary),
+            var(--accent-ocean)
+        );
+        color:white;
+        text-decoration:none;
+        font-size:13px;
+        font-weight:600;
+    }
+
+    /* MESSAGES */
+    .messages-container{
+        flex:1;
+        overflow-y:auto;
+        padding:20px;
+        background:var(--bg-page);
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .message-row{
+        display:flex;
+    }
+
+    .sent-row{
+        justify-content:flex-end;
+    }
+
+    .received-row{
+        justify-content:flex-start;
+    }
+
+    .message-bubble{
+        max-width:70%;
+        padding:12px 14px;
+        border-radius:18px;
+        position:relative;
+        word-wrap:break-word;
+    }
+
+    .sent{
+        background:linear-gradient(
+            135deg,
+            var(--accent-primary),
+            var(--accent-ocean)
+        );
+        color:white;
+        border-bottom-right-radius:4px;
+    }
+
+    .received{
+        background:var(--bg-card);
+        border:1px solid var(--border-color);
+        color:var(--text-primary);
+        border-bottom-left-radius:4px;
+    }
+
+    .message-image{
+        width:100%;
+        max-width:250px;
+        border-radius:12px;
+        margin-top:8px;
+    }
+
+    .message-video{
+        width:100%;
+        max-width:250px;
+        border-radius:12px;
+        margin-top:8px;
+    }
+
+    .file-link{
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        margin-top:8px;
+        color:white;
+        text-decoration:none;
+        font-size:14px;
+    }
+
+    .received .file-link{
+        color:var(--accent-primary);
+    }
+
+    .message-footer{
+        margin-top:6px;
+        display:flex;
+        justify-content:flex-end;
+        align-items:center;
+        gap:5px;
+        font-size:11px;
+        opacity:0.8;
+    }
+
+    /* INPUT */
+    .chat-input-container{
+        padding:14px;
+        border-top:1px solid var(--border-color);
+        background:var(--bg-card);
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    .attach-btn{
+        width:45px;
+        height:45px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        background:var(--bg-page);
+        border:1px solid var(--border-color);
+        color:var(--text-primary);
+        font-size:18px;
+        flex-shrink:0;
+    }
+
+    .chat-input{
+        flex:1;
+        height:45px;
+        border-radius:30px;
+        border:1px solid var(--border-color);
+        background:var(--bg-page);
+        color:var(--text-primary);
+        padding:0 18px;
+        outline:none;
+    }
+
+    .send-btn{
+        width:48px;
+        height:48px;
+        border:none;
+        border-radius:50%;
+        background:linear-gradient(
+            135deg,
+            var(--accent-primary),
+            var(--accent-ocean)
+        );
+        color:white;
+        font-size:18px;
+        cursor:pointer;
+    }
+
+    .send-btn:hover{
+        transform:scale(1.05);
+    }
+
+    .read-status{
+        font-size:13px;
+    }
+
+    /* MOBILE */
+    @media(max-width:768px){
+
+        .message-bubble{
+            max-width:85%;
+        }
+
+        .view-profile-btn{
+            display:none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-wrapper">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+
+        <a href="{% url 'view_other_profile' other_user.id %}" class="chat-user">
+
+            {% if other_user.userprofile.profile_picture %}
+                <img
+                    src="{{ other_user.userprofile.profile_picture.url }}"
+                    class="chat-avatar"
+                >
+            {% else %}
+                <div class="avatar-placeholder">
+                    {{ other_user.username|first|upper }}
+                </div>
+            {% endif %}
+
+            <div class="chat-user-info">
+                <h3>{{ other_user.username }}</h3>
+                
+            </div>
+
+        </a>
+
+        <a
+            href="{% url 'view_other_profile' other_user.id %}"
+            class="view-profile-btn"
+        >
+            
+        </a>
+
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="messagesBox" class="messages-container"></div>
+
+    <!-- INPUT -->
+    <form id="messageForm">
+
+        {% csrf_token %}
+
+        <div class="chat-input-container">
+
+            <!-- ONE BUTTON -->
+            <label class="attach-btn">
+                <i class="bi bi-plus-lg"></i>
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    hidden
+                >
+            </label>
+
+            <input
+                type="text"
+                id="messageInput"
+                class="chat-input"
+                placeholder="Type a message..."
+            >
+
+            <button type="submit" class="send-btn">
+                <i class="bi bi-send-fill"></i>
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+const otherUserId = "{{ other_user.id }}";
+
+async function loadMessages(){
+
+    try{
+
+        const response = await fetch(
+            `/api/messages/get/${otherUserId}/`
+        );
+
+        const data = await response.json();
+
+        const box = document.getElementById('messagesBox');
+
+        box.innerHTML = '';
+
+        data.messages.forEach(msg => {
+
+            const row = document.createElement('div');
+
+            row.className =
+                `message-row ${
+                    msg.is_mine
+                    ? 'sent-row'
+                    : 'received-row'
+                }`;
+
+            row.innerHTML = `
+                <div class="message-bubble ${
+                    msg.is_mine ? 'sent' : 'received'
+                }">
+
+                    ${msg.message ? `
+                        <div>${escapeHtml(msg.message)}</div>
+                    ` : ''}
+
+                    ${msg.image ? `
+                        <img
+                            src="${msg.image}"
+                            class="message-image"
+                        >
+                    ` : ''}
+
+                    ${msg.video ? `
+                        <video
+                            controls
+                            class="message-video"
+                        >
+                            <source src="${msg.video}">
+                        </video>
+                    ` : ''}
+
+                    ${msg.file ? `
+                        <a
+                            href="${msg.file}"
+                            target="_blank"
+                            class="file-link"
+                        >
+                            <i class="bi bi-paperclip"></i>
+                            Open File
+                        </a>
+                    ` : ''}
+
+                    <div class="message-footer">
+
+                        <span>${msg.time}</span>
+
+                        ${
+                            msg.is_mine
+                            ?
+                            `<span class="read-status">
+                                ${
+                                    msg.is_read
+                                    ? '✓✓'
+                                    : '✓'
+                                }
+                            </span>`
+                            :
+                            ''
+                        }
+
+                    </div>
+
+                </div>
+            `;
+
+            box.appendChild(row);
+
+        });
+
+        box.scrollTop = box.scrollHeight;
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+}
+
+document
+.getElementById('messageForm')
+.addEventListener('submit', async function(e){
+
+    e.preventDefault();
+
+    const messageInput =
+        document.getElementById('messageInput');
+
+    const fileInput =
+        document.getElementById('fileInput');
+
+    const formData = new FormData();
+
+    formData.append(
+        'message',
+        messageInput.value
+    );
+
+    if(fileInput.files[0]){
+
+        const file = fileInput.files[0];
+
+        if(file.type.startsWith('image/')){
+
+            formData.append('image', file);
+
+        }else if(file.type.startsWith('video/')){
+
+            formData.append('video', file);
+
+        }else{
+
+            formData.append('file', file);
+        }
+    }
+
+    try{
+
+        const response = await fetch(
+            `/api/messages/send/${otherUserId}/`,
+            {
+                method:'POST',
+
+                headers:{
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if(data.success){
+
+            messageInput.value = '';
+
+            fileInput.value = '';
+
+            loadMessages();
+        }
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+});
+
+function getCookie(name){
+
+    let cookieValue = null;
+
+    if(document.cookie && document.cookie !== ''){
+
+        const cookies = document.cookie.split(';');
+
+        for(let i = 0; i < cookies.length; i++){
+
+            const cookie = cookies[i].trim();
+
+            if(cookie.startsWith(name + '=')){
+
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+function escapeHtml(text){
+
+    const div = document.createElement('div');
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+loadMessages();
+
+setInterval(loadMessages, 2000);
+
+</script>
+{% endblock %}

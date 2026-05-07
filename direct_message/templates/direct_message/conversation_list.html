@@ -5,6 +5,9 @@
 
 {% block extra_css %}
 <style>
+    .view-profile-btn{
+    display:none !important;
+}
     /* Messages Container */
     .messages-container {
         display: flex;
@@ -425,6 +428,7 @@
         }
     }
     
+    
     /* Mobile View - Stack Layout */
     @media (max-width: 768px) {
         .messages-container {
@@ -659,6 +663,10 @@
             const truncatedMessage = lastMessage.length > 50 ? lastMessage.substring(0, 47) + '...' : lastMessage;
             
             html += `
+                <div class="conversation-item">
+                    <a href="/api/messages/chat/${conv.user_id}/" class="conversation-link">
+                        <div class="d-flex gap-3">
+                            <!-- Profile Picture -->
                 <div class="conversation-item" data-user-id="${conv.user_id}" data-username="${escapeHtml(userName)}" onclick="openConversation(${conv.user_id}, '${escapeHtml(userName)}')">
                     <div class="conversation-link">
                         <div class="conversation-avatar">
