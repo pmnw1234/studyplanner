@@ -7,36 +7,60 @@
 <style>
     /* Messages Container */
     .messages-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 0;
-        min-height: calc(100vh - 60px);
-    }
-    
-    /* Sticky Header */
-    .sticky-header {
-        position: sticky;
-        top: 60px;
-        z-index: 100;
-        background-color: var(--bg-card, #ffffff);
-        border-bottom: 1px solid var(--border-color, #e5e7eb);
-        padding: 12px 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    
-    /* Filter Tabs */
-    .filter-tabs {
         display: flex;
-        gap: 12px;
-        margin-bottom: 12px;
+        flex-direction: row;
+        height: calc(100vh - 60px);
+        background-color: var(--bg-page, #f9fafb);
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
     
-    .filter-tab {
+    /* Sidebar - Conversations List */
+    .conversations-sidebar {
+        width: 380px;
+        background-color: var(--bg-card, #ffffff);
+        border-right: 1px solid var(--border-color, #e5e7eb);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    /* Header Section */
+    .conversations-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        background-color: var(--bg-card, #ffffff);
+    }
+    
+    .conversations-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 16px 0;
+        color: var(--text-primary, #111827);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .conversations-header h2 i {
+        color: var(--accent-primary, #8b6914);
+        font-size: 22px;
+    }
+    
+    /* Filter Buttons */
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    
+    .filter-btn {
         flex: 1;
-        max-width: 200px;
-        padding: 10px 16px;
+        padding: 8px 12px;
         border-radius: 30px;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         text-align: center;
         cursor: pointer;
@@ -46,93 +70,101 @@
         border: 1px solid var(--border-color, #e5e7eb);
     }
     
-    .filter-tab.active {
+    .filter-btn.active {
         background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
         color: white;
         border-color: transparent;
     }
     
-    .filter-tab i {
+    .filter-btn i {
+        margin-right: 6px;
+        font-size: 12px;
+    }
+    
+    /* Search Box */
+    .search-box {
+        position: relative;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary, #6b7280);
         font-size: 14px;
-        margin-right: 8px;
     }
     
-    /* Search Bar */
-    .search-wrapper {
+    .search-box input {
         width: 100%;
-    }
-    
-    .search-bar {
-        display: flex;
-        align-items: center;
-        background-color: var(--bg-page, #f9fafb);
+        padding: 10px 12px 10px 38px;
         border: 1px solid var(--border-color, #e5e7eb);
         border-radius: 30px;
-        padding: 10px 16px;
-        gap: 10px;
+        background-color: var(--bg-page, #f9fafb);
+        color: var(--text-primary, #111827);
+        font-size: 14px;
+        outline: none;
         transition: all 0.2s ease;
     }
     
-    .search-bar:focus-within {
+    .search-box input:focus {
         border-color: var(--accent-primary, #8b6914);
         box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
     }
     
-    .search-bar i {
-        color: var(--text-secondary, #6b7280);
-        font-size: 16px;
-    }
-    
-    .search-bar input {
-        background: transparent;
-        border: none;
-        outline: none;
-        width: 100%;
-        color: var(--text-primary, #111827);
-        font-size: 14px;
-    }
-    
-    .search-bar input::placeholder {
+    .search-box input::placeholder {
         color: var(--text-secondary, #6b7280);
         font-size: 13px;
     }
     
     /* Conversations List */
     .conversations-list {
-        width: 100%;
-        background-color: var(--bg-page, #f9fafb);
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
     
     /* Conversation Item */
     .conversation-item {
-        background-color: var(--bg-card, #ffffff);
+        padding: 16px 20px;
         border-bottom: 1px solid var(--border-color, #e5e7eb);
-        transition: all 0.2s ease;
         cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: var(--bg-card, #ffffff);
     }
     
     .conversation-item:hover {
         background-color: var(--bg-hover, #f3f4f6);
     }
     
-    .conversation-link {
-        text-decoration: none;
-        display: block;
-        padding: 16px 20px;
+    .conversation-item.active {
+        background: linear-gradient(135deg, rgba(139, 105, 20, 0.05), rgba(15, 118, 110, 0.05));
+        border-left: 3px solid var(--accent-primary, #8b6914);
     }
     
-    /* Profile Picture */
-    .profile-picture {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        object-fit: cover;
+    .conversation-link {
+        text-decoration: none;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        cursor: pointer;
+    }
+    
+    /* Avatar */
+    .conversation-avatar {
         flex-shrink: 0;
     }
     
+    .avatar-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
     .avatar-placeholder {
-        width: 56px;
-        height: 56px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
         display: flex;
@@ -140,151 +172,128 @@
         justify-content: center;
         color: white;
         font-weight: 700;
-        font-size: 1.3rem;
-        flex-shrink: 0;
+        font-size: 20px;
     }
     
-    /* Flex Layout Fix */
-    .d-flex {
-        display: flex;
-    }
-    
-    .gap-3 {
-        gap: 1rem;
-    }
-    
-    /* Conversation Content */
-    .conversation-content {
+    /* Conversation Info */
+    .conversation-info {
         flex: 1;
         min-width: 0;
     }
     
-    /* Header Row */
-    .conversation-header {
+    .conversation-name-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 6px;
-        gap: 12px;
+        gap: 10px;
     }
     
-    .user-name {
-        font-size: 16px;
+    .conversation-name {
+        font-size: 15px;
         font-weight: 600;
         color: var(--text-primary, #111827);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     
-    .user-name-bold {
+    .conversation-name.unread {
         font-weight: 800;
+        color: var(--accent-primary, #8b6914);
     }
     
-    /* Timestamp */
-    .timestamp {
+    .conversation-time {
         font-size: 11px;
         color: var(--text-secondary, #6b7280);
         white-space: nowrap;
         flex-shrink: 0;
     }
     
-    /* Message Preview */
-    .message-preview {
+    .conversation-preview {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
     }
     
-    .message-icon {
+    .preview-icon {
         font-size: 12px;
         color: var(--text-secondary, #6b7280);
         opacity: 0.5;
-        flex-shrink: 0;
     }
     
-    .message-text {
+    .preview-text {
         font-size: 13px;
         color: var(--text-secondary, #6b7280);
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
         overflow: hidden;
-        word-break: break-word;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         flex: 1;
     }
     
-    .message-text-bold {
-        font-weight: 700;
+    .preview-text.unread {
+        font-weight: 600;
         color: var(--text-primary, #111827);
     }
     
-    /* Unread Badge */
     .unread-badge {
         background: linear-gradient(135deg, #fbbf24, #f59e0b);
-        color: #000000;
+        color: #000;
         font-weight: 800;
-        padding: 3px 10px;
+        padding: 2px 8px;
         border-radius: 30px;
-        font-size: 11px;
-        min-width: 26px;
+        font-size: 10px;
+        display: inline-block;
+        min-width: 22px;
         text-align: center;
-        box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+        margin-left: 8px;
     }
     
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 14px 12px;
+    /* Right Panel - Chat Area */
+    .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-page, #f9fafb);
+        overflow: hidden;
     }
     
-    .empty-state i {
-        font-size: 20px;
-        color: var(--text-secondary, #6b7280);
+    .no-chat-selected {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .no-chat-selected i {
+        font-size: 64px;
+        color: var(--accent-primary, #8b6914);
         opacity: 0.3;
         margin-bottom: 20px;
     }
     
-    .empty-state h5 {
+    .no-chat-selected h3 {
+        font-size: 20px;
         color: var(--text-primary, #111827);
-        margin-bottom: 8px;
-        font-size: 18px;
+        margin-bottom: 10px;
     }
     
-    .empty-state p {
+    .no-chat-selected p {
         color: var(--text-secondary, #6b7280);
-        font-size: 13px;
-        margin-bottom: 24px;
-    }
-    
-    .btn-primary-custom {
-        background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 30px;
         font-size: 14px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        color: white;
-        box-shadow: 0 4px 12px rgba(139, 105, 20, 0.3);
     }
     
     /* Loading State */
     .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
         text-align: center;
-        padding: 80px 20px;
     }
     
     .spinner {
@@ -294,119 +303,279 @@
         border-top-color: var(--accent-primary, #8b6914);
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
-        margin: 0 auto 16px;
+        margin-bottom: 16px;
     }
     
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
     
-    /* Animation */
+    /* Empty States */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        color: var(--accent-primary, #8b6914);
+        opacity: 0.3;
+        margin-bottom: 16px;
+    }
+    
+    .empty-state h5 {
+        font-size: 16px;
+        color: var(--text-primary, #111827);
+        margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+        font-size: 13px;
+        color: var(--text-secondary, #6b7280);
+        margin-bottom: 20px;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--accent-primary, #8b6914), var(--accent-ocean, #0f766e));
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 105, 20, 0.3);
+        color: white;
+    }
+    
+    /* Scrollbar Styling */
+    .conversations-list::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .conversations-list::-webkit-scrollbar-track {
+        background: var(--bg-page, #f9fafb);
+    }
+    
+    .conversations-list::-webkit-scrollbar-thumb {
+        background: var(--border-color, #e5e7eb);
+        border-radius: 4px;
+    }
+    
+    .conversations-list::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-primary, #8b6914);
+    }
+    
+    /* Animations */
     @keyframes fadeIn {
         from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateX(-10px);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0);
         }
     }
     
     .conversation-item {
-        animation: fadeIn 0.3s ease forwards;
+        animation: fadeIn 0.2s ease forwards;
     }
     
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .messages-container {
-            max-width: 95%;
-        }
-    }
+    /* ==================== */
+    /* RESPONSIVE DESIGN */
+    /* ==================== */
     
-    @media (max-width: 768px) {
-        .messages-container {
-            max-width: 100%;
+    /* Tablet View */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .conversations-sidebar {
+            width: 320px;
         }
         
-        .sticky-header {
-            top: 56px;
-            padding: 10px 16px;
+        .conversation-item {
+            padding: 14px 16px;
         }
         
-        .filter-tabs {
-            gap: 8px;
-        }
-        
-        .filter-tab {
-            padding: 8px 12px;
-            font-size: 12px;
-            max-width: 150px;
-        }
-        
-        .filter-tab i {
-            font-size: 12px;
-        }
-        
-        .conversation-link {
-            padding: 12px 16px;
-        }
-        
-        .profile-picture,
+        .avatar-img,
         .avatar-placeholder {
             width: 48px;
             height: 48px;
-            font-size: 1.1rem;
+            font-size: 18px;
         }
         
-        .user-name {
+        .conversation-name {
             font-size: 14px;
         }
         
-        .timestamp {
-            font-size: 10px;
+        .preview-text {
+            font-size: 12px;
+        }
+    }
+    
+    /* Mobile View - Stack Layout */
+    @media (max-width: 768px) {
+        .messages-container {
+            flex-direction: column;
+            height: calc(100vh - 56px);
         }
         
-        .message-text {
+        /* Sidebar becomes top section on mobile */
+        .conversations-sidebar {
+            width: 100%;
+            height: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+        
+        /* Chat area becomes bottom section on mobile */
+        .chat-area {
+            height: 100%;
+        }
+        
+        /* When a conversation is selected on mobile, hide the sidebar */
+        .messages-container.conversation-open .conversations-sidebar {
+            display: none;
+        }
+        
+        .messages-container.conversation-open .chat-area {
+            display: flex;
+        }
+        
+        /* Adjust header padding */
+        .conversations-header {
+            padding: 16px;
+        }
+        
+        .conversations-header h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        
+        /* Make items more touch-friendly */
+        .conversation-item {
+            padding: 14px 16px;
+        }
+        
+        .avatar-img,
+        .avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
+        }
+        
+        .conversation-name {
+            font-size: 14px;
+        }
+        
+        .preview-text {
             font-size: 12px;
         }
         
-        .unread-badge {
-            padding: 2px 8px;
-            font-size: 10px;
+        .filter-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        .search-box input {
+            font-size: 13px;
+            padding: 9px 12px 9px 38px;
+        }
+    }
+    
+    /* Small Mobile View */
+    @media (max-width: 480px) {
+        .conversations-header {
+            padding: 12px;
+        }
+        
+        .filter-buttons {
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .filter-btn {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+        
+        .conversation-item {
+            padding: 12px;
+        }
+        
+        .avatar-img,
+        .avatar-placeholder {
+            width: 44px;
+            height: 44px;
+            font-size: 16px;
+        }
+        
+        .conversation-name {
+            font-size: 13px;
+        }
+        
+        .preview-text {
+            font-size: 11px;
+        }
+        
+        .conversation-time {
+            font-size: 9px;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="messages-container">
-    <!-- Sticky Header with Filters -->
-    <div class="sticky-header">
-        <!-- Filter Tabs -->
-        <div class="filter-tabs">
-            <div class="filter-tab active" data-filter="all">
-                <i class="bi bi-chat-dots"></i> All Messages
+<div class="messages-container" id="messagesContainer">
+    <!-- Left Sidebar - Conversations List -->
+    <div class="conversations-sidebar" id="conversationsSidebar">
+        <div class="conversations-header">
+            <h2>
+                <i class="bi bi-chat-dots-fill"></i>
+                Messages
+            </h2>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="bi bi-inbox"></i> All
+                </button>
+                <button class="filter-btn" data-filter="unread">
+                    <i class="bi bi-envelope-exclamation"></i> Unread
+                </button>
             </div>
-            <div class="filter-tab" data-filter="unread">
-                <i class="bi bi-envelope-exclamation"></i> Unread
+            
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Search conversations...">
             </div>
         </div>
         
-        <!-- Search Bar -->
-        <div class="search-wrapper">
-            <div class="search-bar">
-                <i class="bi bi-search"></i>
-                <input type="text" id="searchInput" placeholder="Search by name...">
+        <div class="conversations-list" id="conversationsList">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading conversations...</p>
             </div>
         </div>
     </div>
     
-    <!-- Conversations List -->
-    <div class="conversations-list" id="conversationsList">
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p style="color: var(--text-secondary, #6b7280);">Loading conversations...</p>
+    <!-- Right Panel - Chat Area (Placeholder) -->
+    <div class="chat-area" id="chatArea">
+        <div class="no-chat-selected">
+            <i class="bi bi-chat-square-heart"></i>
+            <h3>Your Messages</h3>
+            <p>Select a conversation to start messaging</p>
         </div>
     </div>
 </div>
@@ -416,12 +585,13 @@
 <script>
     let allConversations = [];
     let currentFilter = 'all';
+    let currentSearchTerm = '';
 
     async function loadConversations() {
         const container = document.getElementById('conversationsList');
         
         try {
-            const response = await fetch('/api/messages/conversations/');
+            const response = await fetch('/messages/conversations/');
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -437,7 +607,7 @@
             }
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error loading conversations:', error);
             showError();
         }
     }
@@ -451,18 +621,17 @@
         }
         
         // Apply search filter
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-        if (searchTerm) {
+        if (currentSearchTerm) {
             filtered = filtered.filter(conv => {
                 const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
-                return userName.toLowerCase().includes(searchTerm);
+                return userName.toLowerCase().includes(currentSearchTerm);
             });
         }
         
         if (filtered.length === 0) {
             if (currentFilter === 'unread' && allConversations.length > 0) {
                 showNoUnreadState();
-            } else if (searchTerm) {
+            } else if (currentSearchTerm) {
                 showNoResultsState();
             } else {
                 showEmptyState();
@@ -478,55 +647,67 @@
         let html = '';
         
         conversations.forEach(conv => {
-            // User info
             const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
             const userInitial = (conv.first_name ? conv.first_name[0] : conv.username[0]).toUpperCase();
             const hasProfilePic = conv.profile_picture && conv.profile_picture !== '';
-            const profilePicUrl = conv.profile_picture || '';
-            
-            // Message info
             const lastMessage = conv.last_message || 'No messages yet';
             const lastMessageTime = conv.last_message_time || '';
             const unreadCount = conv.unread_count || 0;
             const isUnread = unreadCount > 0;
             
             // Truncate message
-            const truncatedMessage = lastMessage.length > 60 ? lastMessage.substring(0, 57) + '...' : lastMessage;
+            const truncatedMessage = lastMessage.length > 50 ? lastMessage.substring(0, 47) + '...' : lastMessage;
             
             html += `
-                <div class="conversation-item">
-                    <a href="/api/messages/get/${conv.user_id}/" class="conversation-link">
-                        <div class="d-flex gap-3">
-                            <!-- Profile Picture -->
+                <div class="conversation-item" data-user-id="${conv.user_id}" data-username="${escapeHtml(userName)}" onclick="openConversation(${conv.user_id}, '${escapeHtml(userName)}')">
+                    <div class="conversation-link">
+                        <div class="conversation-avatar">
                             ${hasProfilePic ? 
-                                `<img src="${escapeHtml(profilePicUrl)}" class="profile-picture" alt="${escapeHtml(userName)}">` :
+                                `<img src="${escapeHtml(conv.profile_picture)}" class="avatar-img" alt="${escapeHtml(userName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` +
+                                `<div class="avatar-placeholder" style="display: none;">${escapeHtml(userInitial)}</div>` :
                                 `<div class="avatar-placeholder">${escapeHtml(userInitial)}</div>`
                             }
-                            
-                            <!-- Content -->
-                            <div class="conversation-content">
-                                <div class="conversation-header">
-                                    <div class="user-name ${isUnread ? 'user-name-bold' : ''}">
-                                        ${escapeHtml(userName)}
-                                        ${isUnread ? `<span class="unread-badge">${unreadCount}</span>` : ''}
-                                    </div>
-                                    ${lastMessageTime ? `<div class="timestamp">${escapeHtml(lastMessageTime)}</div>` : ''}
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name-row">
+                                <div class="conversation-name ${isUnread ? 'unread' : ''}">
+                                    ${escapeHtml(userName)}
+                                    ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
                                 </div>
-                                
-                                <div class="message-preview">
-                                    <i class="bi bi-chat-dots message-icon"></i>
-                                    <div class="message-text ${isUnread ? 'message-text-bold' : ''}">
-                                        ${escapeHtml(truncatedMessage)}
-                                    </div>
+                                ${lastMessageTime ? `<div class="conversation-time">${escapeHtml(lastMessageTime)}</div>` : ''}
+                            </div>
+                            <div class="conversation-preview">
+                                <i class="bi bi-chat-dots preview-icon"></i>
+                                <div class="preview-text ${isUnread ? 'unread' : ''}">
+                                    ${escapeHtml(truncatedMessage)}
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
             `;
         });
         
         container.innerHTML = html;
+    }
+    
+    function openConversation(userId, userName) {
+        // On mobile, store that we're opening a conversation
+        if (window.innerWidth <= 768) {
+            const container = document.getElementById('messagesContainer');
+            container.classList.add('conversation-open');
+            
+            // Store the conversation state
+            sessionStorage.setItem('conversationOpen', 'true');
+            sessionStorage.setItem('currentConversationId', userId);
+        }
+        
+        // Store selected user in localStorage
+        localStorage.setItem('selectedConversation', userId);
+        localStorage.setItem('selectedUserName', userName);
+        
+        // Redirect to the chat page
+        window.location.href = `/messages/get/${userId}/`;
     }
     
     function showEmptyState() {
@@ -535,7 +716,7 @@
             <div class="empty-state">
                 <i class="bi bi-chat-square-heart"></i>
                 <h5>No messages yet</h5>
-                <p>Start a conversation with your alumni connections</p>
+                <p>Start a conversation with your connections</p>
                 <a href="/dashboard/" class="btn-primary-custom">
                     <i class="bi bi-people"></i> Find Connections
                 </a>
@@ -559,7 +740,7 @@
         container.innerHTML = `
             <div class="empty-state">
                 <i class="bi bi-search"></i>
-                <h5>No results found</h5>
+                <h5>No conversations found</h5>
                 <p>Try a different name</p>
             </div>
         `;
@@ -586,11 +767,12 @@
         return div.innerHTML;
     }
     
-    // Search handler with debounce
+    // Debounced search handler
     let searchTimeout;
     function handleSearch() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
+            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             applyFilterAndDisplay();
         }, 300);
     }
@@ -598,20 +780,53 @@
     function setFilter(filter) {
         currentFilter = filter;
         
-        // Update active tab UI
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            if (tab.dataset.filter === filter) {
-                tab.classList.add('active');
+        // Update active button UI
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === filter) {
+                btn.classList.add('active');
             } else {
-                tab.classList.remove('active');
+                btn.classList.remove('active');
             }
         });
         
         applyFilterAndDisplay();
     }
     
+    // Check for selected conversation on load
+    function checkSelectedConversation() {
+        const selectedId = localStorage.getItem('selectedConversation');
+        if (selectedId) {
+            const selectedItem = document.querySelector(`.conversation-item[data-user-id="${selectedId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+        }
+        
+        // Check if we're on mobile and coming back from a conversation
+        if (window.innerWidth <= 768) {
+            const wasOpen = sessionStorage.getItem('conversationOpen');
+            if (wasOpen === 'true') {
+                const container = document.getElementById('messagesContainer');
+                container.classList.add('conversation-open');
+                sessionStorage.removeItem('conversationOpen');
+            }
+        }
+    }
+    
+    // Reset mobile view when page loads fresh
+    function resetMobileView() {
+        if (window.innerWidth <= 768) {
+            const container = document.getElementById('messagesContainer');
+            // Only hide sidebar if we're not coming back from a conversation
+            if (!sessionStorage.getItem('conversationOpen')) {
+                container.classList.remove('conversation-open');
+            }
+        }
+    }
+    
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
+        resetMobileView();
         loadConversations();
         
         // Search input
@@ -620,12 +835,15 @@
             searchInput.addEventListener('input', handleSearch);
         }
         
-        // Filter tabs
-        document.querySelectorAll('.filter-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                setFilter(tab.dataset.filter);
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setFilter(btn.getAttribute('data-filter'));
             });
         });
+        
+        // Check for selected conversation after loading
+        setTimeout(checkSelectedConversation, 500);
     });
 </script>
 {% endblock %}

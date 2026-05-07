@@ -1,4 +1,3 @@
-{% load custom_filters %}
 {% extends 'base.html' %}
 
 {% block title %}{{ other_user.username }}'s Profile | SkillSwap{% endblock %}
@@ -311,36 +310,20 @@
                     </span>
                 </div>
 
+                <!-- Star rating bars - simplified without custom filter -->
                 {% for star in "54321" %}
                     <div class="flex items-center text-sm mb-1">
-
                         <span class="w-12">{{ star }} ★</span>
-
                         <div class="flex-1 bg-gray-200 h-2 mx-2 rounded">
-                            <div class="bg-yellow-400 h-2 rounded"
-                                 style="width:
-                                 {% if review_count > 0 %}
-                                 {% widthratio rating_dict|get_item:star review_count 100 %}
-                                 {% else %}
-                                 0
-                                 {% endif %}%">
+                            <div class="bg-yellow-400 h-2 rounded" 
+                                 style="width: {% if review_count > 0 %}{% widthratio rating_dict|default:0 review_count 100 %}{% else %}0{% endif %}%">
                             </div>
                         </div>
-
-                        <span class="text-xs">
-                            {{ rating_dict|get_item:star }}
-                        </span>
-
+                        <span class="text-xs">{{ rating_dict|default:0 }}</span>
                     </div>
                 {% endfor %}
 
-                {% if request.user != other_user %}
-                    <a href="{% url 'add_review' other_user.username %}"
-                       class="inline-block mt-3 px-4 py-2 rounded text-white"
-                       style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
-                        Write a Review
-                    </a>
-                {% endif %}
+            
 
                 <div class="mt-6 space-y-4">
 
@@ -437,7 +420,45 @@
                     </h3>
                 </div>
 
-                <!-- Skills content here -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Teach Skills -->
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-page);">
+                        <h4 class="font-medium mb-2 flex items-center gap-2" style="color: var(--accent-primary);">
+                            <i class="bi bi-megaphone-fill"></i> Teaches
+                        </h4>
+                        {% if teach_skills %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in teach_skills %}
+                                    <span class="px-3 py-1 rounded-full text-xs" 
+                                          style="background-color: var(--accent-primary)15; color: var(--accent-primary);">
+                                        {{ skill }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-sm opacity-60">No skills listed to teach.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Learn Skills -->
+                    <div class="p-4 rounded-xl" style="background-color: var(--bg-page);">
+                        <h4 class="font-medium mb-2 flex items-center gap-2" style="color: var(--accent-ocean);">
+                            <i class="bi bi-book-half"></i> Wants to Learn
+                        </h4>
+                        {% if learn_skills %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for skill in learn_skills %}
+                                    <span class="px-3 py-1 rounded-full text-xs" 
+                                          style="background-color: var(--accent-ocean)15; color: var(--accent-ocean);">
+                                        {{ skill }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-sm opacity-60">No skills listed to learn.</p>
+                        {% endif %}
+                    </div>
+                </div>
 
             </div>
 
@@ -484,6 +505,12 @@
                                         <p class="text-sm opacity-70">
                                             {{ cert.issuing_organization }}
                                         </p>
+
+                                        {% if cert.date_earned %}
+                                            <p class="text-xs opacity-50 mt-1">
+                                                Earned: {{ cert.date_earned|date:"M Y" }}
+                                            </p>
+                                        {% endif %}
 
                                     </div>
 
