@@ -5,9 +5,10 @@
 
 {% block extra_css %}
 <style>
-    .view-profile-btn{
-    display:none !important;
-}
+    .view-profile-btn {
+        display: none !important;
+    }
+    
     /* Messages Container */
     .messages-container {
         display: flex;
@@ -428,7 +429,6 @@
         }
     }
     
-    
     /* Mobile View - Stack Layout */
     @media (max-width: 768px) {
         .messages-container {
@@ -436,7 +436,6 @@
             height: calc(100vh - 56px);
         }
         
-        /* Sidebar becomes top section on mobile */
         .conversations-sidebar {
             width: 100%;
             height: 100%;
@@ -444,12 +443,10 @@
             border-bottom: 1px solid var(--border-color, #e5e7eb);
         }
         
-        /* Chat area becomes bottom section on mobile */
         .chat-area {
             height: 100%;
         }
         
-        /* When a conversation is selected on mobile, hide the sidebar */
         .messages-container.conversation-open .conversations-sidebar {
             display: none;
         }
@@ -458,7 +455,6 @@
             display: flex;
         }
         
-        /* Adjust header padding */
         .conversations-header {
             padding: 16px;
         }
@@ -468,7 +464,6 @@
             margin-bottom: 12px;
         }
         
-        /* Make items more touch-friendly */
         .conversation-item {
             padding: 14px 16px;
         }
@@ -663,10 +658,6 @@
             const truncatedMessage = lastMessage.length > 50 ? lastMessage.substring(0, 47) + '...' : lastMessage;
             
             html += `
-                <div class="conversation-item">
-                    <a href="/api/messages/chat/${conv.user_id}/" class="conversation-link">
-                        <div class="d-flex gap-3">
-                            <!-- Profile Picture -->
                 <div class="conversation-item" data-user-id="${conv.user_id}" data-username="${escapeHtml(userName)}" onclick="openConversation(${conv.user_id}, '${escapeHtml(userName)}')">
                     <div class="conversation-link">
                         <div class="conversation-avatar">
@@ -714,8 +705,8 @@
         localStorage.setItem('selectedConversation', userId);
         localStorage.setItem('selectedUserName', userName);
         
-        // Redirect to the chat page
-        window.location.href = `/messages/get/${userId}/`;
+        // Redirect to the chat page using the correct URL pattern
+        window.location.href = `/messages/chat/${userId}/`;
     }
     
     function showEmptyState() {

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Chat - SkillSwap{% endblock %}
+{% block title %}Chat with {{ other_user.username }} - SkillSwap{% endblock %}
 
 {% block extra_css %}
 <style>
     .view-profile-btn{
-    display:none !important;
-}
+        display:none !important;
+    }
     .chat-wrapper{
         max-width:900px;
         margin:0 auto;
@@ -235,11 +235,9 @@
 
     /* MOBILE */
     @media(max-width:768px){
-
         .message-bubble{
             max-width:85%;
         }
-
         .view-profile-btn{
             display:none;
         }
@@ -252,34 +250,22 @@
 
     <!-- HEADER -->
     <div class="chat-header">
-
         <a href="{% url 'view_other_profile' other_user.id %}" class="chat-user">
-
             {% if other_user.userprofile.profile_picture %}
-                <img
-                    src="{{ other_user.userprofile.profile_picture.url }}"
-                    class="chat-avatar"
-                >
+                <img src="{{ other_user.userprofile.profile_picture.url }}" class="chat-avatar">
             {% else %}
                 <div class="avatar-placeholder">
                     {{ other_user.username|first|upper }}
                 </div>
             {% endif %}
-
             <div class="chat-user-info">
-                <h3>{{ other_user.username }}</h3>
-                
+                <h3>{{ other_user.get_full_name|default:other_user.username }}</h3>
+                <p>@{{ other_user.username }}</p>
             </div>
-
         </a>
-
-        <a
-            href="{% url 'view_other_profile' other_user.id %}"
-            class="view-profile-btn"
-        >
-            
+        <a href="{% url 'view_other_profile' other_user.id %}" class="view-profile-btn">
+            Profile
         </a>
-
     </div>
 
     <!-- MESSAGES -->
@@ -287,250 +273,143 @@
 
     <!-- INPUT -->
     <form id="messageForm">
-
         {% csrf_token %}
-
         <div class="chat-input-container">
-
-            <!-- ONE BUTTON -->
             <label class="attach-btn">
                 <i class="bi bi-plus-lg"></i>
-
-                <input
-                    type="file"
-                    id="fileInput"
-                    hidden
-                >
+                <input type="file" id="fileInput" hidden>
             </label>
-
-            <input
-                type="text"
-                id="messageInput"
-                class="chat-input"
-                placeholder="Type a message..."
-            >
-
+            <input type="text" id="messageInput" class="chat-input" placeholder="Type a message...">
             <button type="submit" class="send-btn">
                 <i class="bi bi-send-fill"></i>
             </button>
-
         </div>
-
     </form>
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-
 const otherUserId = "{{ other_user.id }}";
 
 async function loadMessages(){
-
     try{
-
-        const response = await fetch(
-            `/api/messages/get/${otherUserId}/`
-        );
-
+        // FIXED: Changed from /api/messages/get/ to /messages/get/
+        const response = await fetch(`/messages/get/${otherUserId}/`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const data = await response.json();
-
         const box = document.getElementById('messagesBox');
+        
+        if (!data.messages || data.messages.length === 0) {
+            box.innerHTML = `
+                <div style="text-align:center; padding:40px; opacity:0.5;">
+                    <i class="bi bi-chat-dots" style="font-size:48px;"></i>
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            `;
+            return;
+        }
 
         box.innerHTML = '';
 
         data.messages.forEach(msg => {
-
             const row = document.createElement('div');
-
-            row.className =
-                `message-row ${
-                    msg.is_mine
-                    ? 'sent-row'
-                    : 'received-row'
-                }`;
+            row.className = `message-row ${msg.is_mine ? 'sent-row' : 'received-row'}`;
 
             row.innerHTML = `
-                <div class="message-bubble ${
-                    msg.is_mine ? 'sent' : 'received'
-                }">
-
-                    ${msg.message ? `
-                        <div>${escapeHtml(msg.message)}</div>
-                    ` : ''}
-
-                    ${msg.image ? `
-                        <img
-                            src="${msg.image}"
-                            class="message-image"
-                        >
-                    ` : ''}
-
-                    ${msg.video ? `
-                        <video
-                            controls
-                            class="message-video"
-                        >
-                            <source src="${msg.video}">
-                        </video>
-                    ` : ''}
-
-                    ${msg.file ? `
-                        <a
-                            href="${msg.file}"
-                            target="_blank"
-                            class="file-link"
-                        >
-                            <i class="bi bi-paperclip"></i>
-                            Open File
-                        </a>
-                    ` : ''}
-
+                <div class="message-bubble ${msg.is_mine ? 'sent' : 'received'}">
+                    ${msg.message ? `<div>${escapeHtml(msg.message)}</div>` : ''}
+                    ${msg.image ? `<img src="${msg.image}" class="message-image">` : ''}
+                    ${msg.video ? `<video controls class="message-video"><source src="${msg.video}"></video>` : ''}
+                    ${msg.file ? `<a href="${msg.file}" target="_blank" class="file-link"><i class="bi bi-paperclip"></i> Open File</a>` : ''}
                     <div class="message-footer">
-
                         <span>${msg.time}</span>
-
-                        ${
-                            msg.is_mine
-                            ?
-                            `<span class="read-status">
-                                ${
-                                    msg.is_read
-                                    ? '✓✓'
-                                    : '✓'
-                                }
-                            </span>`
-                            :
-                            ''
-                        }
-
+                        ${msg.is_mine ? `<span class="read-status">${msg.is_read ? '✓✓' : '✓'}</span>` : ''}
                     </div>
-
                 </div>
             `;
 
             box.appendChild(row);
-
         });
 
         box.scrollTop = box.scrollHeight;
 
-    }catch(error){
-
-        console.log(error);
-
+    } catch(error){
+        console.error('Error loading messages:', error);
     }
 }
 
-document
-.getElementById('messageForm')
-.addEventListener('submit', async function(e){
-
+document.getElementById('messageForm').addEventListener('submit', async function(e){
     e.preventDefault();
 
-    const messageInput =
-        document.getElementById('messageInput');
-
-    const fileInput =
-        document.getElementById('fileInput');
-
+    const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
     const formData = new FormData();
-
-    formData.append(
-        'message',
-        messageInput.value
-    );
-
+    
+    formData.append('message', messageInput.value);
+    
     if(fileInput.files[0]){
-
         const file = fileInput.files[0];
-
         if(file.type.startsWith('image/')){
-
             formData.append('image', file);
-
         }else if(file.type.startsWith('video/')){
-
             formData.append('video', file);
-
         }else{
-
             formData.append('file', file);
         }
     }
 
     try{
-
-        const response = await fetch(
-            `/api/messages/send/${otherUserId}/`,
-            {
-                method:'POST',
-
-                headers:{
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-
-                body: formData
-            }
-        );
+        // FIXED: Changed from /api/messages/send/ to /messages/send/
+        const response = await fetch(`/messages/send/${otherUserId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        });
 
         const data = await response.json();
 
         if(data.success){
-
             messageInput.value = '';
-
             fileInput.value = '';
-
             loadMessages();
         }
-
-    }catch(error){
-
-        console.log(error);
-
+    } catch(error){
+        console.error('Error sending message:', error);
     }
 });
 
 function getCookie(name){
-
     let cookieValue = null;
-
     if(document.cookie && document.cookie !== ''){
-
         const cookies = document.cookie.split(';');
-
         for(let i = 0; i < cookies.length; i++){
-
             const cookie = cookies[i].trim();
-
-            if(cookie.startsWith(name + '=')){
-
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-
+            if(cookie.substring(0, name.length + 1) === (name + '=')){
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
         }
     }
-
     return cookieValue;
 }
 
 function escapeHtml(text){
-
     const div = document.createElement('div');
-
     div.textContent = text;
-
     return div.innerHTML;
 }
 
+// Load messages immediately
 loadMessages();
 
-setInterval(loadMessages, 2000);
-
+// Auto-refresh messages every 3 seconds (reduced from 2 seconds)
+setInterval(loadMessages, 3000);
 </script>
 {% endblock %}
