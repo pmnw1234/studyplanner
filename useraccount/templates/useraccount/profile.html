@@ -152,8 +152,127 @@
                     </div>
                 </div>
             </div>
+            <!-- Reviews Section -->
+<div class="rounded-xl p-5"
+     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-star-fill text-lg"
+               style="color: #F59E0B;"></i>
+
+            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                style="color: var(--text-primary);">
+                Reviews & Ratings
+            </h3>
         </div>
 
+        {% if reviews %}
+        <button onclick="toggleReviews()"
+                id="reviewToggleBtn"
+                class="text-sm px-3 py-1 rounded-full transition-all hover:scale-105"
+                style="background-color: var(--accent-primary); color: white;">
+            See More
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Overall Rating -->
+    <div class="text-center py-4">
+        <p class="text-4xl font-bold"
+           style="color: #F59E0B;">
+            {{ avg_rating|default:"0"|floatformat:1 }}
+        </p>
+
+        <!-- Stars -->
+        <div class="text-xl mt-1" style="color:#F59E0B;">
+            {% with avg=avg_rating|default:0 %}
+                {% for i in "12345" %}
+                    {% if forloop.counter <= avg %}
+                        ★
+                    {% else %}
+                        ☆
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+        </div>
+
+        <p class="text-sm opacity-60 mt-2">
+            Based on {{ reviews.count }} reviews
+        </p>
+    </div>
+
+    <!-- Individual Reviews -->
+    <div id="reviewsContainer" class="hidden mt-5 space-y-4">
+
+        {% for review in reviews %}
+        <div class="p-4 rounded-xl"
+             style="background-color: var(--bg-page);
+                    border: 1px solid var(--border-color);">
+
+            <div class="flex justify-between items-center mb-2">
+
+                <div>
+                    <p class="font-semibold"
+                       style="color: var(--text-primary);">
+                        {{ review.reviewer.username }}
+                    </p>
+
+                    <p class="text-xs opacity-50">
+                        {{ review.created_at|date:"M d, Y" }}
+                    </p>
+                </div>
+
+                <div style="color:#F59E0B;">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            ★
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <p class="text-sm"
+               style="color: var(--text-secondary);">
+                {{ review.comment }}
+            </p>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% if not reviews %}
+    <div class="text-center py-6">
+        <i class="bi bi-chat-square-text text-3xl opacity-30"></i>
+
+        <p class="mt-2 text-sm opacity-60">
+            No reviews yet.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleReviews() {
+    const container = document.getElementById("reviewsContainer");
+    const btn = document.getElementById("reviewToggleBtn");
+
+    if (container.classList.contains("hidden")) {
+        container.classList.remove("hidden");
+        btn.innerText = "Show Less";
+    } else {
+        container.classList.add("hidden");
+        btn.innerText = "See More";
+    }
+}
+</script>
+        </div>
+        
         <!-- RIGHT COLUMN - Skills & Goals (spans 2 columns) -->
         <div class="lg:col-span-2 space-y-6">
             

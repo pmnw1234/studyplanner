@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from reviews.models import Review
+from django.db.models import Avg
 
 from .forms import (
     UserRegistrationForm,
@@ -112,14 +114,23 @@ def profile_view(request):
 
     # Certifications
     certifications = profile.certifications.all()
+    reviews = Review.objects.filter(
+    reviewed_user=request.user
+     ).order_by('-created_at')
 
+    avg_rating = reviews.aggregate(
+    Avg('rating')
+    )['rating__avg']
     context = {
         'profile': profile,
         'teach_skills_data': teach_skills_data,
         'learn_skills_data': learn_skills_data,
         'certifications': certifications,
         'study_partners_count': profile.study_partners_count,  # merged feature
+        'reviews': reviews,
+        'avg_rating': avg_rating,
     }
+    
 
     return render(request, 'useraccount/profile.html', context)
 

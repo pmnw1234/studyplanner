@@ -15,6 +15,7 @@ urlpatterns = [
     path('feed/', include('feedview.urls')),
     path('profile/', include('profiles.urls')),   # ✅ consistent naming
     path('api/messages/', include('direct_message.urls')),  # ✅ keep new feature
+    path('reviews/', include('reviews.urls')),
 ]
 
 # Override Django's debug 404
