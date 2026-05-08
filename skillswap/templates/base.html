@@ -325,133 +325,133 @@ document.addEventListener("DOMContentLoaded", function () {
     </footer>
 
     <script>
-        // Theme Toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateIcon(savedTheme);
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateIcon(savedTheme);
+    }
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+    }
+    
+    function updateIcon(theme) {
+        if (theme === 'dark') {
+            themeIcon.className = 'bi bi-sun-fill text-base md:text-xl';
+        } else {
+            themeIcon.className = 'bi bi-moon-fill text-base md:text-xl';
         }
-        
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateIcon(newTheme);
-            });
-        }
-        
-        function updateIcon(theme) {
-            if (theme === 'dark') {
-                themeIcon.className = 'bi bi-sun-fill text-base md:text-xl';
+    }
+    
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+    let isMenuOpen = false;
+    
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('mobile-menu-enter');
+                mobileMenu.classList.add('mobile-menu-enter-active');
+                mobileMenuIcon.className = 'bi bi-x-lg text-xl';
             } else {
-                themeIcon.className = 'bi bi-moon-fill text-base md:text-xl';
-            }
-        }
-        
-        // Mobile Menu
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
-        let isMenuOpen = false;
-        
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => {
-                isMenuOpen = !isMenuOpen;
-                
-                if (isMenuOpen) {
-                    mobileMenu.classList.remove('mobile-menu-enter');
-                    mobileMenu.classList.add('mobile-menu-enter-active');
-                    mobileMenuIcon.className = 'bi bi-x-lg text-xl';
-                } else {
-                    mobileMenu.classList.remove('mobile-menu-enter-active');
-                    mobileMenu.classList.add('mobile-menu-enter');
-                    mobileMenuIcon.className = 'bi bi-list text-xl';
-                }
-            });
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (isMenuOpen && mobileMenuBtn && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                isMenuOpen = false;
                 mobileMenu.classList.remove('mobile-menu-enter-active');
                 mobileMenu.classList.add('mobile-menu-enter');
                 mobileMenuIcon.className = 'bi bi-list text-xl';
             }
         });
+    }
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (isMenuOpen && mobileMenuBtn && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+            isMenuOpen = false;
+            mobileMenu.classList.remove('mobile-menu-enter-active');
+            mobileMenu.classList.add('mobile-menu-enter');
+            mobileMenuIcon.className = 'bi bi-list text-xl';
+        }
+    });
+    
+    // Responsive resize handler - close menu on window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768 && isMenuOpen) {
+            isMenuOpen = false;
+            mobileMenu.classList.remove('mobile-menu-enter-active');
+            mobileMenu.classList.add('mobile-menu-enter');
+            if (mobileMenuIcon) {
+                mobileMenuIcon.className = 'bi bi-list text-xl';
+            }
+        }
+    });
+    
+    // Set active nav link based on current URL
+    function setActiveNavLink() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.menu a');
         
-        // Responsive resize handler - close menu on window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768 && isMenuOpen) {
-                isMenuOpen = false;
-                mobileMenu.classList.remove('mobile-menu-enter-active');
-                mobileMenu.classList.add('mobile-menu-enter');
-                if (mobileMenuIcon) {
-                    mobileMenuIcon.className = 'bi bi-list text-xl';
-                }
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && href !== '#' && currentPath.startsWith(href)) {
+                link.classList.add('nav-link-active');
             }
         });
-        
-        // Set active nav link based on current URL
-        function setActiveNavLink() {
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.menu a');
+    }
+    
+    // Global function to fetch unread count - FIXED: removed /api/ prefix
+    async function updateUnreadMessageCount() {
+        try {
+            const response = await fetch('/messages/unread/');
+            const data = await response.json();
             
-            navLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href !== '#' && currentPath.startsWith(href)) {
-                    link.classList.add('nav-link-active');
+            if (response.ok && data.unread_count !== undefined) {
+                // Update desktop badge
+                const desktopBadge = document.getElementById('unreadMessageBadge');
+                if (desktopBadge) {
+                    if (data.unread_count > 0) {
+                        desktopBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        desktopBadge.style.display = 'inline-block';
+                    } else {
+                        desktopBadge.style.display = 'none';
+                    }
                 }
-            });
-        }
-        
-        // Global function to fetch unread count - FIXED with /api/ prefix
-        async function updateUnreadMessageCount() {
-            try {
-                const response = await fetch('/api/messages/unread/');
-                const data = await response.json();
                 
-                if (response.ok && data.unread_count !== undefined) {
-                    // Update desktop badge
-                    const desktopBadge = document.getElementById('unreadMessageBadge');
-                    if (desktopBadge) {
-                        if (data.unread_count > 0) {
-                            desktopBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                            desktopBadge.style.display = 'inline-block';
-                        } else {
-                            desktopBadge.style.display = 'none';
-                        }
-                    }
-                    
-                    // Update mobile badge
-                    const mobileBadge = document.getElementById('unreadMessageBadgeMobile');
-                    if (mobileBadge) {
-                        if (data.unread_count > 0) {
-                            mobileBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                            mobileBadge.style.display = 'inline-block';
-                        } else {
-                            mobileBadge.style.display = 'none';
-                        }
+                // Update mobile badge
+                const mobileBadge = document.getElementById('unreadMessageBadgeMobile');
+                if (mobileBadge) {
+                    if (data.unread_count > 0) {
+                        mobileBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        mobileBadge.style.display = 'inline-block';
+                    } else {
+                        mobileBadge.style.display = 'none';
                     }
                 }
-            } catch (error) {
-                console.debug('Could not fetch unread count:', error);
             }
+        } catch (error) {
+            console.debug('Could not fetch unread count:', error);
         }
-        
-        // Call setActiveNavLink and update unread count when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setActiveNavLink();
-            updateUnreadMessageCount();
-            // Update unread count every 30 seconds
-            setInterval(updateUnreadMessageCount, 30000);
-        });
-    </script>
+    }
+    
+    // Call setActiveNavLink and update unread count when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        setActiveNavLink();
+        updateUnreadMessageCount();
+        // Update unread count every 30 seconds
+        setInterval(updateUnreadMessageCount, 30000);
+    });
+</script>
     {% block extra_js %}{% endblock %}
 </body>
 <!-- Sidebar Backdrop -->
