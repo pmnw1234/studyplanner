@@ -7,7 +7,9 @@ from django.contrib import messages
 from useraccount.models import UserProfile, Connection, ConnectionRequest
 from feedview.models import MatchRequest
 from useraccount.models import UserProfile, UserSkill, ConnectionRequest, Connection, Certification
+from django.db.models import Avg
 from django.db.models import Q
+from reviews.models import Review
 
 # --- HELPER FUNCTIONS ---
 
@@ -163,6 +165,14 @@ def view_other_profile(request, user_id):
     certifications = Certification.objects.filter(
         user_profile=other_profile
     )
+     # Reviews
+    reviews = Review.objects.filter(
+    reviewed_user=other_user
+    ).order_by('-created_at')
+
+    avg_rating = reviews.aggregate(
+    Avg('rating')
+    )['rating__avg']
 
     context = {
         'other_user': other_user,
@@ -177,6 +187,8 @@ def view_other_profile(request, user_id):
         'request_sent': request_sent,
         'request_received': request_received,
         'request_received_id': request_received_id,
+        'reviews': reviews,
+        'avg_rating': avg_rating,
     }
 
     return render(request, 'profiles/view_other_profile.html', context)
