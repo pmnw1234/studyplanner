@@ -1,0 +1,31 @@
+<!-- filter_component.html - Compact inline filters -->
+<div class="flex gap-2 items-center flex-wrap">
+    <form method="GET" class="flex gap-2 items-center flex-wrap w-full">
+        <select name="category" class="px-3 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-primary);">
+            <option value="">All Categories</option>
+            <option value="skill_swap" {% if request.GET.category == 'skill_swap' %}selected{% endif %}>Skill Swap</option>
+            <option value="study_partner" {% if request.GET.category == 'study_partner' %}selected{% endif %}>Study Partner</option>
+        </select>
+        
+        <select name="topic" class="px-3 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-primary);">
+            <option value="">All Topics</option>
+            <option value="general">General</option>
+            <option value="language">Language</option>
+            <option value="tech">Tech</option>
+            <option value="science">Science</option>
+            <option value="art">Art</option>
+            <option value="business">Business</option>
+        </select>
+        
+        <input type="text" name="hashtag" placeholder="#hashtag" value="{{ request.GET.hashtag }}" 
+               class="px-3 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-primary); width: 120px;">
+        
+        <button type="submit" class="px-4 py-1.5 rounded-full text-white text-sm" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+            <i class="bi bi-search"></i>
+        </button>
+        
+        <a href="{% url 'feed' %}" class="px-4 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-secondary);">
+            <i class="bi bi-arrow-repeat"></i>
+        </a>
+    </form>
+</div>
