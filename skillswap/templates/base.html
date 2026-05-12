@@ -94,6 +94,13 @@
             display: flex !important;
         }
         
+        /* HIDE DESKTOP MENU ON MOBILE - ONLY THIS CHANGE */
+        @media (max-width: 768px) {
+            .navbar-center {
+                display: none !important;
+            }
+        }
+        
         @media (max-width: 640px) {
             .navbar-center a span {
                 display: none;
@@ -127,9 +134,9 @@
         }
 
         /* Sidebar open state */
-#sidebar.open {
-    left: 0;
-}
+        #sidebar.open {
+            left: 0;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
