@@ -2,12 +2,17 @@
 <div id="matches-tab" class="tab-content" style="display: block !important;">
     {% if matches %}
         <div class="space-y-4">
-            {% for match in matches %}
+            
+            {% for match in matches|slice:":1" %}  <!-- Limits to only 1 match -->
             <div class="flex items-start justify-between p-5 rounded-xl transition-all hover:shadow-lg" style="background-color: var(--bg-card); border: 1px solid var(--border-color); margin-bottom: 12px;">
                 <div class="flex items-start gap-4 flex-1">
-                    <!-- User Avatar -->
-                    <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
-                        {{ match.name|first|upper }}
+                    <!-- User Avatar with Profile Picture -->
+                    <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden" style="background: linear-gradient(135deg, #8b6914, #c49a2a);">
+                        {% if match.profile_picture %}
+                            <img src="{{ match.profile_picture }}" alt="{{ match.name }}" class="w-full h-full object-cover">
+                        {% else %}
+                            {{ match.name|first|upper }}
+                        {% endif %}
                     </div>
                     
                     <!-- User Info -->
@@ -24,7 +29,19 @@
                                 <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #6B728020; color: #6B7280;">Potential Match</span>
                             {% endif %}
                         </div>
-                        
+                        <div class="mb-3 text-sm italic"
+     style="color: var(--text-secondary);">
+
+    <i class="bi bi-robot me-1"></i>
+
+    AI Insight:
+    Strong exchange potential detected — your expertise in
+    {{ match.skills_they_want.0.name|default:"key skills" }}
+    complements their ability in
+    {{ match.skills_they_teach.0.name|default:"related areas" }},
+    suggesting a mutually beneficial learning partnership.
+
+</div>
                         <!-- Teaching Skills -->
                         {% if match.skills_they_teach %}
                         <div class="mb-3">
