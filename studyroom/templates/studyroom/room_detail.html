@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+    <div class="card bg-base-100 shadow-xl p-8">
+        <h2 class="text-2xl font-bold mb-5">Create Study Room</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button class="btn btn-primary w-full mt-4">
+                Create Room
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
