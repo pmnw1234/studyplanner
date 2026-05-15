@@ -1,0 +1,158 @@
+<div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+        <h2 class="text-xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-journal-bookmark" style="color: var(--accent-primary);"></i>
+            Class Work
+        </h2>
+        {% if request.user == room.creator %}
+        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('create-work-modal').showModal()">
+            <i class="bi bi-plus-lg"></i> Create Work
+        </button>
+        {% endif %}
+    </div>
+    <div class="space-y-4">
+        {% for work in classworks %}
+        <div class="p-4 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+            <div class="flex justify-between items-start flex-wrap gap-2">
+                <h3 class="font-bold text-lg" style="color: var(--text-primary);">{{ work.title }}</h3>
+                <div class="flex gap-2">
+                    <span class="badge gap-1" style="background-color: var(--accent-secondary); color: white; border: none;">
+                        <i class="bi bi-person"></i> {{ work.created_by.username }}
+                    </span>
+                    {% if request.user == room.creator %}
+                    <button class="btn btn-xs btn-ghost" onclick="openEditModal(
+                        '{{ work.id }}', 
+                        '{{ work.title|escapejs }}', 
+                        '{{ work.description|escapejs }}', 
+                        '{{ work.due_date|date:'Y-m-d\TH:i'|default:'' }}',
+                        '{{ work.resource_title|escapejs }}',
+                        '{{ work.resource_link|escapejs }}'
+                    )">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-xs btn-ghost text-red-500" onclick="if(confirm('Delete {{ work.title }}?')) document.getElementById('delete-form-{{ work.id }}').submit()">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <form id="delete-form-{{ work.id }}" method="POST" action="{% url 'delete_classwork' work.id %}" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <p class="mt-2" style="color: var(--text-secondary);">{{ work.description }}</p>
+            {% if work.due_date %}
+            <div class="mt-3 flex items-center gap-2 text-sm" style="color: var(--text-secondary);">
+                <i class="bi bi-calendar-event"></i>
+                <span>Due: {{ work.due_date|date:"M d, Y g:i A" }}</span>
+            </div>
+            {% endif %}
+            
+            <!-- Display Resources if available -->
+            {% if work.resource_file or work.resource_link %}
+            <div class="mt-3 pt-2">
+                <div class="text-sm font-medium mb-1" style="color: var(--text-primary);">
+                    <i class="bi bi-paperclip"></i> Attached Resource:
+                </div>
+                {% if work.resource_title %}
+                <div class="text-sm font-medium" style="color: var(--accent-primary);">{{ work.resource_title }}</div>
+                {% endif %}
+                <div class="flex gap-3 mt-1">
+                    {% if work.resource_file %}
+                    <a href="{{ work.resource_file.url }}" target="_blank" 
+                       class="btn btn-xs gap-1" style="background-color: var(--accent-primary); color: white; border: none;">
+                        <i class="bi bi-download"></i> Download File
+                    </a>
+                    {% endif %}
+                    {% if work.resource_link %}
+                    <a href="{{ work.resource_link }}" target="_blank" 
+                       class="btn btn-xs gap-1" style="background-color: var(--accent-secondary); color: white; border: none;">
+                        <i class="bi bi-box-arrow-up-right"></i> Open Link
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Submission section for students -->
+            {% if is_member and request.user != room.creator %}
+            <div class="mt-4 pt-3 border-t" style="border-color: var(--border-color);">
+                {% for sub_id, submission in user_submissions.items %}
+                    {% if sub_id == work.id and submission %}
+                        {% if submission.status == 'submitted' %}
+                        <div class="flex items-center gap-2 text-sm">
+                            <i class="bi bi-check-circle-fill text-green-500"></i>
+                            <span style="color: var(--text-secondary);">Submitted on {{ submission.submitted_at|date:"M d, Y" }}</span>
+                            {% if submission.grade %}
+                            <span class="badge" style="background-color: var(--accent-primary); color: white;">Grade: {{ submission.grade }}%</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
+                            <i class="bi bi-cloud-upload"></i> Submit Work
+                        </button>
+                        {% endif %}
+                    {% elif sub_id == work.id and not submission %}
+                        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
+                            <i class="bi bi-cloud-upload"></i> Submit Work
+                        </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Submissions list for creator -->
+            {% if request.user == room.creator %}
+            <div class="mt-4 pt-3 border-t" style="border-color: var(--border-color);">
+                <details>
+                    <summary class="cursor-pointer text-sm" style="color: var(--accent-primary);">
+                        <i class="bi bi-people"></i> Submissions
+                    </summary>
+                    <div class="mt-2 space-y-2">
+                        {% for sub_id, submission_list in all_submissions.items %}
+                            {% if sub_id == work.id %}
+                                {% for submission in submission_list %}
+                                <div class="p-2 rounded flex justify-between items-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                                    <div class="flex items-center gap-2">
+                                        <!-- Student Avatar -->
+                                        <div class="avatar">
+                                            {% if submission.student.userprofile.profile_picture %}
+                                            <div class="w-6 h-6 rounded-full">
+                                                <img src="{{ submission.student.userprofile.profile_picture.url }}" 
+                                                     alt="{{ submission.student.username }}"
+                                                     class="w-full h-full rounded-full object-cover">
+                                            </div>
+                                            {% else %}
+                                            <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
+                                                <span class="text-white text-xs font-bold">{{ submission.student.username|make_list|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold" style="color: var(--text-primary);">{{ submission.student.username }}</span>
+                                            <span class="text-xs ml-2" style="color: var(--text-secondary);">{{ submission.submitted_at|date:"M d" }}</span>
+                                            {% if submission.grade %}
+                                            <span class="badge text-xs ml-2" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-xs gap-1" style="background-color: var(--accent-primary); color: white;" onclick="openGradeModal('{{ submission.id }}', '{{ submission.student.username }}', '{{ submission.grade|default:'' }}', `{{ submission.feedback|escapejs }}`)">
+                                        <i class="bi bi-pencil"></i> Grade
+                                    </button>
+                                </div>
+                                {% empty %}
+                                <p class="text-sm italic" style="color: var(--text-secondary);">No submissions yet.</p>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </details>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center py-8" style="color: var(--text-secondary);">
+            <i class="bi bi-journal-bookmark text-4xl"></i><br>No class work yet.
+        </p>
+        {% endfor %}
+    </div>
+</div>

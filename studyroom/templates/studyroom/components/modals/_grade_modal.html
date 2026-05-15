@@ -1,0 +1,41 @@
+<dialog id="grade-modal" class="modal">
+    <div class="modal-box rounded-xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-star" style="color: var(--accent-primary);"></i>
+            Grade Submission
+        </h3>
+        <form method="POST" action="" id="grade-form">
+            {% csrf_token %}
+            <p class="mb-4" style="color: var(--text-secondary);">Student: <span id="grade-student-name" class="font-semibold" style="color: var(--text-primary);"></span></p>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Grade (%)</label>
+                <input type="number" name="grade" id="grade-value" step="0.01" min="0" max="100" class="input input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Feedback</label>
+                <textarea name="feedback" id="grade-feedback" class="textarea textarea-bordered w-full" rows="4" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-check-lg"></i> Save Grade
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+function openGradeModal(submissionId, studentName, currentGrade, currentFeedback) {
+    const form = document.getElementById('grade-form');
+    form.action = `/library/submission/${submissionId}/grade/`;
+    document.getElementById('grade-student-name').textContent = studentName;
+    document.getElementById('grade-value').value = currentGrade;
+    document.getElementById('grade-feedback').value = currentFeedback;
+    document.getElementById('grade-modal').showModal();
+}
+</script>

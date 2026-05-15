@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}My Library | SkillSwap{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2" style="color: var(--text-primary);">
+            My Library
+        </h1>
+        <p class="text-sm" style="color: var(--text-secondary);">
+            Manage your study rooms and collaborate with friends
+        </p>
+    </div>
+
+    <!-- Banner -->
+    <div class="rounded-3xl p-8 mb-8 flex justify-between items-center"
+         style="background: linear-gradient(135deg, var(--accent-primary)15, var(--accent-ocean)15); border: 1px solid var(--border-color);">
+
+        <div>
+            <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">
+                Your Learning Hub
+            </h2>
+            <p style="color: var(--text-secondary);">
+                Create study rooms or join with room code.
+                Maximum 3 members per room.
+            </p>
+        </div>
+
+        <i class="bi bi-journal-bookmark-fill text-6xl" style="color: var(--accent-primary);"></i>
+    </div>
+
+    <!-- Buttons -->
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+
+        <!-- Create Room -->
+        <div class="rounded-2xl p-6 shadow-sm border transition hover:shadow-md"
+             style="background-color: var(--bg-card); border-color: var(--border-color);">
+            <h3 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">Create Room</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Start a new study room</p>
+
+            <button onclick="openCreateModal()"
+                class="px-6 py-3 rounded-full font-medium text-white shadow-md transition hover:scale-105"
+                style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean)); border: none;">
+                <i class="bi bi-plus-circle mr-2"></i>Create Room
+            </button>
+        </div>
+
+        <!-- Join Room -->
+        <div class="rounded-2xl p-6 shadow-sm border transition hover:shadow-md"
+             style="background-color: var(--bg-card); border-color: var(--border-color);">
+            <h3 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">Join Room</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Join using room code</p>
+
+            <button onclick="openJoinModal()"
+                class="px-6 py-3 rounded-full font-medium text-white shadow-md transition hover:scale-105"
+                style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean)); border: none;">
+                <i class="bi bi-box-arrow-in-right mr-2"></i>Join Room
+            </button>
+        </div>
+    </div>
+
+    <!-- Room Count -->
+    <div class="mb-4 flex justify-between items-center">
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">Your Study Rooms</h2>
+        <span class="badge" style="background-color: var(--accent-primary); color: white; border: none;">{{ my_rooms|length }}</span>
+    </div>
+
+    <!-- Room Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for room in my_rooms %}
+        <div class="rounded-3xl overflow-hidden shadow-md border transition hover:shadow-xl"
+             style="background-color: var(--bg-card); border-color: var(--border-color);">
+
+            <!-- Card Header -->
+            <div class="p-6 text-white"
+                 style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
+
+                <h3 class="text-2xl font-semibold">
+                    {{ room.course_name }}
+                </h3>
+
+                <p class="text-sm mt-2 opacity-90">
+                    {{ room.description|default:"No description" }}
+                </p>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-5">
+
+                <!-- Creator -->
+                <div class="flex items-center gap-3 mb-4">
+                    
+                    {% if room.creator.userprofile.profile_picture %}
+                    <img src="{{ room.creator.userprofile.profile_picture.url }}"
+                         class="w-10 h-10 rounded-full object-cover">
+                    {% else %}
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: var(--border-color);">
+                        <i class="bi bi-person-fill" style="color: var(--text-secondary);"></i>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <p class="text-xs" style="color: var(--text-secondary);">Created by</p>
+
+                        <a href="{% url 'view_other_profile' room.creator.id %}"
+                           class="font-medium hover:underline" style="color: var(--text-primary);">
+                            {{ room.creator.username }}
+                        </a>
+                    </div>
+                </div>
+
+                <p class="text-sm mb-2" style="color: var(--text-secondary);">
+                    <strong style="color: var(--text-primary);">Room Code:</strong> {{ room.room_code }}
+                </p>
+
+                <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                    <strong style="color: var(--text-primary);">Members:</strong> {{ room.members.count }}/3
+                </p>
+
+                <a href="{% url 'room_detail' room.id %}"
+                   class="w-full block text-center py-3 rounded-xl text-white font-medium transition hover:opacity-90"
+                   style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean));">
+                    Enter Room
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full rounded-3xl p-12 text-center border"
+             style="background-color: var(--bg-card); border-color: var(--border-color);">
+            <i class="bi bi-folder2-open text-6xl" style="color: var(--text-secondary);"></i>
+            <p class="mt-4 text-lg" style="color: var(--text-secondary);">
+                No study rooms yet.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!-- CREATE ROOM MODAL -->
+<div id="createModal"
+     class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+    <div class="rounded-3xl p-8 w-[500px] max-w-[95%] border shadow-xl"
+         style="background-color: var(--bg-card); border-color: var(--border-color);">
+
+        <h2 class="text-3xl mb-6 font-semibold" style="color: var(--text-primary);">Create Study Room</h2>
+
+        <form method="POST" action="{% url 'create_room' %}">
+            {% csrf_token %}
+
+            <input type="text"
+                   name="course_name"
+                   placeholder="Study Room Name"
+                   class="input input-bordered w-full mb-4"
+                   style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"
+                   required>
+
+            <textarea name="description"
+                      placeholder="Description"
+                      class="textarea textarea-bordered w-full mb-4"
+                      style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"></textarea>
+
+            <div class="flex justify-end gap-4">
+                <button type="button"
+                        onclick="closeCreateModal()"
+                        class="btn px-4 py-2 rounded-lg"
+                        style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="btn px-4 py-2 rounded-lg text-white border-none"
+                        style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean));">
+                    Create
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- JOIN ROOM MODAL -->
+<div id="joinModal"
+     class="hidden fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+
+    <div class="rounded-3xl p-8 w-[500px] max-w-[95%] border shadow-xl"
+         style="background-color: var(--bg-card); border-color: var(--border-color);">
+
+        <h2 class="text-3xl mb-6 font-semibold" style="color: var(--text-primary);">Join Study Room</h2>
+
+        <form method="POST" action="{% url 'join_room' %}">
+            {% csrf_token %}
+
+            <input type="text"
+                   name="room_code"
+                   placeholder="Enter Room Code"
+                   class="input input-bordered w-full mb-4"
+                   style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"
+                   required>
+
+            <div class="flex justify-end gap-4">
+                <button type="button"
+                        onclick="closeJoinModal()"
+                        class="btn px-4 py-2 rounded-lg"
+                        style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="btn px-4 py-2 rounded-lg text-white border-none"
+                        style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean));">
+                    Join
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+function openCreateModal() {
+    document.getElementById("createModal").classList.remove("hidden");
+}
+
+function closeCreateModal() {
+    document.getElementById("createModal").classList.add("hidden");
+}
+
+function openJoinModal() {
+    document.getElementById("joinModal").classList.remove("hidden");
+}
+
+function closeJoinModal() {
+    document.getElementById("joinModal").classList.add("hidden");
+}
+
+// Close modals when clicking outside
+document.getElementById("createModal").addEventListener("click", function(e) {
+    if (e.target === this) closeCreateModal();
+});
+
+document.getElementById("joinModal").addEventListener("click", function(e) {
+    if (e.target === this) closeJoinModal();
+});
+</script>
+
+{% endblock %}

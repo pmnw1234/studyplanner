@@ -1,0 +1,42 @@
+<div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+        <i class="bi bi-clock-history" style="color: var(--accent-primary);"></i>
+        Recent Activity
+    </h2>
+    <div class="space-y-3">
+        {% for log in activity_logs %}
+        <div class="flex items-start gap-3 p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+            <!-- Profile Picture with Fallback -->
+            <div class="avatar">
+                {% if log.user.userprofile.profile_picture %}
+                <div class="w-8 h-8 rounded-full">
+                    <img src="{{ log.user.userprofile.profile_picture.url }}" 
+                         alt="{{ log.user.username }}"
+                         class="w-full h-full rounded-full object-cover">
+                </div>
+                {% else %}
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
+                    <span class="text-white text-sm font-bold">{{ log.user.username|make_list|first|upper }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                <p class="text-sm" style="color: var(--text-primary);">
+                    <span class="font-semibold">{{ log.user.username }}</span>
+                    <span style="color: var(--text-secondary);">{{ log.get_action_display }}</span>
+                    {% if log.details %}
+                    <span class="text-xs" style="color: var(--text-secondary);">- {{ log.details }}</span>
+                    {% endif %}
+                </p>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                    <i class="bi bi-clock"></i> {{ log.timestamp|timesince }} ago
+                </p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center py-8" style="color: var(--text-secondary);">
+            <i class="bi bi-clock-history text-4xl"></i><br>No activity yet.
+        </p>
+        {% endfor %}
+    </div>
+</div>

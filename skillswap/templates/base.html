@@ -318,7 +318,7 @@
             <span>Progress</span>
         </a>
 
-        <a href="#" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+        <a href="{% url 'studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
             <i class="bi bi-book text-lg" style="color: var(--accent-primary);"></i>
             <span>My Library</span>
         </a>
@@ -488,4 +488,33 @@
     
     {% block extra_js %}{% endblock %}
 </body>
+<!-- Sidebar Backdrop -->
+<div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full bg-gray-900 text-white z-50 p-5 transition-all duration-300">
+
+    <h2 class="text-lg font-bold mb-4">Skill Menu</h2>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-bar-chart text-blue-400 text-lg"></i>
+        <span>Progress</span>
+    </a>
+
+    <a href="{% url 'studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-book text-green-400 text-lg"></i>
+        <span>My Library</span>
+    </a>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-trophy text-yellow-400 text-lg"></i>
+        <span>Leaderboard</span>
+    </a>
+
+    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
+        <i class="bi bi-pencil-square text-pink-400 text-lg"></i>
+        <span>Assignments</span>
+    </a>
+
+</div>
 </html>

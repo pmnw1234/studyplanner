@@ -1,0 +1,56 @@
+<dialog id="create-work-modal" class="modal">
+    <div class="modal-box rounded-xl w-full max-w-2xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-plus-circle" style="color: var(--accent-primary);"></i>
+            Create New Class Work
+        </h3>
+        <form method="POST" action="{% url 'create_classwork' room.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Title *</label>
+                <input type="text" name="title" class="input input-bordered w-full" required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Description</label>
+                <textarea name="description" class="textarea textarea-bordered w-full" rows="4" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Due Date (optional)</label>
+                <input type="datetime-local" name="due_date" class="input input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            
+            <!-- NEW: Resource Section -->
+            <div class="border-t pt-4 mt-2 mb-4" style="border-color: var(--border-color);">
+                <label class="label font-semibold" style="color: var(--text-primary);">
+                    <i class="bi bi-paperclip mr-2"></i> Attach Resource (Optional)
+                </label>
+                
+                <div class="form-control mb-3">
+                    <label class="label text-sm" style="color: var(--text-secondary);">Resource Title</label>
+                    <input type="text" name="resource_title" class="input input-bordered w-full" placeholder="e.g., Lecture Slides, Reading Material" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+                
+                <div class="form-control mb-3">
+                    <label class="label text-sm" style="color: var(--text-secondary);">Upload File (PDF, DOC, PPT, Image, ZIP)</label>
+                    <input type="file" name="resource_file" class="file-input file-input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+                
+                <div class="form-control mb-3">
+                    <label class="label text-sm" style="color: var(--text-secondary);">Or External Link</label>
+                    <input type="url" name="resource_link" class="input input-bordered w-full" placeholder="https://example.com/resource" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+            </div>
+            
+            <div class="modal-action">
+                <button type="submit" class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-check-lg"></i> Create Work
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>

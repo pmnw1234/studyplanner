@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.course_name }} | Study Room{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Room Header -->
+    <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--text-primary);">{{ room.course_name }}</h1>
+                <p class="mt-2" style="color: var(--text-secondary);">{{ room.description }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <div class="badge badge-lg gap-2" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-key"></i> {{ room.room_code }}
+                </div>
+                <div class="badge badge-lg gap-2" style="background-color: var(--border-color); color: var(--text-primary);">
+                    <i class="bi bi-people"></i> {{ members|length }}/3
+                </div>
+                {% if is_member and request.user != room.creator %}
+                <a href="{% url 'leave_room' room.id %}" class="badge badge-lg gap-2" style="background-color: #ef4444; color: white; border: none;" onclick="return confirm('Are you sure you want to leave this room?')">
+                    <i class="bi bi-box-arrow-left"></i> Leave
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="mt-4 text-sm flex items-center gap-2" style="color: var(--text-secondary);">
+            <i class="bi bi-person-circle"></i>
+            <span>Created by <span class="font-semibold" style="color: var(--text-primary);">{{ room.creator.username }}</span></span>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-6 border-b mb-6" style="border-bottom-color: var(--border-color);">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('students')" id="tab-students-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-people"></i> Students
+        </button>
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('classwork')" id="tab-classwork-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-journal-bookmark"></i> Class Work
+        </button>
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('stream')" id="tab-stream-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-chat-dots"></i> Stream
+        </button>
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('activity')" id="tab-activity-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-clock-history"></i> Activity
+        </button>
+        {% if not is_member %}
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('join')" id="tab-join-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-box-arrow-in-right"></i> Join Room
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Tab Contents -->
+    <div id="students-tab" class="tab-content">
+        {% include 'studyroom/components/_students_tab.html' %}
+    </div>
+
+    <div id="classwork-tab" class="tab-content" style="display: none;">
+        {% include 'studyroom/components/_classwork_tab.html' %}
+    </div>
+
+    <div id="stream-tab" class="tab-content" style="display: none;">
+        {% include 'studyroom/components/_stream_tab.html' %}
+    </div>
+
+    <div id="activity-tab" class="tab-content" style="display: none;">
+        {% include 'studyroom/components/_activity_tab.html' %}
+    </div>
+
+    <div id="join-tab" class="tab-content" style="display: none;">
+        {% include 'studyroom/components/_join_tab.html' %}
+    </div>
+</div>
+
+<!-- Modals -->
+{% include 'studyroom/components/modals/_create_work_modal.html' %}
+{% include 'studyroom/components/modals/_edit_work_modal.html' %}
+{% include 'studyroom/components/modals/_submit_work_modal.html' %}
+{% include 'studyroom/components/modals/_grade_modal.html' %}
+{% include 'studyroom/components/modals/_transfer_modal.html' %}
+
+{% for item in works_with_stream %}
+    {% include 'studyroom/components/modals/_stream_comment_modal.html' with work=item.work %}
+{% endfor %}
+
+<script>
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.style.color = 'var(--text-secondary)';
+        btn.style.borderBottom = '2px solid transparent';
+        btn.style.fontWeight = '500';
+    });
+    
+    document.getElementById(`${tabName}-tab`).style.display = 'block';
+    
+    const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+    if (activeBtn) {
+        activeBtn.style.color = 'var(--accent-primary)';
+        activeBtn.style.borderBottom = '2px solid var(--accent-primary)';
+        activeBtn.style.fontWeight = '600';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    showTab('students');
+});
+</script>
+{% endblock %}

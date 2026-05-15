@@ -1,0 +1,31 @@
+{% for work in classworks %}
+<dialog id="submit-modal-{{ work.id }}" class="modal">
+    <div class="modal-box rounded-xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-cloud-upload" style="color: var(--accent-primary);"></i>
+            Submit: {{ work.title }}
+        </h3>
+        <form method="POST" action="{% url 'submit_work' work.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Your Work</label>
+                <textarea name="content" class="textarea textarea-bordered w-full" rows="6" placeholder="Write your submission here..." required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Attachment (optional)</label>
+                <input type="file" name="file" class="file-input file-input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-send"></i> Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endfor %}
