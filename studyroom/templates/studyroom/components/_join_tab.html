@@ -1,0 +1,23 @@
+<div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+        <i class="bi bi-box-arrow-in-right" style="color: var(--accent-primary);"></i>
+        Join This Room
+    </h2>
+    {% if room.is_full %}
+    <div class="alert" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>This room is full (max 3 members).</span>
+    </div>
+    {% else %}
+    <form method="POST" action="{% url 'join_room' %}">
+        {% csrf_token %}
+        <input type="hidden" name="room_code" value="{{ room.room_code }}">
+        <p class="mb-4" style="color: var(--text-secondary);">
+            You are not currently a member of this room. Click the button below to join.
+        </p>
+        <button type="submit" class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+            <i class="bi bi-door-open"></i> Join Room
+        </button>
+    </form>
+    {% endif %}
+</div>

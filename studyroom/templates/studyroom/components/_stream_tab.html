@@ -1,0 +1,61 @@
+<div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+        <i class="bi bi-chat-dots" style="color: var(--accent-primary);"></i>
+        Activity Stream
+    </h2>
+    <div class="space-y-6">
+        {% for item in works_with_stream %}
+        <div class="rounded-lg p-4" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-journal-check" style="color: var(--accent-primary);"></i>
+                    <span class="font-semibold" style="color: var(--text-primary);">{{ item.work.title }}</span>
+                    <span class="text-xs" style="color: var(--text-secondary);">by {{ item.creator.username }}</span>
+                </div>
+                {% if request.user == item.creator %}
+                <button class="btn btn-xs gap-1" style="background-color: var(--accent-primary); color: white; border: none;" 
+                        onclick="document.getElementById('comment-modal-{{ item.work.id }}').showModal()">
+                    <i class="bi bi-chat-text"></i> Post Update
+                </button>
+                {% endif %}
+            </div>
+            
+            {% if item.stream_comments %}
+            <div class="space-y-3 mt-3 pl-4 border-l-2" style="border-color: var(--accent-primary);">
+                {% for comment in item.stream_comments %}
+                <div class="p-3 rounded-lg" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div class="flex items-center gap-2 mb-2">
+                        <!-- Profile Picture with Fallback -->
+                        <div class="avatar">
+                            {% if comment.user.userprofile.profile_picture %}
+                            <div class="w-6 h-6 rounded-full">
+                                <img src="{{ comment.user.userprofile.profile_picture.url }}" 
+                                     alt="{{ comment.user.username }}"
+                                     class="w-full h-full rounded-full object-cover">
+                            </div>
+                            {% else %}
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
+                                <span class="text-white text-xs font-bold">{{ comment.user.username|make_list|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <span class="font-semibold text-sm" style="color: var(--text-primary);">{{ comment.user.username }}</span>
+                        <span class="text-xs" style="color: var(--text-secondary);">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <p class="text-sm" style="color: var(--text-secondary);">{{ comment.text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm italic pl-4" style="color: var(--text-secondary);">
+                <i class="bi bi-chat"></i> No stream updates yet for this work.
+            </p>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center py-8" style="color: var(--text-secondary);">
+            <i class="bi bi-chat-dots text-4xl"></i><br>No class work with stream activity yet.
+        </p>
+        {% endfor %}
+    </div>
+</div>

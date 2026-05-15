@@ -1,0 +1,65 @@
+{% load dict_filters %}
+<div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-people" style="color: var(--accent-primary);"></i>
+            Room Members
+        </h2>
+        {% if request.user == room.creator and members|length > 1 %}
+        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('transfer-modal').showModal()">
+            <i class="bi bi-arrow-left-right"></i> Transfer Ownership
+        </button>
+        {% endif %}
+    </div>
+    <div class="space-y-3">
+        {% for member in members %}
+        <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+            <div class="flex items-center gap-3">
+                <!-- Profile Picture with Fallback -->
+                <div class="avatar">
+                    {% if member.userprofile.profile_picture %}
+                    <div class="w-10 h-10 rounded-full">
+                        <img src="{{ member.userprofile.profile_picture.url }}" 
+                             alt="{{ member.username }}"
+                             class="w-full h-full rounded-full object-cover">
+                    </div>
+                    {% else %}
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
+                        <span class="text-white font-bold text-lg">{{ member.username|make_list|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <p class="font-semibold" style="color: var(--text-primary);">{{ member.username }}</p>
+                    {% if member == room.creator %}
+                    <span class="text-xs badge gap-1" style="background-color: var(--accent-primary); color: white; border: none;">
+                        <i class="bi bi-star-fill text-xs"></i> Creator
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Optional: Show member status or action buttons -->
+            {% if request.user == room.creator and member != room.creator %}
+            <div class="dropdown dropdown-end">
+                <button class="btn btn-ghost btn-xs">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-content menu p-2 shadow rounded-box w-40" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                    <li>
+                        <a href="{% url 'view_other_profile' member.id %}" style="color: var(--text-primary);">
+                            <i class="bi bi-person"></i> View Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center py-8" style="color: var(--text-secondary);">
+            <i class="bi bi-people text-4xl"></i><br>No members yet.
+        </p>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,36 @@
+<dialog id="transfer-modal" class="modal">
+    <div class="modal-box rounded-xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-arrow-left-right" style="color: var(--accent-primary);"></i>
+            Transfer Ownership
+        </h3>
+        <form method="POST" action="{% url 'transfer_ownership' room.id %}">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">New Owner</label>
+                <select name="new_owner" class="select select-bordered w-full" required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                    <option value="">Select a member...</option>
+                    {% for member in members %}
+                        {% if member != room.creator %}
+                        <option value="{{ member.id }}">{{ member.username }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                <i class="bi bi-exclamation-triangle"></i>
+                You will become a regular member after transfer.
+            </p>
+            <div class="modal-action">
+                <button type="submit" class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-check-lg"></i> Transfer
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
