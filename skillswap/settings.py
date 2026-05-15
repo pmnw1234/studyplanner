@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'profiles',  # Keep profiles from main branch
     'direct_message',  # Added from dashboard branch
     'studyroom',
+    'reviews',
     
 ]
 

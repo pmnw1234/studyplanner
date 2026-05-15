@@ -6,61 +6,105 @@
     <form method="POST" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
 
+        <!-- Post Type Selection - Toggle Style -->
+        <div class="flex gap-3 p-1 rounded-xl" style="background-color: var(--border-color);">
+            <button type="button" onclick="setPostType('study')" id="studyBtn" class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
+                <i class="bi bi-people"></i> Study Partner
+            </button>
+            <button type="button" onclick="setPostType('skill')" id="skillBtn" class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2" style="color: var(--text-secondary);">
+                <i class="bi bi-arrow-left-right"></i> Skill Swap
+            </button>
+            <input type="hidden" name="post_type" id="postTypeInput" value="study">
+        </div>
+
+        <!-- Topic Selection -->
+        <div>
+            <label class="text-sm font-medium mb-2 block" style="color: var(--text-secondary);">
+                <i class="bi bi-tag"></i> Topic
+            </label>
+            <select name="topic" class="w-full p-3 rounded-xl" style="background-color: var(--border-color); color: var(--text-primary); border: none;" required>
+                <option value="general"><i class="bi bi-file-text"></i> General</option>
+                <option value="language"><i class="bi bi-chat-dots"></i> Language Learning</option>
+                <option value="tech"><i class="bi bi-laptop"></i> Technology & Coding</option>
+                <option value="science"><i class="bi bi-flask"></i> Science & Research</option>
+                <option value="art"><i class="bi bi-palette"></i> Art & Design</option>
+                <option value="business"><i class="bi bi-graph-up"></i> Business & Marketing</option>
+            </select>
+        </div>
+
+        <!-- Hashtags -->
+        <div>
+            <label class="text-sm font-medium mb-2 block" style="color: var(--text-secondary);">
+                <i class="bi bi-hash"></i> Hashtags (optional)
+            </label>
+            <input type="text" 
+                   name="hashtags" 
+                   class="w-full p-3 rounded-xl" 
+                   style="background-color: var(--border-color); color: var(--text-primary); border: none;"
+                   placeholder="#python #study #coding">
+        </div>
+
         <!-- Content -->
-        <textarea name="content"
-                  class="textarea textarea-bordered w-full"
-                  placeholder="Share your study progress..."></textarea>
-
-        <!-- Post Type -->
-        <select name="post_type" class="select select-bordered w-full">
-            <option value="study">Study Partner</option>
-            <option value="skill">Skill Swap</option>
-        </select>
-
-        <!-- Image Upload -->
         <div>
-            <label for="imageUpload"
-                   class="btn w-full cursor-pointer">
-                📷 Upload Image
+            <label class="text-sm font-medium mb-2 block" style="color: var(--text-secondary);">
+                <i class="bi bi-pencil-square"></i> Share your progress
             </label>
-            <input type="file"
-                   id="imageUpload"
-                   name="image"
-                   accept="image/*"
-                   class="hidden"
-                   onchange="previewImage(event)">
-
-            <img id="imagePreview"
-                 class="hidden mt-3 rounded-xl w-full max-h-96 object-cover">
+            <textarea name="content"
+                      class="w-full p-3 rounded-xl"
+                      style="background-color: var(--border-color); color: var(--text-primary); border: none;"
+                      placeholder="What are you working on? Need help? Found a resource?"
+                      rows="4"></textarea>
         </div>
 
-        <!-- Video Upload -->
-        <div>
-            <label for="videoUpload"
-                   class="btn w-full cursor-pointer">
-                🎥 Upload Video
-            </label>
-            <input type="file"
-                   id="videoUpload"
-                   name="video"
-                   accept="video/*"
-                   class="hidden"
-                   onchange="previewVideo(event)">
+        <!-- Media Upload Section -->
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Image Upload -->
+            <div>
+                <label for="imageUpload" class="flex items-center justify-center gap-2 w-full p-3 rounded-xl cursor-pointer transition hover:opacity-80" style="background-color: var(--border-color);">
+                    <i class="bi bi-image"></i> Upload Image
+                </label>
+                <input type="file" id="imageUpload" name="image" accept="image/*" class="hidden" onchange="previewImage(event)">
+                <img id="imagePreview" class="hidden mt-3 rounded-xl w-full max-h-48 object-cover">
+            </div>
 
-            <video id="videoPreview"
-                   controls
-                   class="hidden mt-3 rounded-xl w-full max-h-96">
-            </video>
+            <!-- Video Upload -->
+            <div>
+                <label for="videoUpload" class="flex items-center justify-center gap-2 w-full p-3 rounded-xl cursor-pointer transition hover:opacity-80" style="background-color: var(--border-color);">
+                    <i class="bi bi-camera-reels"></i> Upload Video
+                </label>
+                <input type="file" id="videoUpload" name="video" accept="video/*" class="hidden" onchange="previewVideo(event)">
+                <video id="videoPreview" controls class="hidden mt-3 rounded-xl w-full max-h-48"></video>
+            </div>
         </div>
 
-        <button class="btn btn-primary w-full">
-            Post
+        <!-- Submit Button -->
+        <button class="w-full p-3 rounded-xl font-semibold text-white transition hover:opacity-90 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+            <i class="bi bi-send"></i> Post
         </button>
     </form>
 
 </div>
 
 <script>
+function setPostType(type) {
+    document.getElementById('postTypeInput').value = type;
+    
+    const studyBtn = document.getElementById('studyBtn');
+    const skillBtn = document.getElementById('skillBtn');
+    
+    if (type === 'study') {
+        studyBtn.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
+        studyBtn.style.color = 'white';
+        skillBtn.style.background = 'transparent';
+        skillBtn.style.color = 'var(--text-secondary)';
+    } else {
+        skillBtn.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
+        skillBtn.style.color = 'white';
+        studyBtn.style.background = 'transparent';
+        studyBtn.style.color = 'var(--text-secondary)';
+    }
+}
+
 function previewImage(event) {
     const file = event.target.files[0];
     const preview = document.getElementById('imagePreview');
