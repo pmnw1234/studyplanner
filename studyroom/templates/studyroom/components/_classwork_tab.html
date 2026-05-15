@@ -1,125 +1,139 @@
 <div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-    <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <h2 class="text-xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
-            <i class="bi bi-journal-bookmark" style="color: var(--accent-primary);"></i>
-            Class Work
-        </h2>
-        {% if request.user == room.creator %}
-        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('create-work-modal').showModal()">
-            <i class="bi bi-plus-lg"></i> Create Work
-        </button>
-        {% endif %}
+    
+    <!-- Create Button (Teacher only) -->
+    {% if request.user == room.creator %}
+    <div class="flex justify-end mb-4">
+        <div class="dropdown dropdown-end">
+            <button class="btn gap-2" style="background-color: var(--accent-primary); color: white; border: none;">
+                <i class="bi bi-plus-lg"></i> Create
+            </button>
+            <ul class="dropdown-content menu p-2 shadow rounded-box w-52 mt-2 z-10" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <li>
+                    <button onclick="document.getElementById('assignment-modal').showModal()" style="color: var(--text-primary);">
+                        <i class="bi bi-pencil-square"></i> Assignment
+                    </button>
+                </li>
+                <li>
+                    <button onclick="alert('Quiz feature coming soon!')" style="color: var(--text-primary);">
+                        <i class="bi bi-question-circle"></i> Quiz assignment
+                    </button>
+                </li>
+                <li>
+                    <button onclick="document.getElementById('material-modal').showModal()" style="color: var(--text-primary);">
+                        <i class="bi bi-file-text"></i> Material
+                    </button>
+                </li>
+                <li><hr class="my-1" style="border-color: var(--border-color);"></li>
+                <li>
+                    <button onclick="alert('Reuse post feature coming soon!')" style="color: var(--text-primary);">
+                        <i class="bi bi-arrow-repeat"></i> Reuse post
+                    </button>
+                </li>
+            </ul>
+        </div>
     </div>
-    <div class="space-y-4">
-        {% for work in classworks %}
-        <div class="p-4 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-            <div class="flex justify-between items-start flex-wrap gap-2">
-                <h3 class="font-bold text-lg" style="color: var(--text-primary);">{{ work.title }}</h3>
-                <div class="flex gap-2">
-                    <span class="badge gap-1" style="background-color: var(--accent-secondary); color: white; border: none;">
-                        <i class="bi bi-person"></i> {{ work.created_by.username }}
-                    </span>
-                    {% if request.user == room.creator %}
-                    <button class="btn btn-xs btn-ghost" onclick="openEditModal(
-                        '{{ work.id }}', 
-                        '{{ work.title|escapejs }}', 
-                        '{{ work.description|escapejs }}', 
-                        '{{ work.due_date|date:'Y-m-d\TH:i'|default:'' }}',
-                        '{{ work.resource_title|escapejs }}',
-                        '{{ work.resource_link|escapejs }}'
-                    )">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-xs btn-ghost text-red-500" onclick="if(confirm('Delete {{ work.title }}?')) document.getElementById('delete-form-{{ work.id }}').submit()">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                    <form id="delete-form-{{ work.id }}" method="POST" action="{% url 'delete_classwork' work.id %}" style="display: none;">
-                        {% csrf_token %}
-                    </form>
-                    {% endif %}
-                </div>
+    {% endif %}
+
+    <!-- Class Work List -->
+    <div class="space-y-6">
+        
+        <!-- Assignments Section -->
+        <div>
+            <div class="flex items-center gap-2 mb-3 cursor-pointer" onclick="toggleSection('assignments-section')">
+                <i class="bi bi-chevron-down" id="assignments-icon"></i>
+                <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                    <i class="bi bi-pencil-square mr-2" style="color: var(--accent-primary);"></i>
+                    Assignments
+                </h3>
+                <span class="badge text-xs" style="background-color: var(--bg-page); color: var(--text-secondary);">{{ classworks|length }}</span>
             </div>
-            <p class="mt-2" style="color: var(--text-secondary);">{{ work.description }}</p>
-            {% if work.due_date %}
-            <div class="mt-3 flex items-center gap-2 text-sm" style="color: var(--text-secondary);">
-                <i class="bi bi-calendar-event"></i>
-                <span>Due: {{ work.due_date|date:"M d, Y g:i A" }}</span>
-            </div>
-            {% endif %}
-            
-            <!-- Display Resources if available -->
-            {% if work.resource_file or work.resource_link %}
-            <div class="mt-3 pt-2">
-                <div class="text-sm font-medium mb-1" style="color: var(--text-primary);">
-                    <i class="bi bi-paperclip"></i> Attached Resource:
-                </div>
-                {% if work.resource_title %}
-                <div class="text-sm font-medium" style="color: var(--accent-primary);">{{ work.resource_title }}</div>
-                {% endif %}
-                <div class="flex gap-3 mt-1">
-                    {% if work.resource_file %}
-                    <a href="{{ work.resource_file.url }}" target="_blank" 
-                       class="btn btn-xs gap-1" style="background-color: var(--accent-primary); color: white; border: none;">
-                        <i class="bi bi-download"></i> Download File
-                    </a>
-                    {% endif %}
-                    {% if work.resource_link %}
-                    <a href="{{ work.resource_link }}" target="_blank" 
-                       class="btn btn-xs gap-1" style="background-color: var(--accent-secondary); color: white; border: none;">
-                        <i class="bi bi-box-arrow-up-right"></i> Open Link
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- Submission section for students -->
-            {% if is_member and request.user != room.creator %}
-            <div class="mt-4 pt-3 border-t" style="border-color: var(--border-color);">
-                {% for sub_id, submission in user_submissions.items %}
-                    {% if sub_id == work.id and submission %}
-                        {% if submission.status == 'submitted' %}
-                        <div class="flex items-center gap-2 text-sm">
-                            <i class="bi bi-check-circle-fill text-green-500"></i>
-                            <span style="color: var(--text-secondary);">Submitted on {{ submission.submitted_at|date:"M d, Y" }}</span>
-                            {% if submission.grade %}
-                            <span class="badge" style="background-color: var(--accent-primary); color: white;">Grade: {{ submission.grade }}%</span>
+            <div id="assignments-section" class="space-y-3 ml-6">
+                {% for work in classworks %}
+                <div class="p-4 rounded-lg" style="background-color: var(--bg-page); border-left: 4px solid var(--accent-primary); border-right: 1px solid var(--border-color); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <div class="flex justify-between items-start flex-wrap gap-2">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <i class="bi bi-pencil-square" style="color: var(--accent-primary);"></i>
+                                <h4 class="font-bold" style="color: var(--text-primary);">{{ work.title }}</h4>
+                                {% if work.due_date %}
+                                <span class="text-xs" style="color: #ef4444;">
+                                    <i class="bi bi-clock"></i> Due: {{ work.due_date|date:"M d, Y" }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm mb-2" style="color: var(--text-secondary);">{{ work.description }}</p>
+                            
+                            <!-- Resources -->
+                            {% if work.resource_file or work.resource_link %}
+                            <div class="flex gap-2 mt-2 flex-wrap">
+                                {% if work.resource_file %}
+                                <a href="{{ work.resource_file.url }}" target="_blank" class="btn btn-xs gap-1" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                    <i class="bi bi-paperclip"></i> {{ work.resource_title|default:"Attachment" }}
+                                </a>
+                                {% endif %}
+                                {% if work.resource_link %}
+                                <a href="{{ work.resource_link }}" target="_blank" class="btn btn-xs gap-1" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                    <i class="bi bi-link"></i> Link
+                                </a>
+                                {% endif %}
+                            </div>
                             {% endif %}
                         </div>
-                        {% else %}
-                        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
-                            <i class="bi bi-cloud-upload"></i> Submit Work
-                        </button>
+                        
+                        <!-- Action buttons for teacher -->
+                        {% if request.user == room.creator %}
+                        <div class="flex gap-1">
+                            <button class="btn btn-xs btn-ghost" onclick="openEditAssignmentModal('{{ work.id }}', '{{ work.title|escapejs }}', '{{ work.description|escapejs }}', '{{ work.due_date|date:'Y-m-d\TH:i'|default:'' }}', '{{ work.resource_title|escapejs }}', '{{ work.resource_link|escapejs }}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-xs btn-ghost text-red-500" onclick="if(confirm('Delete {{ work.title }}?')) document.getElementById('delete-form-{{ work.id }}').submit()">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <form id="delete-form-{{ work.id }}" method="POST" action="{% url 'delete_classwork' work.id %}" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </div>
                         {% endif %}
-                    {% elif sub_id == work.id and not submission %}
-                        <button class="btn btn-sm gap-2" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
-                            <i class="bi bi-cloud-upload"></i> Submit Work
-                        </button>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Submissions list for creator -->
-            {% if request.user == room.creator %}
-            <div class="mt-4 pt-3 border-t" style="border-color: var(--border-color);">
-                <details>
-                    <summary class="cursor-pointer text-sm" style="color: var(--accent-primary);">
-                        <i class="bi bi-people"></i> Submissions
-                    </summary>
-                    <div class="mt-2 space-y-2">
-                        {% for sub_id, submission_list in all_submissions.items %}
+                    </div>
+                    
+                    <!-- Submission area for students -->
+                    {% if is_member and request.user != room.creator %}
+                    <div class="mt-3 pt-2 border-t" style="border-color: var(--border-color);">
+                        {% for sub_id, submission in user_submissions.items %}
                             {% if sub_id == work.id %}
-                                {% for submission in submission_list %}
+                                {% if submission and submission.status == 'submitted' %}
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="bi bi-check-circle-fill text-green-500"></i>
+                                    <span style="color: var(--text-secondary);">Submitted on {{ submission.submitted_at|date:"M d, Y" }}</span>
+                                    {% if submission.grade %}
+                                    <span class="badge" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <button class="btn btn-sm gap-1" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
+                                    <i class="bi bi-cloud-upload"></i> Add or create
+                                </button>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Submissions for teacher -->
+                    {% if request.user == room.creator %}
+                    <div class="mt-3 pt-2 border-t" style="border-color: var(--border-color);">
+                        <details class="text-sm">
+                            <summary class="cursor-pointer" style="color: var(--accent-primary);">
+                                <i class="bi bi-people"></i> View submissions
+                            </summary>
+                            <div class="mt-2 space-y-2">
+                                {% for submission in work.submissions.all %}
                                 <div class="p-2 rounded flex justify-between items-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                                     <div class="flex items-center gap-2">
-                                        <!-- Student Avatar -->
                                         <div class="avatar">
                                             {% if submission.student.userprofile.profile_picture %}
                                             <div class="w-6 h-6 rounded-full">
-                                                <img src="{{ submission.student.userprofile.profile_picture.url }}" 
-                                                     alt="{{ submission.student.username }}"
-                                                     class="w-full h-full rounded-full object-cover">
+                                                <img src="{{ submission.student.userprofile.profile_picture.url }}" class="w-full h-full rounded-full object-cover">
                                             </div>
                                             {% else %}
                                             <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color: var(--accent-primary);">
@@ -127,32 +141,181 @@
                                             </div>
                                             {% endif %}
                                         </div>
-                                        <div>
-                                            <span class="font-semibold" style="color: var(--text-primary);">{{ submission.student.username }}</span>
-                                            <span class="text-xs ml-2" style="color: var(--text-secondary);">{{ submission.submitted_at|date:"M d" }}</span>
-                                            {% if submission.grade %}
-                                            <span class="badge text-xs ml-2" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
-                                            {% endif %}
-                                        </div>
+                                        <span class="font-semibold" style="color: var(--text-primary);">{{ submission.student.username }}</span>
+                                        <span class="text-xs" style="color: var(--text-secondary);">{{ submission.submitted_at|date:"M d" }}</span>
+                                        {% if submission.grade %}
+                                        <span class="badge text-xs" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
+                                        {% endif %}
                                     </div>
-                                    <button class="btn btn-xs gap-1" style="background-color: var(--accent-primary); color: white;" onclick="openGradeModal('{{ submission.id }}', '{{ submission.student.username }}', '{{ submission.grade|default:'' }}', `{{ submission.feedback|escapejs }}`)">
+                                    <button class="btn btn-xs" style="background-color: var(--accent-primary); color: white;" onclick="openGradeModal('{{ submission.id }}', '{{ submission.student.username }}', '{{ submission.grade|default:'' }}', `{{ submission.feedback|escapejs }}`)">
                                         <i class="bi bi-pencil"></i> Grade
                                     </button>
                                 </div>
                                 {% empty %}
                                 <p class="text-sm italic" style="color: var(--text-secondary);">No submissions yet.</p>
                                 {% endfor %}
-                            {% endif %}
-                        {% endfor %}
+                            </div>
+                        </details>
                     </div>
-                </details>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-center py-4" style="color: var(--text-secondary);">No assignments yet.</p>
+                {% endfor %}
             </div>
-            {% endif %}
         </div>
-        {% empty %}
+        
+        <!-- Materials Section -->
+        <div>
+            <div class="flex items-center gap-2 mb-3 cursor-pointer" onclick="toggleSection('materials-section')">
+                <i class="bi bi-chevron-down" id="materials-icon"></i>
+                <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                    <i class="bi bi-file-text mr-2" style="color: var(--accent-secondary);"></i>
+                    Materials
+                </h3>
+                <span class="badge text-xs" style="background-color: var(--bg-page); color: var(--text-secondary);">0</span>
+            </div>
+            <div id="materials-section" class="space-y-3 ml-6">
+                <p class="text-center py-4" style="color: var(--text-secondary);">No materials yet.</p>
+            </div>
+        </div>
+        
+        {% if not classworks %}
         <p class="text-center py-8" style="color: var(--text-secondary);">
-            <i class="bi bi-journal-bookmark text-4xl"></i><br>No class work yet.
+            <i class="bi bi-journal-bookmark text-4xl"></i><br>No class work yet. Click "Create" to add your first assignment or material.
         </p>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
+
+<!-- JavaScript for collapsible sections -->
+<script>
+function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const icon = document.getElementById(sectionId.replace('-section', '-icon'));
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        icon.classList.remove('bi-chevron-right');
+        icon.classList.add('bi-chevron-down');
+    } else {
+        section.style.display = 'none';
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-right');
+    }
+}
+
+// Initialize sections to be open by default
+document.addEventListener('DOMContentLoaded', function() {
+    const assignmentsSection = document.getElementById('assignments-section');
+    const materialsSection = document.getElementById('materials-section');
+    if (assignmentsSection) assignmentsSection.style.display = 'block';
+    if (materialsSection) materialsSection.style.display = 'block';
+});
+
+function openGradeModal(submissionId, studentName, currentGrade, currentFeedback) {
+    const form = document.getElementById('grade-form');
+    form.action = `/library/submission/${submissionId}/grade/`;
+    document.getElementById('grade-student-name').textContent = studentName;
+    document.getElementById('grade-value').value = currentGrade;
+    document.getElementById('grade-feedback').value = currentFeedback;
+    document.getElementById('grade-modal').showModal();
+}
+
+function openEditAssignmentModal(id, title, description, dueDate, resourceTitle, resourceLink) {
+    alert('Edit feature coming soon!');
+}
+
+function openEditMaterialModal(id, title, description, resourceTitle, resourceLink) {
+    alert('Edit feature coming soon!');
+}
+</script>
+
+<!-- Assignment Modal -->
+<dialog id="assignment-modal" class="modal">
+    <div class="modal-box rounded-xl w-full max-w-2xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-pencil-square" style="color: var(--accent-primary);"></i>
+            Create Assignment
+        </h3>
+        <form method="POST" action="{% url 'create_classwork' room.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Title *</label>
+                <input type="text" name="title" class="input input-bordered w-full" required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Instructions</label>
+                <textarea name="description" class="textarea textarea-bordered w-full" rows="4" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Due Date</label>
+                <input type="datetime-local" name="due_date" class="input input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="border-t pt-4 mt-2" style="border-color: var(--border-color);">
+                <label class="label font-semibold" style="color: var(--text-primary);">Attachments</label>
+                <div class="form-control mb-3">
+                    <input type="text" name="resource_title" class="input input-bordered w-full" placeholder="Title (e.g., Worksheet, Reading)" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+                <div class="form-control mb-3">
+                    <input type="file" name="resource_file" class="file-input file-input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color);">
+                </div>
+                <div class="form-control mb-3">
+                    <input type="url" name="resource_link" class="input input-bordered w-full" placeholder="Or add a link" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-check-lg"></i> Create
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Material Modal -->
+<dialog id="material-modal" class="modal">
+    <div class="modal-box rounded-xl w-full max-w-2xl" style="background-color: var(--bg-card);">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-file-text" style="color: var(--accent-primary);"></i>
+            Create Material
+        </h3>
+        <form method="POST" action="{% url 'create_classwork' room.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Title *</label>
+                <input type="text" name="title" class="input input-bordered w-full" required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+            </div>
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Description</label>
+                <textarea name="description" class="textarea textarea-bordered w-full" rows="4" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            <div class="border-t pt-4 mt-2" style="border-color: var(--border-color);">
+                <label class="label font-semibold" style="color: var(--text-primary);">Attachments</label>
+                <div class="form-control mb-3">
+                    <input type="text" name="resource_title" class="input input-bordered w-full" placeholder="Title (e.g., Lecture Slides)" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+                <div class="form-control mb-3">
+                    <input type="file" name="resource_file" class="file-input file-input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color);">
+                </div>
+                <div class="form-control mb-3">
+                    <input type="url" name="resource_link" class="input input-bordered w-full" placeholder="Or add a link" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn" style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-check-lg"></i> Create
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
