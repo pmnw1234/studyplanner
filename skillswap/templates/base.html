@@ -94,7 +94,7 @@
             display: flex !important;
         }
         
-        /* HIDE DESKTOP MENU ON MOBILE - ONLY THIS CHANGE */
+        /* HIDE DESKTOP MENU ON MOBILE */
         @media (max-width: 768px) {
             .navbar-center {
                 display: none !important;
@@ -140,32 +140,6 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const sidebar = document.getElementById("sidebar");
-    const backdrop = document.getElementById("sidebar-backdrop");
-    const toggleBtn = document.getElementById("sidebar-toggle");
-
-    function toggleSidebar() {
-        sidebar.classList.toggle("open");
-        backdrop.classList.toggle("hidden");
-    }
-
-    function closeSidebar() {
-        sidebar.classList.remove("open");
-        backdrop.classList.add("hidden");
-    }
-
-    if (toggleBtn) {
-        toggleBtn.addEventListener("click", toggleSidebar);
-    }
-
-    if (backdrop) {
-        backdrop.addEventListener("click", closeSidebar);
-    }
-});
-</script>
 <body class="no-tap-highlight">
     
     <!-- Responsive Navbar with Mobile Menu -->
@@ -176,9 +150,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 <!-- Left side - Logo -->
                 <div class="navbar-start">
                     <a id="sidebar-toggle"
-   class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2 cursor-pointer"
-   href="javascript:void(0);"
-   style="color: var(--text-primary);">
+                       class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2 cursor-pointer"
+                       href="javascript:void(0);"
+                       style="color: var(--text-primary);">
                         <i class="bi bi-intersect text-lg md:text-2xl" style="color: var(--accent-primary);"></i>
                         <span class="ml-1 md:ml-2 hidden sm:inline">SkillSwap</span>
                         <span class="ml-1 sm:hidden">SS</span>
@@ -199,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             </a>
                         </li>
                         <li>
-                            <a href="{% url 'inbox' %}" class="text-sm">
+                            <a href="{% url 'inbox' %}" class="text-sm" style="color: var(--text-primary);">
                                 <i class="bi bi-people"></i> <span>Matches</span>
                             </a>
                         </li>
@@ -220,16 +194,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                     
-                    <!-- PROFILE BUTTON - VISIBLE TEXT BUTTON -->
+                    <!-- PROFILE BUTTON -->
                     <div class="dropdown dropdown-end">
                         <label tabindex="0" class="profile-btn cursor-pointer">
                             <i class="bi bi-person-circle"></i>
                             <span class="hidden sm:inline">{{ user.username }}</span>
                             <i class="bi bi-chevron-down text-xs"></i>
                         </label>
-                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-48 mt-2" style="background-color: var(--bg-card); background: rgba(255,255,255,0.03);
-backdrop-filter: blur(14px);
-box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-48 mt-2" style="background-color: var(--bg-card); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
                             <li><a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> My Profile</a></li>
                             <li><a href="{% url 'edit_profile' %}" style="color: var(--text-primary);"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
                             <li><hr class="my-1" style="border-color: var(--border-color);"></li>
@@ -260,7 +232,7 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="justify-between" style="color: var(--text-primary);">
+                        <a href="{% url 'inbox' %}" class="justify-between" style="color: var(--text-primary);">
                             <span><i class="bi bi-people"></i> Matches</span>
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
@@ -302,9 +274,7 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         {% if messages %}
             <div class="mb-4 space-y-2">
                 {% for message in messages %}
-                    <div class="alert shadow-lg rounded-xl" style="background-color: var(--bg-card); background: rgba(255,255,255,0.03);
-backdrop-filter: blur(14px);
-box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+                    <div class="alert shadow-lg rounded-xl" style="background-color: var(--bg-card); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
                         <div>
                             <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill text-green-500{% elif message.tags == 'error' %}exclamation-triangle-fill text-red-500{% else %}info-circle-fill text-blue-500{% endif %} mr-2"></i>
                             <span style="color: var(--text-primary);">{{ message }}</span>
@@ -335,6 +305,36 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         </div>
     </footer>
 
+    <!-- Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full z-50 p-5 transition-all duration-300" style="background-color: var(--bg-card); border-right: 1px solid var(--border-color);">
+
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Skill Menu</h2>
+
+        <a href="#" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-bar-chart text-lg" style="color: var(--accent-primary);"></i>
+            <span>Progress</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-book text-lg" style="color: var(--accent-primary);"></i>
+            <span>My Library</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-trophy text-lg" style="color: var(--accent-primary);"></i>
+            <span>Leaderboard</span>
+        </a>
+
+        <a href="#" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-pencil-square text-lg" style="color: var(--accent-primary);"></i>
+            <span>Assignments</span>
+        </a>
+
+    </div>
+
     <script>
     // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
@@ -362,6 +362,29 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         } else {
             themeIcon.className = 'bi bi-moon-fill text-base md:text-xl';
         }
+    }
+    
+    // Sidebar Functions
+    const sidebar = document.getElementById("sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
+    const toggleBtn = document.getElementById("sidebar-toggle");
+
+    function toggleSidebar() {
+        sidebar.classList.toggle("open");
+        backdrop.classList.toggle("hidden");
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove("open");
+        backdrop.classList.add("hidden");
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", toggleSidebar);
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener("click", closeSidebar);
     }
     
     // Mobile Menu
@@ -396,19 +419,22 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         }
     });
     
-    // Responsive resize handler - close menu on window resize
+    // Responsive resize handler
     window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768 && isMenuOpen) {
-            isMenuOpen = false;
-            mobileMenu.classList.remove('mobile-menu-enter-active');
-            mobileMenu.classList.add('mobile-menu-enter');
-            if (mobileMenuIcon) {
-                mobileMenuIcon.className = 'bi bi-list text-xl';
+        if (window.innerWidth >= 768) {
+            if (isMenuOpen) {
+                isMenuOpen = false;
+                mobileMenu.classList.remove('mobile-menu-enter-active');
+                mobileMenu.classList.add('mobile-menu-enter');
+                if (mobileMenuIcon) {
+                    mobileMenuIcon.className = 'bi bi-list text-xl';
+                }
             }
+            closeSidebar();
         }
     });
     
-    // Set active nav link based on current URL
+    // Set active nav link
     function setActiveNavLink() {
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('.menu a');
@@ -421,14 +447,13 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         });
     }
     
-    // Global function to fetch unread count - FIXED: removed /api/ prefix
+    // Fetch unread count
     async function updateUnreadMessageCount() {
         try {
             const response = await fetch('/messages/unread/');
             const data = await response.json();
             
             if (response.ok && data.unread_count !== undefined) {
-                // Update desktop badge
                 const desktopBadge = document.getElementById('unreadMessageBadge');
                 if (desktopBadge) {
                     if (data.unread_count > 0) {
@@ -439,7 +464,6 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
                     }
                 }
                 
-                // Update mobile badge
                 const mobileBadge = document.getElementById('unreadMessageBadgeMobile');
                 if (mobileBadge) {
                     if (data.unread_count > 0) {
@@ -455,43 +479,13 @@ box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
         }
     }
     
-    // Call setActiveNavLink and update unread count when the page loads
     document.addEventListener('DOMContentLoaded', function() {
         setActiveNavLink();
         updateUnreadMessageCount();
-        // Update unread count every 30 seconds
         setInterval(updateUnreadMessageCount, 30000);
     });
-</script>
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
-<!-- Sidebar Backdrop -->
-<div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
-
-<!-- Sidebar -->
-<div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full bg-gray-900 text-white z-50 p-5 transition-all duration-300">
-
-    <h2 class="text-lg font-bold mb-4">Skill Menu</h2>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-bar-chart text-blue-400 text-lg"></i>
-        <span>Progress</span>
-    </a>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-book text-green-400 text-lg"></i>
-        <span>My Library</span>
-    </a>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-trophy text-yellow-400 text-lg"></i>
-        <span>Leaderboard</span>
-    </a>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-pencil-square text-pink-400 text-lg"></i>
-        <span>Assignments</span>
-    </a>
-
-</div>
 </html>
