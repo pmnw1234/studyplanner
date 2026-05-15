@@ -15,6 +15,7 @@ urlpatterns = [
     path('feed/', include('feedview.urls')),  # Keep feedview from feed-view branch
     path('profiles/', include('profiles.urls')),  # Keep profiles from main branch
     path('messages/', include('direct_message.urls')),  # ADD THIS LINE - include direct_message URLs
+    path('library/', include('studyroom.urls')),
     path('reviews/', include('reviews.urls')),
 ]
 
