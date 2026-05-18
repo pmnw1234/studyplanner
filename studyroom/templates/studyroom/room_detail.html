@@ -107,8 +107,39 @@ function showTab(tabName) {
     }
 }
 
+// Toggle sections inside Class Work tab (Assignments & Materials)
+function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const icon = document.getElementById(sectionId.replace('-section', '-icon'));
+    
+    if (!section) return;
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        if (icon) {
+            icon.className = 'bi bi-chevron-down';
+        }
+    } else {
+        section.style.display = 'none';
+        if (icon) {
+            icon.className = 'bi bi-chevron-right';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     showTab('students');
+    
+    // Initialize sections to be visible by default
+    const assignmentsSection = document.getElementById('assignments-section');
+    const materialsSection = document.getElementById('materials-section');
+    const assignmentsIcon = document.getElementById('assignments-icon');
+    const materialsIcon = document.getElementById('materials-icon');
+    
+    if (assignmentsSection) assignmentsSection.style.display = 'block';
+    if (materialsSection) materialsSection.style.display = 'block';
+    if (assignmentsIcon) assignmentsIcon.className = 'bi bi-chevron-down';
+    if (materialsIcon) materialsIcon.className = 'bi bi-chevron-down';
 });
 </script>
 {% endblock %}

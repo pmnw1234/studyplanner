@@ -194,6 +194,25 @@
                         <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                     
+                    <!-- Notifications Bell -->
+                    {% if user.is_authenticated %}
+                    <div class="dropdown dropdown-end" id="notifications-dropdown">
+                        <button id="notification-bell" class="btn btn-ghost btn-circle btn-sm md:btn-md relative">
+                            <i class="bi bi-bell text-base md:text-xl" style="color: var(--text-primary);"></i>
+                            <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                        </button>
+                        <div id="notification-menu" class="dropdown-content menu p-2 shadow rounded-box w-80 mt-2 hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <div class="flex justify-between items-center p-2 border-b" style="border-color: var(--border-color);">
+                                <span class="font-bold" style="color: var(--text-primary);">Notifications</span>
+                                <a href="{% url 'mark_all_notifications_read' %}" class="text-xs" style="color: var(--accent-primary);" id="mark-all-read">Mark all as read</a>
+                            </div>
+                            <div id="notification-list" class="max-h-96 overflow-y-auto">
+                                <div class="text-center py-4" style="color: var(--text-secondary);">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <!-- PROFILE BUTTON -->
                     <div class="dropdown dropdown-end">
                         <label tabindex="0" class="profile-btn cursor-pointer">
@@ -245,6 +264,7 @@
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
                     </li>
+                    
                     <li><hr class="my-1" style="border-color: var(--border-color);"></li>
                     <li>
                         <a href="{% url 'profile' %}" class="justify-between" style="color: var(--text-primary);">
@@ -447,7 +467,7 @@
         });
     }
     
-    // Fetch unread count
+    // Fetch unread message count
     async function updateUnreadMessageCount() {
         try {
             const response = await fetch('/messages/unread/');
@@ -479,42 +499,116 @@
         }
     }
     
+    // Notification Functions
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/library/notifications/api/');
+            const data = await response.json();
+            
+            // Update badge
+            const badge = document.getElementById('notification-badge');
+            if (data.unread_count > 0) {
+                badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            // Update notification list
+            const list = document.getElementById('notification-list');
+            if (data.notifications.length === 0) {
+                list.innerHTML = '<div class="text-center py-4" style="color: var(--text-secondary);">No notifications yet</div>';
+            } else {
+                list.innerHTML = data.notifications.map(n => `
+                    <div class="p-3 rounded-lg mb-2 ${!n.is_read ? 'border-l-4' : ''}" 
+                         style="${!n.is_read ? 'border-left-color: var(--accent-primary); background-color: var(--bg-page);' : 'background-color: var(--bg-card);'}">
+                        <div class="flex items-start gap-2">
+                            <div>
+                                <i class="bi ${getIconForType(n.type)} ${getColorForType(n.type)}"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold" style="color: var(--text-primary);">${escapeHtml(n.title)}</p>
+                                <p class="text-xs mt-1" style="color: var(--text-secondary);">${escapeHtml(n.message)}</p>
+                                <p class="text-xs mt-1" style="color: var(--text-secondary);">${n.time_ago}</p>
+                                ${n.room_url ? `<a href="${n.room_url}" class="text-xs mt-1 inline-block" style="color: var(--accent-primary);">View →</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    function getIconForType(type) {
+        const icons = {
+            'deadline': 'bi-clock-fill',
+            'new_work': 'bi-plus-circle-fill',
+            'submission': 'bi-upload',
+            'graded': 'bi-star-fill',
+            'comment': 'bi-chat-fill'
+        };
+        return icons[type] || 'bi-bell-fill';
+    }
+
+    function getColorForType(type) {
+        const colors = {
+            'deadline': 'text-red-500',
+            'new_work': 'text-green-500',
+            'submission': 'text-blue-500',
+            'graded': 'text-yellow-500',
+            'comment': 'text-purple-500'
+        };
+        return colors[type] || 'text-gray-500';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Toggle notification dropdown
     document.addEventListener('DOMContentLoaded', function() {
         setActiveNavLink();
         updateUnreadMessageCount();
         setInterval(updateUnreadMessageCount, 30000);
+        
+        const bell = document.getElementById('notification-bell');
+        const menu = document.getElementById('notification-menu');
+        
+        if (bell) {
+            bell.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.classList.toggle('hidden');
+                if (!menu.classList.contains('hidden')) {
+                    loadNotifications();
+                }
+            });
+            
+            // Close when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!bell.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Load notifications count on page load
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+        
+        // Refresh every 30 seconds
+        setInterval(function() {
+            if (typeof loadNotifications === 'function') {
+                loadNotifications();
+            }
+        }, 30000);
     });
     </script>
     
     {% block extra_js %}{% endblock %}
 </body>
-<!-- Sidebar Backdrop -->
-<div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
-
-<!-- Sidebar -->
-<div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full bg-gray-900 text-white z-50 p-5 transition-all duration-300">
-
-    <h2 class="text-lg font-bold mb-4">Skill Menu</h2>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-bar-chart text-blue-400 text-lg"></i>
-        <span>Progress</span>
-    </a>
-
-    <a href="{% url 'studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-book text-green-400 text-lg"></i>
-        <span>My Library</span>
-    </a>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-trophy text-yellow-400 text-lg"></i>
-        <span>Leaderboard</span>
-    </a>
-
-    <a href="#" class="flex items-center gap-3 py-2 px-3 rounded hover:bg-gray-700">
-        <i class="bi bi-pencil-square text-pink-400 text-lg"></i>
-        <span>Assignments</span>
-    </a>
-
-</div>
 </html>

@@ -1,4 +1,6 @@
+<!-- Submit Work Modals -->
 {% for work in classworks %}
+{% if work.content_type == 'assignment' %}
 <dialog id="submit-modal-{{ work.id }}" class="modal">
     <div class="modal-box rounded-xl" style="background-color: var(--bg-card);">
         <form method="dialog">
@@ -28,4 +30,5 @@
         </form>
     </div>
 </dialog>
+{% endif %}
 {% endfor %}

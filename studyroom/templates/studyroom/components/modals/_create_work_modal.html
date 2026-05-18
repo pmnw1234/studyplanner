@@ -11,20 +11,50 @@
         </h3>
         <form method="POST" action="{% url 'create_classwork' room.id %}" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <!-- NEW: Content Type Selector -->
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">Content Type *</label>
+                <div class="flex gap-4 flex-wrap">
+                    <label class="cursor-pointer flex items-center gap-2">
+                        <input type="radio" name="content_type" value="assignment" checked class="radio" style="border-color: var(--accent-primary); accent-color: var(--accent-primary);">
+                        <i class="bi bi-pencil-square" style="color: var(--accent-primary);"></i>
+                        <span style="color: var(--text-primary);">Assignment</span>
+                    </label>
+                    <label class="cursor-pointer flex items-center gap-2">
+                        <input type="radio" name="content_type" value="quiz" class="radio" style="border-color: var(--accent-secondary); accent-color: var(--accent-secondary);">
+                        <i class="bi bi-question-circle" style="color: var(--accent-secondary);"></i>
+                        <span style="color: var(--text-primary);">Quiz</span>
+                    </label>
+                    <label class="cursor-pointer flex items-center gap-2">
+                        <input type="radio" name="content_type" value="material" class="radio" style="border-color: #10b981; accent-color: #10b981;">
+                        <i class="bi bi-file-text" style="color: #10b981;"></i>
+                        <span style="color: var(--text-primary);">Material</span>
+                    </label>
+                </div>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                    <i class="bi bi-info-circle"></i> 
+                    Assignments and Quizzes have due dates and submissions; Materials are for sharing resources only.
+                </p>
+            </div>
+            
             <div class="form-control mb-4">
                 <label class="label" style="color: var(--text-primary);">Title *</label>
                 <input type="text" name="title" class="input input-bordered w-full" required style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
             </div>
+            
             <div class="form-control mb-4">
                 <label class="label" style="color: var(--text-primary);">Description</label>
                 <textarea name="description" class="textarea textarea-bordered w-full" rows="4" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
             </div>
-            <div class="form-control mb-4">
+            
+            <!-- Due Date - Only shown for Assignments and Quizzes (JavaScript controlled) -->
+            <div class="form-control mb-4" id="due-date-container">
                 <label class="label" style="color: var(--text-primary);">Due Date (optional)</label>
                 <input type="datetime-local" name="due_date" class="input input-bordered w-full" style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);">
             </div>
             
-            <!-- NEW: Resource Section -->
+            <!-- Resource Section -->
             <div class="border-t pt-4 mt-2 mb-4" style="border-color: var(--border-color);">
                 <label class="label font-semibold" style="color: var(--text-primary);">
                     <i class="bi bi-paperclip mr-2"></i> Attach Resource (Optional)
@@ -54,3 +84,27 @@
         </form>
     </div>
 </dialog>
+
+<script>
+    // Show/hide due date based on content type selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioButtons = document.querySelectorAll('input[name="content_type"]');
+        const dueDateContainer = document.getElementById('due-date-container');
+        
+        function toggleDueDate() {
+            const selected = document.querySelector('input[name="content_type"]:checked');
+            if (selected && (selected.value === 'assignment' || selected.value === 'quiz')) {
+                dueDateContainer.style.display = 'block';
+            } else {
+                dueDateContainer.style.display = 'none';
+            }
+        }
+        
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', toggleDueDate);
+        });
+        
+        // Initial state
+        toggleDueDate();
+    });
+</script>
