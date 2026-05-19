@@ -457,6 +457,111 @@ function toggleReviews() {
                     </div>
                 </div>
             </div>
+            <!-- My Posts -->
+<div class="mt-8">
+    <h2 class="text-xl font-bold mb-4">
+        My Posts
+    </h2>
+
+    {% for post in posts %}
+
+    <div class="p-4 rounded-2xl shadow-sm post-card mb-4"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-3">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                     style="background-color: var(--border-color);">
+
+                    {% if post.user.userprofile.profile_picture %}
+                        <img src="{{ post.user.userprofile.profile_picture.url }}"
+                             class="w-full h-full object-cover">
+                    {% endif %}
+                </div>
+
+                <div>
+                    <p class="text-sm font-semibold">
+                        {{ post.user.username }}
+                    </p>
+
+                    <p class="text-xs opacity-50">
+                        {{ post.created_at|timesince }} ago
+                    </p>
+                </div>
+            </div>
+
+            <span class="text-xs px-3 py-1 rounded-full"
+                  style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
+
+                {{ post.get_post_type_display }}
+
+            </span>
+        </div>
+
+        <!-- Topic -->
+        <div class="mb-2">
+            <span class="text-xs px-2 py-0.5 rounded-full"
+                  style="background-color: var(--border-color);">
+
+                {{ post.get_topic_display }}
+
+            </span>
+        </div>
+
+        <!-- Content -->
+        {% if post.content %}
+        <p class="text-sm mb-3">
+            {{ post.content }}
+        </p>
+        {% endif %}
+
+        <!-- Hashtags -->
+        {% if post.hashtags %}
+        <p class="text-xs mb-3"
+           style="color: var(--accent-primary);">
+
+            {{ post.hashtags }}
+
+        </p>
+        {% endif %}
+
+        <!-- Image -->
+        {% if post.image %}
+        <img src="{{ post.image.url }}"
+             class="w-full rounded-xl mb-3 object-cover">
+        {% endif %}
+
+        <!-- Video -->
+        {% if post.video %}
+        <video controls class="w-full rounded-xl mb-3">
+            <source src="{{ post.video.url }}">
+        </video>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex gap-4 text-sm pt-2 border-t"
+             style="border-color: var(--border-color);">
+
+            <div class="flex items-center gap-1">
+                ❤️ {{ post.total_likes }}
+            </div>
+
+            <div class="flex items-center gap-1">
+                ⭐ Interested
+            </div>
+
+        </div>
+    </div>
+
+    {% empty %}
+
+    <p>No posts yet.</p>
+
+    {% endfor %}
+</div>
         </div>
     </div>
 </div>

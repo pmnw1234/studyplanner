@@ -5,11 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from useraccount.models import UserProfile, Connection, ConnectionRequest
-from feedview.models import MatchRequest
+from feedview.models import MatchRequest,Post
 from useraccount.models import UserProfile, UserSkill, ConnectionRequest, Connection, Certification
 from django.db.models import Avg
 from django.db.models import Q
 from reviews.models import Review
+
 
 # --- HELPER FUNCTIONS ---
 
@@ -173,7 +174,9 @@ def view_other_profile(request, user_id):
     avg_rating = reviews.aggregate(
     Avg('rating')
     )['rating__avg']
-
+    posts = Post.objects.filter(
+    user=other_user
+    ).order_by('-created_at')
     context = {
         'other_user': other_user,
         'other_profile': other_profile,
@@ -189,6 +192,7 @@ def view_other_profile(request, user_id):
         'request_received_id': request_received_id,
         'reviews': reviews,
         'avg_rating': avg_rating,
+        'posts': posts,
     }
 
     return render(request, 'profiles/view_other_profile.html', context)

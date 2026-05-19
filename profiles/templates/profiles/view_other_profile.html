@@ -641,7 +641,117 @@
 
                 </div>
             </div>
+            <!-- POSTS SECTION -->
+<div class="rounded-xl p-5"
+     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
 
+    <h3 class="text-xl font-bold mb-4">
+        {{ other_user.username }}'s Posts
+    </h3>
+
+    {% for post in posts %}
+    <div class="p-4 rounded-xl mb-4"
+         style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+
+        <!-- Post Header -->
+        <div class="flex justify-between items-center mb-3">
+            <div>
+                <p class="font-semibold">
+                    {{ other_user.username }}
+                </p>
+
+                <p class="text-xs opacity-60">
+                    {{ post.created_at|timesince }} ago
+                </p>
+            </div>
+
+            <span class="text-xs px-3 py-1 rounded-full"
+                  style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
+                {{ post.get_post_type_display }}
+            </span>
+        </div>
+
+        <!-- Topic -->
+        {% if post.topic %}
+        <p class="text-xs mb-2 opacity-70">
+            # {{ post.get_topic_display }}
+        </p>
+        {% endif %}
+
+        <!-- Content -->
+        {% if post.content %}
+        <p class="mb-3">
+            {{ post.content }}
+        </p>
+        {% endif %}
+
+        <!-- Image -->
+        {% if post.image %}
+        <img src="{{ post.image.url }}"
+             class="w-full rounded-xl mb-3">
+        {% endif %}
+
+        <!-- Video -->
+        {% if post.video %}
+        <video controls class="w-full rounded-xl mb-3">
+            <source src="{{ post.video.url }}">
+        </video>
+        {% endif %}
+
+        <!-- Hashtags -->
+        {% if post.hashtags %}
+        <p class="text-sm"
+           style="color: var(--accent-primary);">
+            {{ post.hashtags }}
+        </p>
+        {% endif %}
+
+        <!-- Actions -->
+<div class="flex gap-4 text-sm pt-3 border-t"
+     style="border-color: var(--border-color);">
+
+    <!-- LIKE BUTTON -->
+    <button type="button"
+            onclick="likePost({{ post.id }}, '{% url 'like_post' post.id %}')"
+            class="flex items-center gap-1 opacity-70 hover:opacity-100 transition">
+
+        <i class="bi bi-heart"
+           id="heart-icon-{{ post.id }}"></i>
+
+        <span id="like-count-{{ post.id }}">
+            {{ post.total_likes }}
+        </span>
+    </button>
+
+    <!-- INTERESTED BUTTON -->
+    {% if other_user != request.user %}
+
+    <button type="button"
+            onclick="sendInterest({{ other_user.id }}, '{% url 'send_request' other_user.id %}', this)"
+            class="flex items-center gap-1 opacity-70 hover:opacity-100 transition"
+            id="interest-btn-{{ other_user.id }}">
+
+        <i class="bi bi-star"
+           id="star-icon-{{ other_user.id }}"></i>
+
+        <span id="interest-text-{{ other_user.id }}">
+            Interested
+        </span>
+    </button>
+
+    {% endif %}
+
+</div>
+
+    </div>
+
+    {% empty %}
+    <p class="opacity-60">
+        No posts yet.
+    </p>
+    {% endfor %}
+
+</div>
         </div>
     </div>
 </div>
@@ -724,4 +834,92 @@ function toggleReviews() {
 }
 </script>
 
+<script>
+function getCSRFToken() {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+function likePost(postId, url) {
+    const csrftoken = getCSRFToken();
+
+    const heartIcon = document.getElementById(`heart-icon-${postId}`);
+    const likeCount = document.getElementById(`like-count-${postId}`);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.status === 'liked') {
+
+            heartIcon.classList.remove('bi-heart');
+            heartIcon.classList.add('bi-heart-fill');
+            heartIcon.style.color = '#ef4444';
+
+        } else {
+
+            heartIcon.classList.remove('bi-heart-fill');
+            heartIcon.classList.add('bi-heart');
+            heartIcon.style.color = '';
+        }
+
+        likeCount.textContent = data.total_likes;
+    });
+}
+
+function sendInterest(userId, url, button) {
+    const csrftoken = getCSRFToken();
+
+    const starIcon = document.getElementById(`star-icon-${userId}`);
+    const interestText = document.getElementById(`interest-text-${userId}`);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.status === 'sent') {
+
+            starIcon.classList.remove('bi-star');
+            starIcon.classList.add('bi-star-fill');
+
+            starIcon.style.color = '#fbbf24';
+
+            interestText.textContent = 'Request Sent';
+
+            button.disabled = true;
+            button.style.opacity = '0.6';
+
+        } else if (data.status === 'error') {
+
+            alert(data.message);
+        }
+    });
+}
+</script>
 {% endblock %}
