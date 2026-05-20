@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from reviews.models import Review
 from django.db.models import Avg
-
+from feedview.models import Post
 from .forms import (
     UserRegistrationForm,
     UserProfileEditForm,
@@ -119,6 +119,10 @@ def profile_view(request):
     avg_rating = reviews.aggregate(
     Avg('rating')
     )['rating__avg']
+    
+    posts = Post.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
     context = {
         'profile': profile,
         'teach_skills_data': teach_skills_data,
@@ -127,6 +131,7 @@ def profile_view(request):
         'study_partners_count': profile.study_partners_count,  # merged feature
         'reviews': reviews,
         'avg_rating': avg_rating,
+         'posts': posts,
     }
 
     return render(request, 'useraccount/profile.html', context)
