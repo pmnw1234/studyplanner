@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'direct_message',  # Added from dashboard branch
     'studyroom',
     'reviews',
+    'ai_assistant',  
     
 ]
 
@@ -137,3 +138,15 @@ LOGOUT_REDIRECT_URL = 'landing'
 # ======================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# settings.py
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+
