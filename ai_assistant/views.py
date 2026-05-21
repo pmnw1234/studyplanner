@@ -13,11 +13,11 @@ assistant = GroqStudyAssistant()
 @login_required
 def ai_assistant_dashboard(request):
     """Main AI Assistant view"""
-    # Get a quick tip for the sidebar
-    daily_tip = assistant.get_study_tip()
+    # Clear conversation history when loading fresh page
+    if 'conversation_history' in request.session:
+        del request.session['conversation_history']
     
     context = {
-        'daily_tip': daily_tip,
         'user': request.user,
     }
     return render(request, 'ai_assistant/dashboard.html', context)
@@ -26,7 +26,7 @@ def ai_assistant_dashboard(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def ai_chat_api(request):
-    """API endpoint for AI chat"""
+    """API endpoint for AI chat with memory"""
     try:
         data = json.loads(request.body)
         user_message = data.get('message', '')
@@ -34,22 +34,43 @@ def ai_chat_api(request):
         if not user_message:
             return JsonResponse({'error': 'No message provided'}, status=400)
         
-        # Detect intent from user message (simple keyword matching)
+        # Get or create conversation history from session
+        if 'conversation_history' not in request.session:
+            request.session['conversation_history'] = []
+        
+        conversation_history = request.session['conversation_history']
+        
+        # Add user message to history
+        conversation_history.append({
+            'role': 'user',
+            'content': user_message
+        })
+        
+        # Keep only last 10 messages to avoid token limits
+        if len(conversation_history) > 10:
+            conversation_history = conversation_history[-10:]
+        
+        # Detect intent from user message
         message_lower = user_message.lower()
         
         if any(word in message_lower for word in ['tip', 'advice', 'study better']):
-            response_text = assistant.get_study_tip()
-            
+            response_text = assistant.get_study_tip_with_history(conversation_history)
         elif any(word in message_lower for word in ['quote', 'motivate', 'encourage', 'motivation']):
-            response_text = assistant.get_motivational_quote()
-            
+            response_text = assistant.get_motivational_quote_with_history(conversation_history)
         elif any(word in message_lower for word in ['resource', 'video', 'tutorial', 'learn', 'course']):
-            # Extract topic (simplified)
             topic = user_message.replace('resource for', '').replace('find', '').replace('video', '').replace('tutorial', '').replace('learn', '').strip()
-            response_text = assistant.get_resource_recommendation(topic or "studying")
-            
+            response_text = assistant.get_resource_recommendation_with_history(topic or "studying", conversation_history)
         else:
-            response_text = assistant.answer_study_question(user_message)
+            response_text = assistant.answer_study_question_with_history(conversation_history)
+        
+        # Add assistant response to history
+        conversation_history.append({
+            'role': 'assistant',
+            'content': response_text
+        })
+        
+        # Save back to session
+        request.session['conversation_history'] = conversation_history
         
         return JsonResponse({
             'message': response_text,
@@ -66,7 +87,7 @@ def get_study_tip_api(request):
     """Get a study tip via API"""
     subject = request.GET.get('subject', None)
     tip = assistant.get_study_tip(subject)
-    return JsonResponse({'content': tip, 'tip': tip})
+    return JsonResponse({'tip': tip, 'content': tip})
 
 @login_required
 def get_motivational_quote_api(request):
@@ -78,12 +99,8 @@ def get_motivational_quote_api(request):
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
-def get_resource_api(request):
-    """Get resource recommendation via API"""
-    try:
-        data = json.loads(request.body)
-        topic = data.get('topic', 'studying')
-        resource = assistant.get_resource_recommendation(topic)
-        return JsonResponse({'resource': resource})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+def clear_conversation(request):
+    """Clear conversation history"""
+    if 'conversation_history' in request.session:
+        del request.session['conversation_history']
+    return JsonResponse({'status': 'Conversation cleared'})
