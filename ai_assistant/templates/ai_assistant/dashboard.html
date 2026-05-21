@@ -6,7 +6,7 @@
 {% block extra_css %}
 <style>
     .ai-container {
-        background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-page) 100%);
+        background: var(--bg-card);
         border-radius: 20px;
         border: 1px solid var(--border-color);
         overflow: hidden;
@@ -59,17 +59,6 @@
         border-bottom-left-radius: 4px;
     }
     
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
     .quick-buttons {
         display: flex;
         gap: 10px;
@@ -110,14 +99,6 @@
         border-radius: 50%;
         background: var(--text-secondary);
         animation: typing 1.4s infinite;
-    }
-    
-    .typing-indicator span:nth-child(2) {
-        animation-delay: 0.2s;
-    }
-    
-    .typing-indicator span:nth-child(3) {
-        animation-delay: 0.4s;
     }
     
     @keyframes typing {
@@ -168,10 +149,6 @@
         transition: opacity 0.2s;
     }
     
-    .input-group-custom button:hover {
-        opacity: 0.9;
-    }
-    
     .tip-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -185,20 +162,14 @@
         font-size: 20px;
     }
     
-    .resource-link {
-        display: block;
+    .error-debug {
+        background: #ff4444;
+        color: white;
         padding: 10px;
-        margin: 10px 0;
-        background: var(--bg-page);
-        border-left: 3px solid var(--accent-primary);
         border-radius: 8px;
-        text-decoration: none;
-        color: var(--text-primary);
-        font-size: 13px;
-    }
-    
-    .resource-link:hover {
-        background: var(--bg-card);
+        margin: 10px;
+        font-size: 12px;
+        display: none;
     }
 </style>
 {% endblock %}
@@ -211,105 +182,91 @@
         <div class="lg:col-span-2">
             <div class="ai-container">
                 <div class="ai-header">
-                    <div class="flex items-center gap-3">
-                        <i class="bi bi-robot text-2xl"></i>
-                        <div>
-                            <h2 class="text-xl font-bold">AI Study Assistant</h2>
-                            <p class="text-sm opacity-90">Powered by Groq | Ask me anything about studying!</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="bi bi-robot text-2xl"></i>
+                            <div>
+                                <h2 class="text-xl font-bold">AI Study Assistant</h2>
+                                <p class="text-sm opacity-90">Powered by Groq | Ask me anything about studying!</p>
+                            </div>
                         </div>
+                        <button id="clearChatBtn" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white; border: none;">
+                            <i class="bi bi-trash"></i> Clear
+                        </button>
                     </div>
                 </div>
+                
+                <!-- Debug error display -->
+                <div id="debugError" class="error-debug"></div>
                 
                 <div class="chat-messages" id="chatMessages">
                     <div class="message ai">
                         <div class="message-bubble">
                             👋 Hey there! I'm your AI study assistant.<br>
-                            I can help you with:
-                            <ul class="mt-2 ml-4">
-                                <li>💡 Study tips & techniques</li>
-                                <li>✨ Motivational quotes</li>
-                                <li>📚 Learning resources</li>
-                                <li>❓ Any study questions</li>
-                            </ul>
-                            <strong class="mt-2 block">What would you like help with today?</strong>
+                            I can help you with study tips, motivation, resources, and questions.<br><br>
+                            <strong>Try asking me something!</strong>
                         </div>
                     </div>
                 </div>
                 
                 <div class="input-area">
                     <div class="input-group-custom">
-                        <input type="text" id="userInput" placeholder="Ask me anything... (e.g., 'Give me a study tip', 'Motivate me', 'How to focus?')">
+                        <input type="text" id="userInput" placeholder="Ask me anything...">
                         <button id="sendBtn">
                             <i class="bi bi-send"></i> Send
                         </button>
                     </div>
                     
                     <div class="quick-buttons">
-                        <button class="quick-btn" data-message="Give me a study tip">
-                            <i class="bi bi-lightbulb"></i> Study Tip
-                        </button>
-                        <button class="quick-btn" data-message="Motivate me">
-                            <i class="bi bi-quote"></i> Motivation
-                        </button>
-                        <button class="quick-btn" data-message="I'm struggling to focus">
-                            <i class="bi bi-heart-break"></i> Need Help
-                        </button>
-                        <button class="quick-btn" data-message="Find me resources for studying">
-                            <i class="bi bi-search"></i> Resources
-                        </button>
+                        <button class="quick-btn" data-message="Give me a study tip">💡 Study Tip</button>
+                        <button class="quick-btn" data-message="Motivate me">✨ Motivation</button>
+                        <button class="quick-btn" data-message="I'm struggling to focus">❤️ Need Help</button>
+                        <button class="quick-btn" data-message="Find me resources for studying">📚 Resources</button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Sidebar Tips -->
+        <!-- Sidebar -->
         <div class="lg:col-span-1">
-            <div class="tip-card" id="dailyTipCard">
+            <div class="tip-card">
                 <div class="flex items-start gap-3">
                     <i class="bi bi-lightbulb"></i>
                     <div class="flex-1">
                         <h3 class="font-semibold mb-1">💡 Daily Tip</h3>
-                        <p class="text-sm text-gray-500" id="dailyTipText">Click refresh for a study tip!</p>
+                        <p class="text-sm" id="dailyTipText">Loading...</p>
                         <button class="btn btn-xs mt-2" id="refreshTipBtn" style="background: var(--accent-primary); color: white;">
                             <i class="bi bi-arrow-repeat"></i> New Tip
                         </button>
                     </div>
                 </div>
             </div>
-            
-            <div class="tip-card">
-                <div class="flex items-start gap-3">
-                    <i class="bi bi-star"></i>
-                    <div class="flex-1">
-                        <h3 class="font-semibold mb-1">✨ Quick Actions</h3>
-                        <div class="space-y-2 mt-2">
-                            <button class="quick-btn w-full text-left" data-message="How to take better notes?">
-                                📝 Note-taking tips
-                            </button>
-                            <button class="quick-btn w-full text-left" data-message="How to prepare for exams?">
-                                📖 Exam prep
-                            </button>
-                            <button class="quick-btn w-full text-left" data-message="Time management techniques">
-                                ⏰ Time management
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
     const chatMessages = document.getElementById('chatMessages');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
+    const debugError = document.getElementById('debugError');
+    
+    function showError(message) {
+        debugError.textContent = message;
+        debugError.style.display = 'block';
+        setTimeout(() => {
+            debugError.style.display = 'none';
+        }, 5000);
+    }
     
     function addMessage(text, sender) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}`;
-        messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+        // Simple formatting - convert newlines to <br>
+        const formattedText = text.replace(/\n/g, '<br>');
+        messageDiv.innerHTML = `<div class="message-bubble">${formattedText}</div>`;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -335,6 +292,8 @@
     async function sendMessage(message) {
         if (!message.trim()) return;
         
+        console.log('Sending message:', message);
+        
         // Add user message
         addMessage(message, 'user');
         userInput.value = '';
@@ -343,6 +302,7 @@
         showTyping();
         
         try {
+            console.log('Fetching from /ai-assistant/chat/');
             const response = await fetch('/ai-assistant/chat/', {
                 method: 'POST',
                 headers: {
@@ -352,23 +312,30 @@
                 body: JSON.stringify({ message: message })
             });
             
+            console.log('Response status:', response.status);
             const data = await response.json();
+            console.log('Response data:', data);
+            
             removeTyping();
             
             if (data.message) {
                 addMessage(data.message, 'ai');
             } else if (data.error) {
-                addMessage('Sorry, something went wrong. Please try again.', 'ai');
+                showError('Error: ' + data.error);
+                addMessage('Sorry, something went wrong: ' + data.error, 'ai');
+            } else {
+                showError('No message in response');
+                addMessage('Sorry, I did not get a valid response.', 'ai');
             }
             
         } catch (error) {
+            console.error('Error details:', error);
             removeTyping();
-            addMessage('Network error. Please check your connection.', 'ai');
-            console.error('Error:', error);
+            showError('Network error: ' + error.message);
+            addMessage('Network error. Please check your connection and try again.', 'ai');
         }
     }
     
-    // Get CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -403,16 +370,28 @@
         try {
             const response = await fetch('/ai-assistant/tip/');
             const data = await response.json();
-            document.getElementById('dailyTipText').textContent = data.tip || data.content;
+            document.getElementById('dailyTipText').textContent = data.tip || data.content || 'Click refresh for a tip!';
         } catch (error) {
-            document.getElementById('dailyTipText').textContent = 'Try the Pomodoro technique: 25 min study, 5 min break!';
+            document.getElementById('dailyTipText').textContent = 'Try the Pomodoro technique!';
         }
     }
     
-    document.getElementById('refreshTipBtn').addEventListener('click', refreshTip);
+    // Clear conversation
+    document.getElementById('clearChatBtn')?.addEventListener('click', async () => {
+        try {
+            await fetch('/ai-assistant/clear/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            chatMessages.innerHTML = '';
+            addMessage('Conversation cleared! How can I help you?', 'ai');
+        } catch (error) {
+            console.error('Error clearing conversation:', error);
+        }
+    });
     
-    // Load initial tip
     refreshTip();
 </script>
-{% endblock %}
 {% endblock %}
