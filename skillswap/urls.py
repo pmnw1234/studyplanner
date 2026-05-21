@@ -17,6 +17,7 @@ urlpatterns = [
     path('messages/', include('direct_message.urls')),  # ADD THIS LINE - include direct_message URLs
     path('library/', include('studyroom.urls')),
     path('reviews/', include('reviews.urls')),
+    path('ai-assistant/', include('ai_assistant.urls')),
 ]
 
 # Override Django's debug 404
