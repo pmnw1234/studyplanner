@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'studyroom'  # ← ADD THIS LINE
+
 urlpatterns = [
     path('library/', views.studyroom_dashboard, name='studyroom_dashboard'),
     path('create-room/', views.create_room, name='create_room'),
@@ -15,7 +17,8 @@ urlpatterns = [
     path('room/<int:room_id>/transfer/', views.transfer_ownership, name='transfer_ownership'),
     path('work/<int:work_id>/add-comment/', views.add_stream_comment, name='add_stream_comment'),
     
-    # Notification URLs
     path('notifications/api/', views.notification_api, name='notification_api'),
     path('notifications/mark-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notes/', views.notes_list, name='notes'),
+path('notes/<int:note_id>/delete/', views.delete_note, name='delete_note'),
 ]

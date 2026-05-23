@@ -104,3 +104,40 @@ def clear_conversation(request):
     if 'conversation_history' in request.session:
         del request.session['conversation_history']
     return JsonResponse({'status': 'Conversation cleared'})
+
+# Add this import at the top
+from studyroom.models import Note  # Adjust import path as needed
+
+# Add this new view function
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def save_note(request):
+    """Save an AI response as a note"""
+    try:
+        data = json.loads(request.body)
+        title = data.get('title', '')
+        content = data.get('content', '')
+        
+        if not content:
+            return JsonResponse({'error': 'No content provided'}, status=400)
+        
+        # Auto-generate title if not provided
+        if not title:
+            title = content[:50] + ('...' if len(content) > 50 else '')
+        
+        note = Note.objects.create(
+            user=request.user,
+            title=title,
+            content=content,
+            source='ai_assistant'
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'note_id': note.id,
+            'message': 'Note saved successfully!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

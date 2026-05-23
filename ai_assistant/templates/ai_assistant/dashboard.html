@@ -171,6 +171,32 @@
         font-size: 12px;
         display: none;
     }
+
+    .save-note-btn {
+    transition: all 0.2s ease;
+}
+
+.save-note-btn:hover {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border-color: var(--accent-primary) !important;
+}
+
+.message-bubble {
+    position: relative;
+}
+
+/* Toast animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
 </style>
 {% endblock %}
 
@@ -392,6 +418,115 @@
         }
     });
     
+
+// Updated addMessage function with save button for AI messages
+function addMessage(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    if (sender === 'ai') {
+        // Create message bubble with save button
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.innerHTML = text.replace(/\n/g, '<br>');
+        
+        // Add save button for AI messages
+        const saveButton = document.createElement('button');
+        saveButton.className = 'save-note-btn';
+        saveButton.innerHTML = '<i class="bi bi-bookmark-plus"></i> Save as Note';
+        saveButton.style.marginTop = '10px';
+        saveButton.style.padding = '5px 12px';
+        saveButton.style.background = 'var(--bg-page)';
+        saveButton.style.border = '1px solid var(--border-color)';
+        saveButton.style.borderRadius = '15px';
+        saveButton.style.fontSize = '11px';
+        saveButton.style.cursor = 'pointer';
+        saveButton.style.color = 'var(--text-secondary)';
+        
+        // Store the message content
+        saveButton.onclick = () => saveAsNote(text, messageDiv);
+        
+        bubble.appendChild(saveButton);
+        messageDiv.appendChild(bubble);
+    } else {
+        messageDiv.innerHTML = `<div class="message-bubble">${escapeHtml(text)}</div>`;
+    }
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Save note function
+async function saveAsNote(content, messageElement) {
+    // Extract title from first line or first 50 chars
+    let title = content.split('\n')[0].substring(0, 50);
+    if (title.length > 50) title = title.substring(0, 47) + '...';
+    
+    try {
+        const response = await fetch('/ai-assistant/save-note/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // Show success feedback
+            const btn = messageElement.querySelector('.save-note-btn');
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
+            btn.style.background = '#10b981';
+            btn.style.color = 'white';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-bookmark-plus"></i> Save as Note';
+                btn.style.background = 'var(--bg-page)';
+                btn.style.color = 'var(--text-secondary)';
+            }, 2000);
+            
+            // Optional: Show toast notification
+            showToast('Note saved to your library!');
+        }
+    } catch (error) {
+        console.error('Error saving note:', error);
+        showToast('Failed to save note', 'error');
+    }
+}
+
+// Show toast notification
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.padding = '12px 20px';
+    toast.style.borderRadius = '8px';
+    toast.style.backgroundColor = type === 'success' ? '#10b981' : '#ef4444';
+    toast.style.color = 'white';
+    toast.style.zIndex = '1000';
+    toast.style.fontSize = '14px';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
     refreshTip();
 </script>
 {% endblock %}
