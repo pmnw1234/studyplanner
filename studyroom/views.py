@@ -500,3 +500,27 @@ def notification_api(request):
 def mark_all_notifications_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return redirect(request.META.get('HTTP_REFERER', 'studyroom_dashboard'))
+
+
+# Add these imports at the top of studyroom/views.py if not already there
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import Note  # Make sure Note model exists
+
+# Add these functions at the end of your views.py file
+
+@login_required
+def notes_list(request):
+    """Display user's saved notes"""
+    notes = Note.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'studyroom/notes.html', {'notes': notes})
+
+@login_required
+def delete_note(request, note_id):
+    """Delete a note"""
+    if request.method == 'DELETE':
+        note = get_object_or_404(Note, id=note_id, user=request.user)
+        note.delete()
+        return JsonResponse({'status': 'deleted'})
+    return JsonResponse({'error': 'Invalid method'}, status=400)

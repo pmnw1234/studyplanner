@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+
+{% block title %}My Notes - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notes-container {
+        min-height: calc(100vh - 200px);
+    }
+    
+    .note-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .note-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .note-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+    
+    .note-preview {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+    
+    .note-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .note-date {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+    }
+    
+    .delete-note-btn {
+        background: none;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+    }
+    
+    .delete-note-btn:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: var(--bg-card);
+        border-radius: 20px;
+        max-width: 700px;
+        width: 100%;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        animation: modalSlideIn 0.3s ease;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        padding-right: 20px;
+        overflow-wrap: break-word;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+        padding: 0 8px;
+        line-height: 1;
+    }
+    
+    .close-modal:hover {
+        color: var(--text-primary);
+    }
+    
+    .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    
+    .modal-body-content {
+        color: var(--text-primary);
+        font-size: 1rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .modal-body-content p {
+        margin-bottom: 16px;
+    }
+    
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    
+    .modal-footer button {
+        padding: 8px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-delete-modal {
+        background: #ef4444;
+        color: white;
+        border: none;
+    }
+    
+    .btn-delete-modal:hover {
+        background: #dc2626;
+    }
+    
+    .btn-close-modal {
+        background: var(--bg-page);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .btn-close-modal:hover {
+        background: var(--border-color);
+    }
+    
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+    }
+    
+    @media (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .empty-notes {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .empty-notes i {
+        font-size: 4rem;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-custom notes-container">
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
+                <i class="bi bi-journal-bookmark-fill" style="color: var(--accent-primary);"></i> My Notes
+            </h1>
+            <p class="text-sm mt-1" style="color: var(--text-secondary);">
+                <i class="bi bi-info-circle"></i> Save and organize your AI assistant responses
+            </p>
+        </div>
+        <a href="{% url 'ai_assistant:dashboard' %}" class="px-4 py-2 rounded-lg text-white transition hover:opacity-90 flex items-center gap-2" style="background: var(--accent-primary);">
+            <i class="bi bi-robot"></i> Ask AI
+        </a>
+    </div>
+    
+    <div class="grid">
+        {% for note in notes %}
+        <div class="note-card" onclick="openNoteModal({{ note.id }})">
+            <div class="note-title">{{ note.title }}</div>
+            <div class="note-preview">{{ note.content|truncatechars:150 }}</div>
+            <div class="note-meta">
+                <span class="note-date">
+                    <i class="bi bi-calendar3"></i> {{ note.created_at|date:"M d, Y" }}
+                </span>
+                <button class="delete-note-btn" onclick="event.stopPropagation(); deleteNote({{ note.id }})">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+        
+        <!-- Modal for each note -->
+        <div id="modal-{{ note.id }}" class="modal-overlay" onclick="closeNoteModal(event, {{ note.id }})">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2><i class="bi bi-journal-bookmark-fill" style="color: var(--accent-primary);"></i> {{ note.title }}</h2>
+                    <button class="close-modal" onclick="closeNoteModal(null, {{ note.id }})">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-content">
+                        {{ note.content|linebreaks }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-close-modal" onclick="closeNoteModal(null, {{ note.id }})">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                    <button class="btn-delete-modal" onclick="deleteNote({{ note.id }}); closeNoteModal(null, {{ note.id }})">
+                        <i class="bi bi-trash"></i> Delete Note
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-notes">
+            <i class="bi bi-journal-bookmark"></i>
+            <h3 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">No notes yet</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                Save helpful AI responses as notes to review later
+            </p>
+            <a href="{% url 'ai_assistant:dashboard' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white transition hover:opacity-90" style="background: var(--accent-primary);">
+                <i class="bi bi-robot"></i> Go to AI Assistant
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function openNoteModal(noteId) {
+    const modal = document.getElementById(`modal-${noteId}`);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeNoteModal(event, noteId) {
+    const modal = document.getElementById(`modal-${noteId}`);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+async function deleteNote(noteId) {
+    if (!confirm('Delete this note?')) return;
+    
+    try {
+        const response = await fetch(`/studyroom/notes/${noteId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        if (response.ok) {
+            // Remove the note card
+            const noteCard = document.querySelector(`.note-card[onclick*="${noteId}"]`);
+            if (noteCard) {
+                noteCard.style.opacity = '0';
+                setTimeout(() => noteCard.remove(), 300);
+            }
+            // Close modal if open
+            const modal = document.getElementById(`modal-${noteId}`);
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        } else {
+            alert('Failed to delete note');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred');
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+});
+</script>
+{% endblock %}

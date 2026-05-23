@@ -94,7 +94,6 @@
             display: flex !important;
         }
         
-        /* HIDE DESKTOP MENU ON MOBILE */
         @media (max-width: 768px) {
             .navbar-center {
                 display: none !important;
@@ -113,7 +112,6 @@
             }
         }
         
-        /* Profile button style */
         .profile-btn {
             display: flex !important;
             align-items: center !important;
@@ -133,7 +131,6 @@
             opacity: 0.8 !important;
         }
 
-        /* Sidebar open state */
         #sidebar.open {
             left: 0;
         }
@@ -142,12 +139,10 @@
 </head>
 <body class="no-tap-highlight">
     
-    <!-- Responsive Navbar with Mobile Menu -->
     <nav class="sticky top-0 z-50 shadow-sm" style="background-color: var(--navbar-bg); border-bottom: 1px solid var(--border-color);">
         <div class="container-custom">
             <div class="navbar min-h-[60px] md:min-h-[70px] p-0">
                 
-                <!-- Left side - Logo -->
                 <div class="navbar-start">
                     <a id="sidebar-toggle"
                        class="btn btn-ghost text-base md:text-xl font-bold p-1 md:p-2 cursor-pointer"
@@ -159,7 +154,6 @@
                     </a>
                 </div>
                 
-                <!-- Center - Desktop Menu -->
                 <div class="navbar-center">
                     <ul class="menu menu-horizontal px-1 gap-1">
                         <li>
@@ -186,15 +180,12 @@
                     </ul>
                 </div>
                 
-                <!-- Right side -->
                 <div class="navbar-end gap-2">
                     
-                    <!-- Theme Toggle Button -->
                     <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm md:btn-md">
                         <i id="theme-icon" class="bi bi-moon-fill text-base md:text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                     
-                    <!-- Notifications Bell -->
                     {% if user.is_authenticated %}
                     <div class="dropdown dropdown-end" id="notifications-dropdown">
                         <button id="notification-bell" class="btn btn-ghost btn-circle btn-sm md:btn-md relative">
@@ -204,7 +195,7 @@
                         <div id="notification-menu" class="dropdown-content menu p-2 shadow rounded-box w-80 mt-2 hidden" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
                             <div class="flex justify-between items-center p-2 border-b" style="border-color: var(--border-color);">
                                 <span class="font-bold" style="color: var(--text-primary);">Notifications</span>
-                                <a href="{% url 'mark_all_notifications_read' %}" class="text-xs" style="color: var(--accent-primary);" id="mark-all-read">Mark all as read</a>
+                                <a href="#" class="text-xs" style="color: var(--accent-primary);" id="mark-all-read">Mark all as read</a>
                             </div>
                             <div id="notification-list" class="max-h-96 overflow-y-auto">
                                 <div class="text-center py-4" style="color: var(--text-secondary);">Loading...</div>
@@ -213,7 +204,6 @@
                     </div>
                     {% endif %}
                     
-                    <!-- PROFILE BUTTON -->
                     <div class="dropdown dropdown-end">
                         <label tabindex="0" class="profile-btn cursor-pointer">
                             <i class="bi bi-person-circle"></i>
@@ -228,14 +218,12 @@
                         </ul>
                     </div>
                     
-                    <!-- Mobile Menu Button -->
                     <button id="mobile-menu-btn" class="btn btn-ghost btn-circle btn-sm md:hidden">
                         <i id="mobile-menu-icon" class="bi bi-list text-xl" style="color: var(--accent-primary);"></i>
                     </button>
                 </div>
             </div>
             
-            <!-- Mobile Menu Dropdown -->
             <div id="mobile-menu" class="mobile-menu-enter md:hidden overflow-hidden">
                 <ul class="menu py-2 space-y-1" style="border-top: 1px solid var(--border-color);">
                     <li>
@@ -264,7 +252,6 @@
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
                     </li>
-                    
                     <li><hr class="my-1" style="border-color: var(--border-color);"></li>
                     <li>
                         <a href="{% url 'profile' %}" class="justify-between" style="color: var(--text-primary);">
@@ -289,7 +276,6 @@
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="container-custom py-4 md:py-6 lg:py-8">
         {% if messages %}
             <div class="mb-4 space-y-2">
@@ -308,7 +294,6 @@
         {% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="mt-auto py-6 md:py-8" style="border-top: 1px solid var(--border-color); background-color: var(--bg-page);">
         <div class="container-custom">
             <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-xs md:text-sm" style="color: var(--text-secondary);">
@@ -325,20 +310,21 @@
         </div>
     </footer>
 
-    <!-- Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40"></div>
 
-    <!-- Sidebar -->
     <div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full z-50 p-5 transition-all duration-300" style="background-color: var(--bg-card); border-right: 1px solid var(--border-color);">
-
         <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Skill Menu</h2>
 
         <a href="{% url 'ai_assistant:dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
-         <i class="bi bi-robot text-2xl" style="color: var(--accent-primary);"></i>
+            <i class="bi bi-robot text-xl" style="color: var(--accent-primary);"></i>
             <span>AI Assistant</span>
         </a>
-
-        <a href="{% url 'studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+        <!-- Add this after AI Assistant or before My Library -->
+<a href="{% url 'studyroom:notes' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+    <i class="bi bi-journal-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
+    <span>My Notes</span>
+</a>
+        <a href=" {% url 'studyroom:studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
             <i class="bi bi-book text-lg" style="color: var(--accent-primary);"></i>
             <span>My Library</span>
         </a>
@@ -352,11 +338,9 @@
             <i class="bi bi-pencil-square text-lg" style="color: var(--accent-primary);"></i>
             <span>Assignments</span>
         </a>
-
     </div>
 
     <script>
-    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     
@@ -384,7 +368,6 @@
         }
     }
     
-    // Sidebar Functions
     const sidebar = document.getElementById("sidebar");
     const backdrop = document.getElementById("sidebar-backdrop");
     const toggleBtn = document.getElementById("sidebar-toggle");
@@ -407,7 +390,6 @@
         backdrop.addEventListener("click", closeSidebar);
     }
     
-    // Mobile Menu
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
     const mobileMenuIcon = document.getElementById('mobile-menu-icon');
@@ -429,7 +411,6 @@
         });
     }
     
-    // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
         if (isMenuOpen && mobileMenuBtn && !mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
             isMenuOpen = false;
@@ -439,7 +420,6 @@
         }
     });
     
-    // Responsive resize handler
     window.addEventListener('resize', () => {
         if (window.innerWidth >= 768) {
             if (isMenuOpen) {
@@ -454,20 +434,18 @@
         }
     });
     
-    // Set active nav link
     function setActiveNavLink() {
         const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.menu a');
+        const navLinks = document.querySelectorAll('.menu a, #sidebar a');
         
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            if (href && href !== '#' && currentPath.startsWith(href)) {
+            if (href && href !== '#' && href !== 'javascript:void(0)' && currentPath === href) {
                 link.classList.add('nav-link-active');
             }
         });
     }
     
-    // Fetch unread message count
     async function updateUnreadMessageCount() {
         try {
             const response = await fetch('/messages/unread/');
@@ -499,13 +477,11 @@
         }
     }
     
-    // Notification Functions
     async function loadNotifications() {
         try {
             const response = await fetch('/library/notifications/api/');
             const data = await response.json();
             
-            // Update badge
             const badge = document.getElementById('notification-badge');
             if (data.unread_count > 0) {
                 badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
@@ -514,7 +490,6 @@
                 badge.classList.add('hidden');
             }
             
-            // Update notification list
             const list = document.getElementById('notification-list');
             if (data.notifications.length === 0) {
                 list.innerHTML = '<div class="text-center py-4" style="color: var(--text-secondary);">No notifications yet</div>';
@@ -569,7 +544,6 @@
         return div.innerHTML;
     }
 
-    // Toggle notification dropdown
     document.addEventListener('DOMContentLoaded', function() {
         setActiveNavLink();
         updateUnreadMessageCount();
@@ -577,6 +551,7 @@
         
         const bell = document.getElementById('notification-bell');
         const menu = document.getElementById('notification-menu');
+        const markAllRead = document.getElementById('mark-all-read');
         
         if (bell) {
             bell.addEventListener('click', function(e) {
@@ -587,7 +562,6 @@
                 }
             });
             
-            // Close when clicking outside
             document.addEventListener('click', function(e) {
                 if (!bell.contains(e.target) && !menu.contains(e.target)) {
                     menu.classList.add('hidden');
@@ -595,18 +569,41 @@
             });
         }
         
-        // Load notifications count on page load
-        if (typeof loadNotifications === 'function') {
-            loadNotifications();
+        if (markAllRead) {
+            markAllRead.addEventListener('click', async function(e) {
+                e.preventDefault();
+                try {
+                    await fetch('/library/notifications/mark-read/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    loadNotifications();
+                } catch (error) {
+                    console.error('Error marking all as read:', error);
+                }
+            });
         }
         
-        // Refresh every 30 seconds
-        setInterval(function() {
-            if (typeof loadNotifications === 'function') {
-                loadNotifications();
-            }
-        }, 30000);
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
     });
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
     </script>
     
     {% block extra_js %}{% endblock %}

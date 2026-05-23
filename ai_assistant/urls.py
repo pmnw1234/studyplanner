@@ -10,4 +10,5 @@ urlpatterns = [
     path('tip/', views.get_study_tip_api, name='get_tip'),
     path('quote/', views.get_motivational_quote_api, name='get_quote'),
     path('clear/', views.clear_conversation, name='clear_conversation'),
+    path('save-note/', views.save_note, name='save_note'),
 ]
