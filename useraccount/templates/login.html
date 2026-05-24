@@ -1,85 +1,135 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #f2f2f2;
-        }
-        .login-box {
-            width: 300px;
-            margin: 100px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px gray;
-            text-align: center;
-        }
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 8px;
-        }
-        button {
-            width: 95%;
-            padding: 10px;
-            background: green;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        a {
-            text-decoration: none;
-            color: green;
-        }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-        .errorlist {
-            color: red;
-            list-style: none;
-            padding: 0;
-            font-size: 12px;
-            margin: 5px 0 0 0;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-<div class="login-box">
-    <h2>Login</h2>
+{% block title %}Login - SkillSwap{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8" style="background-color: var(--bg-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border-color);">
         
-        <!-- Changed from 'username' to 'email' to match the form -->
-        <input type="text" name="email" placeholder="Email or Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        
-        <!-- Display form errors -->
-        {% if form.errors %}
-            <div class="error">
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
+        <!-- Header -->
+        <div class="text-center">
+            <div class="flex justify-center mb-4">
+                <i class="bi bi-intersect text-5xl" style="color: var(--accent-primary);"></i>
             </div>
-        {% endif %}
+            <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
+                Welcome Back
+            </h2>
+            <p class="mt-2 text-sm" style="color: var(--text-secondary);">
+                Sign in to continue your learning journey
+            </p>
+        </div>
         
-        <button type="submit">Login</button>
-    </form>
-
-    <p>Don't have an account? 
-        <a href="{% url 'register' %}">Register</a>
-    </p>
+        <!-- Login Form -->
+        <form class="mt-8 space-y-6" method="POST">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                <!-- Email/Username Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Email or Username
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="bi bi-envelope" style="color: var(--text-secondary);"></i>
+                        </div>
+                        <input type="text" 
+                               name="email" 
+                               id="email" 
+                               required 
+                               class="block w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                               style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary); focus:ring-color: var(--accent-primary);"
+                               placeholder="Enter your email or username">
+                    </div>
+                </div>
+                
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="bi bi-lock" style="color: var(--text-secondary);"></i>
+                        </div>
+                        <input type="password" 
+                               name="password" 
+                               id="password" 
+                               required 
+                               class="block w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                               style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"
+                               placeholder="Enter your password">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Remember Me & Forgot Password -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           id="remember" 
+                           name="remember" 
+                           class="h-4 w-4 rounded focus:ring-2"
+                           style="border-color: var(--border-color); accent-color: var(--accent-primary);">
+                    <label for="remember" class="ml-2 block text-sm" style="color: var(--text-secondary);">
+                        Remember me
+                    </label>
+                </div>
+                
+                <div class="text-sm">
+                    <a href="#" class="hover:opacity-80" style="color: var(--accent-primary);">
+                        Forgot password?
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Form Errors -->
+            {% if form.errors %}
+            <div class="rounded-lg p-4" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill text-red-500"></i>
+                    <span class="text-sm font-medium" style="color: #ef4444;">Login failed</span>
+                </div>
+                <div class="mt-2 text-sm" style="color: #ef4444;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p class="mb-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Login Button -->
+            <button type="submit" 
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity duration-200"
+                    style="background-color: var(--accent-primary);">
+                <i class="bi bi-box-arrow-in-right mr-2"></i>
+                Sign In
+            </button>
+        </form>
+        
+        <!-- Register Link -->
+        <div class="text-center mt-6">
+            <p class="text-sm" style="color: var(--text-secondary);">
+                Don't have an account?
+                <a href="{% url 'register' %}" class="font-medium hover:opacity-80" style="color: var(--accent-primary);">
+                    Create one now
+                    <i class="bi bi-arrow-right ml-1"></i>
+                </a>
+            </p>
+        </div>
+        
+        <!-- Demo Credentials (Optional - remove in production) -->
+        <div class="mt-6 pt-4 border-t text-center" style="border-color: var(--border-color);">
+            <p class="text-xs" style="color: var(--text-secondary);">
+                <i class="bi bi-info-circle"></i> Demo accounts: <strong>charlie</strong> / <strong>new_password_123</strong>
+            </p>
+        </div>
+    </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

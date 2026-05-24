@@ -121,7 +121,7 @@
                     <strong style="color: var(--text-primary);">Members:</strong> {{ room.members.count }}/3
                 </p>
 
-                <a href="{% url 'room_detail' room.id %}"
+                <a href="{% url 'studyroom:room_detail' room.id %}"
                    class="w-full block text-center py-3 rounded-xl text-white font-medium transition hover:opacity-90"
                    style="background: linear-gradient(90deg, var(--accent-primary), var(--accent-ocean));">
                     Enter Room
@@ -150,7 +150,7 @@
 
         <h2 class="text-3xl mb-6 font-semibold" style="color: var(--text-primary);">Create Study Room</h2>
 
-        <form method="POST" action="{% url 'create_room' %}">
+        <form method="POST" action="{% url 'studyroom:create_room' %}"></form>
             {% csrf_token %}
 
             <input type="text"
@@ -193,7 +193,7 @@
 
         <h2 class="text-3xl mb-6 font-semibold" style="color: var(--text-primary);">Join Study Room</h2>
 
-        <form method="POST" action="{% url 'join_room' %}">
+        <form method="POST" action="{% url 'studyroom:join_room' %}">
             {% csrf_token %}
 
             <input type="text"

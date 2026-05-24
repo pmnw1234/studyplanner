@@ -1,110 +1,467 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-    <style>
-        body { font-family: Arial; background: #f4f6f9; }
-        .container { width: 400px; margin: 50px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; }
-        .step { display: none; }
-        .step.active { display: block; }
-        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; }
-        button { width: 100%; padding: 10px; background: #4c56af; border: none; color: white; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #454ca0; }
-        .btn-group { display: flex; gap: 10px; }
-        .error { color: red; font-size: 14px; }
-        .errorlist { color: red; list-style: none; padding: 0; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-<div class="container">
-    <h2>Register</h2>
+{% block title %}Register - SkillSwap{% endblock %}
 
-    {% if form.errors %}
-        <div style="background: #ffe6e6; padding: 10px; border: 1px solid red; border-radius: 5px; margin-bottom: 15px;">
+{% block extra_css %}
+<style>
+    .step {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .step.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--border-color);
+        z-index: 1;
+    }
+    
+    .step-dot {
+        position: relative;
+        z-index: 2;
+        background: var(--bg-card);
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--text-secondary);
+        transition: all 0.3s;
+    }
+    
+    .step-dot.active {
+        border-color: var(--accent-primary);
+        background: var(--accent-primary);
+        color: white;
+    }
+    
+    .step-dot.completed {
+        border-color: var(--accent-secondary);
+        background: var(--accent-secondary);
+        color: white;
+    }
+    
+    .step-label {
+        position: absolute;
+        top: 45px;
+        font-size: 11px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    
+    input, select, textarea {
+        width: 100%;
+        padding: 10px 12px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        transition: all 0.2s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
+    }
+    
+    label {
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .btn-primary {
+        flex: 1;
+        padding: 12px;
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-secondary {
+        flex: 1;
+        padding: 12px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-secondary:hover {
+        background: var(--border-color);
+    }
+    
+    .error-messages {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .error-messages strong {
+        color: #ef4444;
+        font-size: 14px;
+    }
+    
+    .errorlist {
+        color: #ef4444;
+        font-size: 12px;
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+    
+    .password-strength {
+        margin-top: -10px;
+        margin-bottom: 15px;
+        font-size: 12px;
+    }
+    
+    .strength-weak { color: #ef4444; }
+    .strength-medium { color: #f59e0b; }
+    .strength-strong { color: #10b981; }
+    
+    .form-hint {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: -12px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-lg w-full" style="background-color: var(--bg-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border-color);">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <i class="bi bi-person-plus-fill text-5xl" style="color: var(--accent-primary);"></i>
+            </div>
+            <h2 class="text-3xl font-bold" style="color: var(--text-primary);">
+                Create Account
+            </h2>
+            <p class="mt-2 text-sm" style="color: var(--text-secondary);">
+                Join SkillSwap and start your learning journey
+            </p>
+        </div>
+        
+        <!-- Step Indicators -->
+        <div class="step-indicator mb-8">
+            <div class="step-dot active" id="step1Dot">1</div>
+            <div class="step-dot" id="step2Dot">2</div>
+            <div class="step-dot" id="step3Dot">3</div>
+            <div class="step-dot" id="step4Dot">4</div>
+            <div class="step-dot" id="step5Dot">5</div>
+        </div>
+        
+        <!-- Form Errors -->
+        {% if form.errors %}
+        <div class="error-messages">
             <strong>Please correct the following errors:</strong>
             {{ form.errors }}
         </div>
-    {% endif %}
-
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <div class="step active">
-            <label>Username</label> {{ form.username }}
-            <label>Email</label> {{ form.email }}
-            <button type="button" onclick="nextStep()">Next</button>
-        </div>
-
-        <div class="step">
-            <label>Student Status</label> {{ form.student_status }}
-            <label>Birthday</label> {{ form.birthday }}
-            <div class="btn-group">
-                <button type="button" onclick="prevStep()">Back</button>
-                <button type="button" onclick="nextStep()">Next</button>
+        {% endif %}
+        
+        <!-- Multi-step Form -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Step 1: Basic Info -->
+            <div class="step active" id="step1">
+                <label>
+                    <i class="bi bi-person"></i> Username
+                </label>
+                {{ form.username }}
+                
+                <label>
+                    <i class="bi bi-envelope"></i> Email
+                </label>
+                {{ form.email }}
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-primary" onclick="nextStep()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="step">
-            <label>Gender</label> {{ form.gender }}
-            <label>Current Level</label> {{ form.current_level }}
-            <div class="btn-group">
-                <button type="button" onclick="prevStep()">Back</button>
-                <button type="button" onclick="nextStep()">Next</button>
+            
+            <!-- Step 2: Student Info -->
+            <div class="step" id="step2">
+                <label>
+                    <i class="bi bi-mortarboard"></i> Student Status
+                </label>
+                {{ form.student_status }}
+                
+                <label>
+                    <i class="bi bi-calendar"></i> Birthday
+                </label>
+                {{ form.birthday }}
+                <div class="form-hint">Format: YYYY-MM-DD</div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="step">
-            <label>Goals</label> {{ form.goals }}
-            <label>Availability</label> {{ form.availability }}
-            <div class="btn-group">
-                <button type="button" onclick="prevStep()">Back</button>
-                <button type="button" onclick="nextStep()">Next</button>
+            
+            <!-- Step 3: Profile Details -->
+            <div class="step" id="step3">
+                <label>
+                    <i class="bi bi-gender-ambiguous"></i> Gender
+                </label>
+                {{ form.gender }}
+                
+                <label>
+                    <i class="bi bi-graph-up"></i> Current Level
+                </label>
+                {{ form.current_level }}
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="step">
-            <label>Password</label> {{ form.password }}
-            <label>Confirm Password</label> {{ form.confirm_password }}
-            <p id="password-error" class="error"></p>
-            <div class="btn-group">
-                <button type="button" onclick="prevStep()">Back</button>
-                <button type="submit">Register</button>
+            
+            <!-- Step 4: Goals & Availability -->
+            <div class="step" id="step4">
+                <label>
+                    <i class="bi bi-trophy"></i> Goals
+                </label>
+                {{ form.goals }}
+                <div class="form-hint">What do you want to achieve?</div>
+                
+                <label>
+                    <i class="bi bi-clock"></i> Availability
+                </label>
+                {{ form.availability }}
+                <div class="form-hint">When are you free to study?</div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn-primary" onclick="nextStep()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
+            
+            <!-- Step 5: Password -->
+            <div class="step" id="step5">
+                <label>
+                    <i class="bi bi-lock"></i> Password
+                </label>
+                {{ form.password }}
+                
+                <label>
+                    <i class="bi bi-lock-fill"></i> Confirm Password
+                </label>
+                {{ form.confirm_password }}
+                <p id="password-error" class="errorlist"></p>
+                <div id="password-strength" class="password-strength"></div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="prevStep()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="bi bi-check-circle"></i> Register
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Login Link -->
+        <div class="text-center mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+            <p class="text-sm" style="color: var(--text-secondary);">
+                Already have an account?
+                <a href="{% url 'login' %}" class="font-medium hover:opacity-80" style="color: var(--accent-primary);">
+                    Sign in here
+                    <i class="bi bi-arrow-right ml-1"></i>
+                </a>
+            </p>
         </div>
-    </form>
-
-    <p style="text-align:center; margin-top:10px;">
-        Already have an account? <a href="{% url 'login' %}">Login</a>
-    </p>
+    </div>
 </div>
 
+{% block extra_js %}
 <script>
     let currentStep = 0;
-    const steps = document.querySelectorAll(".step");
-
+    const steps = document.querySelectorAll('.step');
+    const totalSteps = steps.length;
+    
+    function updateStepIndicators() {
+        for (let i = 0; i < totalSteps; i++) {
+            const dot = document.getElementById(`step${i+1}Dot`);
+            if (i < currentStep) {
+                dot.classList.add('completed');
+                dot.classList.remove('active');
+            } else if (i === currentStep) {
+                dot.classList.add('active');
+                dot.classList.remove('completed');
+            } else {
+                dot.classList.remove('active', 'completed');
+            }
+        }
+    }
+    
     function showStep(index) {
         steps.forEach((step, i) => {
-            step.classList.remove("active");
-            if (i === index) step.classList.add("active");
+            step.classList.remove('active');
+            if (i === index) step.classList.add('active');
         });
+        updateStepIndicators();
     }
-
+    
     function nextStep() {
-        if (currentStep < steps.length - 1) {
+        if (currentStep < totalSteps - 1) {
             currentStep++;
             showStep(currentStep);
         }
     }
-
+    
     function prevStep() {
         if (currentStep > 0) {
             currentStep--;
             showStep(currentStep);
         }
     }
+    
+    // Password strength checker
+    const passwordInput = document.querySelector('#id_password');
+    const strengthDiv = document.getElementById('password-strength');
+    const confirmInput = document.querySelector('#id_confirm_password');
+    const errorP = document.getElementById('password-error');
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/)) strength++;
+            if (password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+            
+            let strengthText = '';
+            let strengthClass = '';
+            
+            if (password.length === 0) {
+                strengthText = '';
+            } else if (strength <= 2) {
+                strengthText = 'Weak password';
+                strengthClass = 'strength-weak';
+            } else if (strength <= 4) {
+                strengthText = 'Medium password';
+                strengthClass = 'strength-medium';
+            } else {
+                strengthText = 'Strong password!';
+                strengthClass = 'strength-strong';
+            }
+            
+            strengthDiv.textContent = strengthText;
+            strengthDiv.className = `password-strength ${strengthClass}`;
+            
+            // Check password match
+            if (confirmInput && confirmInput.value) {
+                checkPasswordMatch();
+            }
+        });
+    }
+    
+    function checkPasswordMatch() {
+        if (passwordInput && confirmInput) {
+            if (passwordInput.value !== confirmInput.value) {
+                errorP.textContent = 'Passwords do not match!';
+                return false;
+            } else {
+                errorP.textContent = '';
+                return true;
+            }
+        }
+        return true;
+    }
+    
+    if (confirmInput) {
+        confirmInput.addEventListener('input', checkPasswordMatch);
+    }
+    
+    // Validate before final submit
+    const registerForm = document.querySelector('form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            if (!checkPasswordMatch()) {
+                e.preventDefault();
+                errorP.textContent = 'Please make sure your passwords match.';
+                currentStep = 4;
+                showStep(currentStep);
+            }
+        });
+    }
 </script>
-
-</body>
-</html>
+{% endblock %}
+{% endblock %}

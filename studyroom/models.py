@@ -85,12 +85,19 @@ class RoomActivity(models.Model):
 
 
 class ClassWork(models.Model):
+    CONTENT_TYPES = [
+        ('assignment', 'Assignment'),
+        ('material', 'Material'),
+        ('quiz', 'Quiz'),
+    ]
+    
     room = models.ForeignKey(StudyRoom, on_delete=models.CASCADE, related_name='classworks')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_works')
     created_at = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField(null=True, blank=True)
+    content_type = models.CharField(max_length=20, choices=CONTENT_TYPES, default='assignment')
     
     # Resource file attachment for teachers
     resource_file = models.FileField(
@@ -104,8 +111,6 @@ class ClassWork(models.Model):
 
     def __str__(self):
         return self.title
-
-
 class WorkComment(models.Model):
     work = models.ForeignKey(ClassWork, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -170,3 +175,50 @@ class RoomActivityLog(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.action} - {self.timestamp}"
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('deadline', 'Deadline Approaching'),
+        ('new_work', 'New Class Work'),
+        ('submission', 'New Submission'),
+        ('graded', 'Work Graded'),
+        ('comment', 'New Comment'),
+    ]
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    room = models.ForeignKey(StudyRoom, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    work = models.ForeignKey(ClassWork, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    submission = models.ForeignKey('Submission', on_delete=models.CASCADE, null=True, blank=True)
+    
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.recipient.username} - {self.title}"
+    
+
+
+# studyroom/models.py (add this model)
+from django.db import models
+from django.contrib.auth.models import User
+
+class Note(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    source = models.CharField(max_length=50, default='ai_assistant')  # 'ai_assistant', 'manual'
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title
