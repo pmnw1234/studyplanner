@@ -9,17 +9,14 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- LEFT COLUMN -->
         <div class="space-y-6">
             {% include 'dashboard/components/profile_card.html' %}
             {% include 'dashboard/components/course_progress.html' %}
             {% include 'dashboard/components/recently_watched.html' %}
         </div>
         
-        <!-- RIGHT COLUMN -->
         <div class="lg:col-span-2 space-y-6">
             
-            <!-- AI Match Button -->
             <div class="mb-2">
                 <button id="aiMatchBtn" class="w-full py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3" style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; border: none;">
                     <i id="aiIcon" class="bi bi-magic text-xl"></i>
@@ -30,7 +27,6 @@
                 </button>
             </div>
             
-            <!-- Tabs -->
             <div class="flex gap-6 border-b pb-2" style="border-color: var(--border-color);">
                 <button class="tab-button active-tab text-sm pb-2" data-tab="matches" style="color: var(--text-primary);">
                     Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
@@ -38,74 +34,124 @@
                 <button class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="saved" style="color: var(--text-primary);">
                     Saved Items <span class="text-xs opacity-50 ml-1">{{ saved_items|length }}</span>
                 </button>
-                <button class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="activity" style="color: var(--text-primary);">
-                    Activity
+                
+                <button id="activity-tab-btn" class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition flex items-center gap-1" data-tab="activity" style="color: var(--text-primary); background: none; border: none; cursor: pointer;">
+                    <span>Activity</span>
+                    <span id="activity-counter-wrapper">
+                        {% if unread_count > 0 %}
+                            <span id="noti-badge" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[18px] h-[18px] inline-flex">
+                                {{ unread_count }}
+                            </span>
+                        {% else %}
+                            <span class="text-xs opacity-50">0</span>
+                        {% endif %}
+                    </span>
                 </button>
             </div>
             
-            <!-- Tab Contents -->
-            <div id="matches-tab" class="tab-content">
-                {% include 'dashboard/components/matches_tab.html' %}
-            </div>
-            
-            <div id="saved-tab" class="tab-content" style="display: none;">
-                {% include 'dashboard/components/saved_items.html' %}
-            </div>
-            
-            <div id="activity-tab" class="tab-content" style="display: none;">
-                {% for activity in user_activities %}
-                <div class="flex items-center justify-between gap-3 p-3 rounded-xl mb-2"
-                     style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-                    
-                    <div class="flex items-center gap-3 flex-1">
-                        <i class="bi bi-person text-sm opacity-50"></i>
-                        <div>
-                            <p class="text-sm">
-                                {% if activity.user_id %}
-                                    <a href="{% url 'view_other_profile' activity.user_id %}"
-                                        class="font-medium hover:underline"
-                                        style="color: var(--accent-primary);">
-                                        {{ activity.sender }}
-                                    </a>
-                                {% else %}
-                                    <span class="font-medium">{{ activity.sender|default:'Someone' }}</span>
-                                {% endif %}
-                                sent you a match request
-                            </p>
-                            <p class="text-xs opacity-50">{{ activity.time }} ago</p>
+            <div class="tab-panels-container mt-4">
+                
+                <div id="matches-tab" class="tab-content">
+                    {% include 'dashboard/components/matches_tab.html' %}
+                </div>
+                
+                <div id="saved-tab" class="tab-content hidden" style="display: none;">
+                    {% include 'dashboard/components/saved_items.html' %}
+                </div>
+
+                <div id="activity-tab" class="tab-content hidden space-y-3" style="display: none;">
+                    {% for activity in user_activities %}
+                        <div class="block">
+                        
+                            <div class="flex items-center gap-3 p-4 rounded-xl hover:opacity-90 transition"
+                                 style="background-color: var(--bg-card); border: 1px solid var(--border-color); {% if not activity.is_read %}border-left: 3px solid var(--accent-primary);{% endif %}">
+
+                                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" 
+                                     style="background-color: var(--border-color); color: var(--text-secondary);">
+                                    {% if activity.sender.userprofile.profile_picture %}
+                                        <img src="{{ activity.sender.userprofile.profile_picture.url }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <i class="bi bi-bell opacity-60"></i>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex-1">
+                                    <div class="text-sm" style="color: var(--text-primary);">
+                                        <span class="font-medium" style="color: var(--accent-primary);">
+                                            {{ activity.sender.username }}
+                                        </span>
+                                        
+                                        {% if activity.notification_type == 'like' %}
+                                            {% if activity.post %}<a href="{% url 'post_detail' activity.post.id %}" class="hover:underline">{% endif %}
+                                            liked your post ❤️
+                                            {% if activity.post %}</a>{% endif %}
+                                            
+                                        {% elif activity.notification_type == 'interest' %}
+                                            {% if activity.post %}<a href="{% url 'post_detail' activity.post.id %}" class="hover:underline">{% endif %}
+                                            is interested in your post ⭐
+                                            {% if activity.post %}</a>{% endif %}
+
+                                            {% if activity.note %}
+                                                <div class="mt-2 p-3 rounded-lg" style="background-color: var(--border-color);">
+                                                    <p class="text-xs opacity-80">
+                                                        "{{ activity.note }}"
+                                                    </p>
+                                                </div>
+
+                                                <!-- Reply Button -->
+                                                <button type="button"
+                                                        onclick="event.preventDefault(); event.stopPropagation(); toggleReplyBox('{{ activity.id }}')"
+                                                        class="mt-2 text-xs font-medium hover:underline"
+                                                        style="color: var(--accent-primary);">
+                                                    Reply to user...
+                                                </button>
+
+                                                <!-- Reply Form -->
+                                                <div id="reply-box-{{ activity.id }}" class="hidden mt-3" onclick="event.stopPropagation();">
+                                                    <form method="POST" action="{% url 'send_reply' activity.id %}" class="space-y-2">
+                                                        {% csrf_token %}
+                                                        <textarea name="reply_note" rows="3" placeholder="Write your reply..." class="w-full p-3 rounded-xl text-sm"
+                                                                  style="background-color: var(--border-color); color: var(--text-primary); border:1px solid var(--border-color);"></textarea>
+                                                        <div class="flex justify-end">
+                                                            <button type="submit" class="px-4 py-2 rounded-lg text-white text-xs"
+                                                                    style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); border:none;">
+                                                                Send Reply
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+
+                                        {% elif activity.notification_type == 'reply' %}
+                                            replied to your interest note 💬
+                                            {% if activity.note %}
+                                                <div class="mt-2 p-3 rounded-lg" style="background-color: var(--border-color);">
+                                                    <p class="text-xs opacity-80">
+                                                        "{{ activity.note }}"
+                                                    </p>
+                                                </div>
+                                            {% endif %}
+                                            
+                                        {% elif activity.notification_type == 'comment' %}
+                                            {% if activity.post %}<a href="{% url 'post_detail' activity.post.id %}" class="hover:underline">{% endif %}
+                                            commented on your post 💬
+                                            {% if activity.post %}</a>{% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-xs opacity-50 mt-1">
+                                        {{ activity.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    {% if activity.status == 'pending' and activity.id %}
-                    <div class="flex gap-2">
-                        <a href="{% url 'accept_connection' activity.id %}"
-                           class="px-3 py-1 text-xs rounded-lg"
-                           style="background-color: #22c55e; color: white; text-decoration: none;">
-                            Accept
-                        </a>
-                        <a href="{% url 'decline_connection' activity.id %}"
-                           class="px-3 py-1 text-xs rounded-lg"
-                           style="background-color: #ef4444; color: white; text-decoration: none;">
-                            Decline
-                        </a>
-                    </div>
-                    {% elif activity.status %}
-                        <span class="text-xs px-2 py-1 rounded capitalize"
-                              style="background-color:
-                                 {% if activity.status == 'accepted' %}#22c55e
-                                 {% elif activity.status == 'declined' %}#ef4444
-                                 {% else %}#f59e0b{% endif %};
-                               color: white;">
-                            {{ activity.status }}
-                        </span>
-                    {% endif %}
+                    {% empty %}
+                        <div class="text-center py-12 rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                            <i class="bi bi-bell text-3xl opacity-40"></i>
+                            <p class="text-sm mt-2 opacity-60">No notifications yet</p>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <div class="text-center py-12 opacity-50">
-                    <i class="bi bi-inbox text-3xl"></i>
-                    <p class="text-sm mt-2">No incoming requests</p>
-                </div>
-                {% endfor %}
+
             </div>
             
             {% include 'dashboard/partials/quick_actions.html' %}
@@ -113,7 +159,6 @@
     </div>
 </div>
 
-<!-- AI Modal -->
 <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all duration-300">
     <div class="rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
         
@@ -137,7 +182,6 @@
     </div>
 </div>
 
-<!-- Pass matches data to JavaScript -->
 {{ matches|json_script:"matches-data" }}
 
 <style>
@@ -190,6 +234,7 @@
     .animate-spin {
         animation: spin 0.8s linear infinite;
     }
+    .hidden { display: none; }
 </style>
 
 <script>
@@ -211,6 +256,17 @@
                 savedTab.style.display = 'block';
             } else if (tabName === 'activity' && activityTab) {
                 activityTab.style.display = 'block';
+                
+                // Clear the notification badge instantly when the tab opens
+                const counterWrapper = document.getElementById('activity-counter-wrapper');
+                if (counterWrapper) {
+                    counterWrapper.innerHTML = '<span class="text-xs opacity-50 ml-1">0</span>';
+                }
+                
+                // Optional: Trigger any internal backend mark-as-read tracking call here
+                if (typeof window.clickActivityTab === 'function') {
+                    window.clickActivityTab();
+                }
             }
             
             tabButtons.forEach(button => {
@@ -234,8 +290,14 @@
             });
         });
         
+        // Initial setup
         showTab('matches');
     });
+
+    // Backward compatibility container fallback function
+    function clickActivityTab() {
+        console.log("Activity loaded and viewed.");
+    }
 
     // ========== AI MATCH BUBBLES ==========
     const aiBtn = document.getElementById('aiMatchBtn');
@@ -364,7 +426,6 @@
                     </div>
                 `;
                 
-                // FIXED: Changed from /profile/ to /profiles/ (with an 's')
                 bubble.onclick = () => {
                     window.location.href = `/profiles/${match.user_id}/`;
                 };
@@ -425,5 +486,13 @@
             console.log('Remove item at index:', index);
         }
     };
+
+    //Note Reply 
+    function toggleReplyBox(activityId) {
+        const box = document.getElementById(`reply-box-${activityId}`);
+        if (box) {
+            box.classList.toggle('hidden');
+        }
+    }
 </script>
 {% endblock %}

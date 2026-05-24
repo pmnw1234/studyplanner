@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Post Type -->
+        <div class="flex gap-3 p-1 rounded-xl"
+             style="background-color: var(--border-color);">
+
+            <button type="button"
+                    onclick="setPostType('study')"
+                    id="studyBtn"
+                    class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
+                <i class="bi bi-people"></i> Study Partner
+            </button>
+
+            <button type="button"
+                    onclick="setPostType('skill')"
+                    id="skillBtn"
+                    class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
+                <i class="bi bi-arrow-left-right"></i> Skill Swap
+            </button>
+
+            <input type="hidden" name="post_type" id="postTypeInput" value="{{ post.post_type }}">
+            <input type="hidden" name="category" id="categoryInput" value="{{ post.category }}">
+        </div>
+
+        <!-- Topic -->
+        <div>
+            <label class="text-sm font-medium mb-2 block"
+                   style="color: var(--text-secondary);">
+                <i class="bi bi-tag"></i> Topic
+            </label>
+
+            <select name="topic"
+                    class="w-full p-3 rounded-xl"
+                    style="background-color: var(--border-color); color: var(--text-primary); border:none;">
+
+                <option value="general" {% if post.topic == 'general' %}selected{% endif %}>General</option>
+                <option value="language" {% if post.topic == 'language' %}selected{% endif %}>Language Learning</option>
+                <option value="tech" {% if post.topic == 'tech' %}selected{% endif %}>Technology & Coding</option>
+                <option value="science" {% if post.topic == 'science' %}selected{% endif %}>Science & Research</option>
+                <option value="art" {% if post.topic == 'art' %}selected{% endif %}>Art & Design</option>
+                <option value="business" {% if post.topic == 'business' %}selected{% endif %}>Business & Marketing</option>
+            </select>
+        </div>
+
+        <!-- Hashtags -->
+        <div>
+            <label class="text-sm font-medium mb-2 block"
+                   style="color: var(--text-secondary);">
+                <i class="bi bi-hash"></i> Hashtags
+            </label>
+
+            <input type="text"
+                   name="hashtags"
+                   value="{{ post.hashtags }}"
+                   class="w-full p-3 rounded-xl"
+                   style="background-color: var(--border-color); color: var(--text-primary); border:none;">
+        </div>
+
+        <!-- Content -->
+        <div>
+            <label class="text-sm font-medium mb-2 block"
+                   style="color: var(--text-secondary);">
+                <i class="bi bi-pencil-square"></i> Content
+            </label>
+
+            <textarea name="content"
+                      rows="4"
+                      class="w-full p-3 rounded-xl"
+                      style="background-color: var(--border-color); color: var(--text-primary); border:none;">{{ post.content }}</textarea>
+        </div>
+
+        <!-- Media -->
+        <div class="grid grid-cols-2 gap-4">
+
+            <!-- Image -->
+            <div>
+                <label for="imageUpload"
+                       class="flex items-center justify-center gap-2 w-full p-3 rounded-xl cursor-pointer"
+                       style="background-color: var(--border-color);">
+                    <i class="bi bi-image"></i> Change Image
+                </label>
+
+                <input type="file"
+                       id="imageUpload"
+                       name="image"
+                       accept="image/*"
+                       class="hidden"
+                       onchange="previewImage(event)">
+
+                {% if post.image %}
+                <img src="{{ post.image.url }}"
+                     id="imagePreview"
+                     class="mt-3 rounded-xl w-full max-h-48 object-cover">
+                {% else %}
+                <img id="imagePreview"
+                     class="hidden mt-3 rounded-xl w-full max-h-48 object-cover">
+                {% endif %}
+            </div>
+
+            <!-- Video -->
+            <div>
+                <label for="videoUpload"
+                       class="flex items-center justify-center gap-2 w-full p-3 rounded-xl cursor-pointer"
+                       style="background-color: var(--border-color);">
+                    <i class="bi bi-camera-reels"></i> Change Video
+                </label>
+
+                <input type="file"
+                       id="videoUpload"
+                       name="video"
+                       accept="video/*"
+                       class="hidden"
+                       onchange="previewVideo(event)">
+
+                {% if post.video %}
+                <video id="videoPreview"
+                       controls
+                       class="mt-3 rounded-xl w-full max-h-48">
+                    <source src="{{ post.video.url }}">
+                </video>
+                {% else %}
+                <video id="videoPreview"
+                       controls
+                       class="hidden mt-3 rounded-xl w-full max-h-48"></video>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <button type="submit"
+                class="w-full p-3 rounded-xl font-semibold text-white"
+                style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
+            <i class="bi bi-check-circle"></i> Save Changes
+        </button>
+    </form>
+</div>
+
+<script>
+function setPostType(type) {
+    document.getElementById('postTypeInput').value = type;
+    document.getElementById('categoryInput').value = type;
+
+    const studyBtn = document.getElementById('studyBtn');
+    const skillBtn = document.getElementById('skillBtn');
+
+    if (type === 'study') {
+        studyBtn.style.background =
+            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
+        studyBtn.style.color = 'white';
+
+        skillBtn.style.background = 'transparent';
+        skillBtn.style.color = 'var(--text-secondary)';
+    } else {
+        skillBtn.style.background =
+            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
+        skillBtn.style.color = 'white';
+
+        studyBtn.style.background = 'transparent';
+        studyBtn.style.color = 'var(--text-secondary)';
+    }
+}
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+    }
+}
+
+function previewVideo(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('videoPreview');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+    }
+}
+
+window.onload = function () {
+    setPostType('{{ post.post_type }}');
+}
+</script>
+{% endblock %}
