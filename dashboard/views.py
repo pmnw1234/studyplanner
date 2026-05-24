@@ -1,10 +1,11 @@
 # dashboard/views.py
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from useraccount.models import UserProfile, UserSkill
-from feedview.models import MatchRequest
+from feedview.models import MatchRequest, Notification, Post
 from django.utils.timesince import timesince
 from datetime import datetime
+from feedview.models import Like, Interested
 import json
 
 def check_level_compatibility(teacher_level, learner_level, category):
@@ -261,57 +262,50 @@ def dashboard_home(request):
         ]
     
     # User activities
-    user_activities = []
-    requests = MatchRequest.objects.filter(receiver=request.user).order_by('-id')
-    
-    for req in requests:
-        user_activities.append({
-            'icon': 'person',
-            'message': f"{req.sender.username} is interested in your skills",
-            'date': timesince(req.created_at) if hasattr(req, 'created_at') else "recently",
-            'id': req.id,
-            'status': req.status,
-            'sender': req.sender.username,
-            'user_id': req.sender.id,
-            'time': timesince(req.created_at) if hasattr(req, 'created_at') else "recently"
-        })
 
-        
-    
-    if matches and not requests:
-        # Count strong matches
-        strong_matches = sum(1 for m in matches if m.get('match_strength') == 'strong')
+    user_activities = list(
+        Notification.objects.filter(
+        receiver=request.user
+        ).order_by('-created_at')
+    )
+
+# Add system notification for matches
+    if matches:
+        strong_matches = sum(
+            1 for m in matches if m.get('match_strength') == 'strong'
+        )
+
         user_activities.append({
-            'icon': 'person-plus', 
-            'message': f'You have {len(matches)} new match suggestions ({strong_matches} strong matches)', 
-            'date': 'Today',
+            'sender': 'System',
+            'message': f'You have {len(matches)} new match suggestions ({strong_matches} strong matches)',
             'time': 'Today',
             'user_id': None,
-            'id': None,
-            'status': 'info'
+            'post_id': None,
+            'notification_type': 'system'
         })
-    
-    if profile.updated_at:
-        user_activities.append({
-            'icon': 'pencil', 
-            'message': 'Profile updated', 
-            'date': 'Recently',
-            'time': 'Recently',
-            'user_id': None,
-            'id': None,
-            'status': 'info'
-        })
-    
+
+# Empty state
     if not user_activities:
         user_activities.append({
-            'icon': 'inbox',
+            'sender': 'System',
             'message': 'No recent activity',
-            'date': '',
             'time': '',
             'user_id': None,
-            'id': None,
-            'status': 'info'
+            'post_id': None,
+            'notification_type': 'system'
         })
+    
+        if profile.updated_at:
+            user_activities.append({
+                'icon': 'pencil', 
+                'message': 'Profile updated', 
+                'date': 'Recently',
+                'time': 'Recently',
+                'user_id': None,
+                'id': None,
+                'status': 'info'
+            })
+    
     
     weekly_hours = 0
     sessions_done = 0
@@ -327,12 +321,13 @@ def dashboard_home(request):
     
     recently_watched = []
     saved_items = []
-    
+    unread_count = Notification.objects.filter(receiver=request.user, is_read=False).count()
     context = {
         'profile': profile,
         'matches': matches,
         'study_feed': study_feed,
         'user_activities': user_activities,
+        'unread_count': unread_count,
         'weekly_hours': weekly_hours,
         'sessions_done': sessions_done,
         'streak_days': getattr(request.user, 'streak_days', 5),
@@ -356,3 +351,29 @@ def dashboard_home(request):
     print(f"{'='*60}\n")
     
     return render(request, 'dashboard/index.html', context)
+
+@login_required
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    post.is_liked = Like.objects.filter(
+        user=request.user,
+        post=post
+    ).exists()
+
+    post.user_interested = Interested.objects.filter(
+        user=request.user,
+        post=post
+    ).exists()
+
+    return render(request, 'feedview/post_detail.html', {
+        'post': post
+    })
+from django.http import JsonResponse
+
+@login_required
+def mark_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(receiver=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)

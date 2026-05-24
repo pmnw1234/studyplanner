@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from reviews.models import Review
 from django.http import JsonResponse
 
 from useraccount.forms import (
@@ -14,7 +13,7 @@ from useraccount.forms import (
     CertificationForm
 )
 from useraccount.models import UserProfile, UserSkill, Certification
-from feedview.models import MatchRequest, Post
+from feedview.models import MatchRequest, Post, Interested, Like, Comment, Notification
 
 
 @login_required
@@ -34,12 +33,16 @@ def feed_view(request):
         posts = posts.filter(hashtags__icontains=hashtag)
     
     for post in posts:
-        post.request_sent = MatchRequest.objects.filter(
-            sender=request.user,
-            receiver=post.user,
-            status='pending'
+        post.user_interested = Interested.objects.filter(
+            user=request.user,
+            post=post
         ).exists()
-    
+
+        post.is_liked = Like.objects.filter(
+            user=request.user,
+            post=post
+        ).exists()
+
     return render(request, 'feedview/feed.html', {
         'posts': posts,
         'users': User.objects.exclude(id=request.user.id)
@@ -77,20 +80,102 @@ def create_post(request):
 @login_required
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    
+
     like = post.likes.filter(user=request.user).first()
-    
+
     if like:
         like.delete()
         status = 'unliked'
     else:
         post.likes.create(user=request.user)
         status = 'liked'
-    
+
+        if post.user != request.user:
+            Notification.objects.create(
+                sender=request.user,
+                receiver=post.user,
+                post=post,   # IMPORTANT
+                notification_type='like',
+                message=f"{request.user.username} liked your post"
+            )
+
     return JsonResponse({
         'status': status,
         'total_likes': post.total_likes()
     })
+
+@login_required
+def interested_post(request, post_id):
+
+    post = get_object_or_404(Post, id=post_id)
+
+    interest = post.interests.filter(
+        user=request.user
+    ).first()
+
+    note = request.POST.get('note', '').strip()
+
+    if interest:
+
+        interest.delete()
+
+        Notification.objects.filter(
+            sender=request.user,
+            receiver=post.user,
+            post=post,
+            notification_type='interest'
+        ).delete()
+
+        status = 'uninterested'
+
+    else:
+
+        Interested.objects.create(
+            user=request.user,
+            post=post
+        )
+
+        status = 'interested'
+
+        if post.user != request.user:
+
+            Notification.objects.create(
+                sender=request.user,
+                receiver=post.user,
+                post=post,
+                notification_type='interest',
+                message=f"{request.user.username} is interested in your post",
+                note=note
+            )
+
+    return JsonResponse({
+        'status': status,
+        'total_interests': post.total_interested()
+    })
+
+def add_comment(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+        content = request.POST.get('content')
+        parent_id = request.POST.get('parent_id') # Get parent_id from hidden input if it exists
+        
+        if content:
+            comment = Comment(
+                post=post,
+                user=request.user,
+                content=content
+            )
+            
+            # If parent_id is present, link this comment as a reply
+            if parent_id:
+                parent_comment = get_object_or_404(Comment, id=parent_id)
+                comment.parent = parent_comment
+                
+            comment.save()
+            
+            # Optional: Trigger activity notification logic here if needed
+            
+        return redirect('feed') # Replace with your feed or post detail redirect namespace
 
 @login_required
 def send_request(request, user_id):
@@ -147,6 +232,95 @@ def accept_request(request, request_id):
     
     return redirect('inbox')
 
+@login_required
+def comment_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        parent_id = request.POST.get('parent_id')  # 1. Grab the parent comment identifier if it exists
+
+        if content:
+            # 2. Build the comment payload dynamically
+            comment_kwargs = {
+                'user': request.user,
+                'post': post,
+                'content': content
+            }
+            
+            if parent_id:
+                parent_comment = get_object_or_404(Comment, id=parent_id)
+                comment_kwargs['parent'] = parent_comment
+
+            comment = Comment.objects.create(**comment_kwargs)
+
+            # 3. Handle target notifications gracefully
+            if post.user != request.user:
+                Notification.objects.create(
+                    sender=request.user,
+                    receiver=post.user,
+                    post=post,
+                    notification_type='comment',
+                    message=f"{request.user.username} commented on your post"
+                )
+            
+            pfp_url = ""
+            if hasattr(request.user, 'userprofile') and request.user.userprofile.profile_picture:
+                pfp_url = request.user.userprofile.profile_picture.url
+
+            # 4. Return the ID and Parent ID back to the front-end script
+            return JsonResponse({
+                'status': 'success',
+                'comment_id': comment.id,
+                'parent_id': comment.parent.id if comment.parent else None,
+                'username': request.user.username,
+                'user_id': request.user.id,
+                'text': comment.content,
+                'profile_picture': pfp_url,
+                'total_comments': post.comments.count()
+            })
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+@login_required
+def post_activity(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    def get_pfp(user):
+        if hasattr(user, 'userprofile') and user.userprofile.profile_picture:
+            return user.userprofile.profile_picture.url
+        return ""
+
+    likes = [{
+        'id': like.user.id, 
+        'username': like.user.username,
+        'profile_picture': get_pfp(like.user)
+    } for like in post.likes.all()]
+
+    interests = [{
+        'id': interest.user.id, 
+        'username': interest.user.username,
+        'profile_picture': get_pfp(interest.user)
+    } for interest in post.interests.all()]
+
+    # 5. Extract the parent layout so the frontend knows what is a reply
+    comments = []
+    for comment in post.comments.all():
+        comments.append({
+            'comment_id': comment.id,
+            'parent_id': comment.parent.id if comment.parent else None,
+            'user_id': comment.user.id,
+            'user': comment.user.username,
+            'text': comment.content,
+            'profile_picture': get_pfp(comment.user)
+        })
+
+    return JsonResponse({
+        'likes': likes,
+        'interests': interests,
+        'comments': comments
+    })
 
 @login_required
 def decline_request(request, request_id):
@@ -162,230 +336,69 @@ def decline_request(request, request_id):
     return redirect('inbox')
 
 
-def landing_view(request):
-    """Landing page view - shown to non-authenticated users"""
-    if request.user.is_authenticated:
-        return redirect('dashboard_home')
-    return render(request, 'landing.html')
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
 
-
-def register_view(request):
-    """User registration"""
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST, request.FILES)
-        if form.is_valid():
-            user = User.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                password=form.cleaned_data['password']
+        post.content = request.POST.get('content')
+        post.post_type = request.POST.get('post_type')
+        post.category = request.POST.get('category')
+        post.topic = request.POST.get('topic')
+        post.hashtags = request.POST.get('hashtags')
+
+        # update image if new one uploaded
+        if request.FILES.get('image'):
+            post.image = request.FILES.get('image')
+
+        # update video if new one uploaded
+        if request.FILES.get('video'):
+            post.video = request.FILES.get('video')
+
+        post.is_edited = True   # optional if you show "edited"
+        post.save()
+
+        messages.success(request, "Post edited successfully.")
+        return redirect('feed')
+
+    return render(request, 'feedview/edit_post.html', {
+        'post': post
+    })
+
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+    post.delete()
+    messages.success(request, "Post deleted successfully.")
+    return redirect('feed')
+
+@login_required
+def send_reply_view(request, activity_id):
+    if request.method == 'POST':
+        # 1. Fetch the original 'Interest' notification item that you're replying to
+        original_notification = get_object_or_404(Notification, id=activity_id)
+        
+        # 2. Get the text written in the textarea
+        reply_note_text = request.POST.get('reply_note', '').strip()
+        
+        if reply_note_text:
+            # 3. Build the new notification object using your fields
+            Notification.objects.create(
+                sender=request.user,                     # The person logged in (you)
+                receiver=original_notification.sender,   # The person who originally expressed interest
+                post=original_notification.post,         # Connects it to the same post context
+                notification_type='reply',               # Uses the new choice type
+                message=f"{request.user.username} replied to your interest note.",
+                note=reply_note_text,                    # Store their message body here
+                is_read=False
             )
+            messages.success(request, "Your reply has been sent!")
+        else:
+            messages.error(request, "Reply text cannot be empty.")
             
-            profile = form.save(commit=False)
-            profile.user = user
-            profile.save()
-            
-            login(request, user)
-            messages.success(request, f'Welcome {user.username}! Registration successful.')
-            return redirect('dashboard_home')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = UserRegistrationForm()
-    
-    return render(request, 'register.html', {'form': form})
-
-
-def login_view(request):
-    """User login (clean version)"""
-    if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
-        
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect("dashboard_home")
-        else:
-            messages.error(request, "Invalid username or password.")
-    else:
-        form = LoginForm()
-    
-    return render(request, "login.html", {"form": form})
-
-
-@login_required
-def logout_view(request):
-    logout(request)
-    messages.success(request, "You have been successfully logged out.")
-    return render(request, 'landing.html')
-
-
-@login_required
-def profile_view(request):
-    """User profile display"""
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
-    teach_skills_data = [
-        {
-            'name': skill.skill_name,
-            'level': skill.proficiency_level,
-            'category': skill.category
-        }
-        for skill in profile.skills.filter(skill_type='teach')
-    ]
-    
-    learn_skills_data = [
-        {
-            'name': skill.skill_name,
-            'level': skill.proficiency_level,
-            'category': skill.category
-        }
-        for skill in profile.skills.filter(skill_type='learn')
-    ]
-    
-    certifications = profile.certifications.all()
-    
-    context = {
-        'profile': profile,
-        'teach_skills_data': teach_skills_data,
-        'learn_skills_data': learn_skills_data,
-        'certifications': certifications,
-        'study_partners_count': profile.study_partners_count,
-    }
-    
-    return render(request, 'useraccount/profile.html', context)
-
-
-@login_required
-def edit_profile(request):
-    """Edit user profile"""
-    profile = request.user.userprofile
-    
-    teach_skills_data = [
-        {
-            'name': skill.skill_name,
-            'category': skill.category,
-            'level': skill.proficiency_level
-        }
-        for skill in UserSkill.objects.filter(user_profile=profile, skill_type='teach')
-    ]
-    
-    learn_skills_data = [
-        {
-            'name': skill.skill_name,
-            'category': skill.category,
-            'level': skill.proficiency_level
-        }
-        for skill in UserSkill.objects.filter(user_profile=profile, skill_type='learn')
-    ]
-    
-    if request.method == 'POST':
-        form = EnhancedUserProfileEditForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Your profile has been updated successfully!')
-            return redirect('profile')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = EnhancedUserProfileEditForm(instance=profile)
-    
-    context = {
-        'form': form,
-        'profile': profile,
-        'teach_skills_data': teach_skills_data,
-        'learn_skills_data': learn_skills_data,
-    }
-    
-    return render(request, 'useraccount/edit_profile.html', context)
-
-
-@login_required
-def change_password_view(request):
-    """Change password"""
-    if request.method == 'POST':
-        old_password = request.POST.get('old_password')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
-        
-        if not request.user.check_password(old_password):
-            messages.error(request, 'Current password is incorrect.')
-        elif new_password != confirm_password:
-            messages.error(request, 'New passwords do not match.')
-        elif len(new_password) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
-        else:
-            request.user.set_password(new_password)
-            request.user.save()
-            update_session_auth_hash(request, request.user)
-            messages.success(request, 'Password updated!')
-            return redirect('profile')
-    
-    return render(request, "useraccount/change_password.html")
-
-
-@login_required
-def add_certification(request):
-    profile = request.user.userprofile
-    
-    if request.method == 'POST':
-        form = CertificationForm(request.POST, request.FILES)
-        if form.is_valid():
-            certification = form.save(commit=False)
-            certification.user_profile = profile
-            certification.save()
-            
-            messages.success(request, f'Certification "{certification.title}" added successfully!')
-            return redirect('profile')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = CertificationForm()
-    
-    return render(request, 'useraccount/add_certification.html', {
-        'form': form,
-        'profile': profile,
-    })
-
-
-@login_required
-def edit_certification(request, cert_id):
-    profile = request.user.userprofile
-    certification = get_object_or_404(Certification, id=cert_id, user_profile=profile)
-    
-    if request.method == 'POST':
-        form = CertificationForm(request.POST, request.FILES, instance=certification)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Certification "{certification.title}" updated successfully!')
-            return redirect('profile')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = CertificationForm(instance=certification)
-    
-    return render(request, 'useraccount/edit_certification.html', {
-        'form': form,
-        'certification': certification,
-        'profile': profile,
-    })
-
-
-@login_required
-def delete_certification(request, cert_id):
-    profile = request.user.userprofile
-    certification = get_object_or_404(Certification, id=cert_id, user_profile=profile)
-    
-    if request.method == 'POST':
-        title = certification.title
-        certification.delete()
-        messages.success(request, f'Certification "{title}" deleted successfully!')
-        return redirect('profile')
-    
-    return render(request, 'useraccount/delete_certification.html', {
-        'certification': certification,
-    })
-
+    # Redirect back to the page the user was on
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)

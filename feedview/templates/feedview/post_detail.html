@@ -1,0 +1,842 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-6 space-y-4">
+
+    <div class="p-4 rounded-2xl shadow-sm"
+         style="background-color: var(--bg-card); border:1px solid var(--border-color);">
+
+        <div class="flex items-center gap-3 mb-3">
+            <a href="{% url 'view_other_profile' post.user.id %}" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                     style="background-color: var(--border-color);">
+                    {% if post.user.userprofile.profile_picture %}
+                        <img src="{{ post.user.userprofile.profile_picture.url }}"
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <p class="font-semibold" style="color: var(--text-primary);">{{ post.user.username }}</p>
+                    <p class="text-xs opacity-50">
+                        {{ post.created_at|timesince }} ago
+                        {% if post.is_edited %} • edited {% endif %}
+                    </p>
+                </div>
+            </a>
+        </div>
+
+        {% if post.topic %}
+        <div class="mb-2">
+            <span class="text-xs px-2 py-1 rounded-full"
+                  style="background-color: var(--border-color); color: var(--text-secondary);">
+                {{ post.get_topic_display }}
+            </span>
+        </div>
+        {% endif %}
+
+        {% if post.content %}
+        <p class="mb-3" style="color: var(--text-primary);">{{ post.content }}</p>
+        {% endif %}
+
+        {% if post.hashtags %}
+        <p class="text-sm mb-3" style="color: var(--accent-primary);">
+            {{ post.hashtags }}
+        </p>
+        {% endif %}
+
+        {% if post.image %}
+        <img src="{{ post.image.url }}" class="w-full rounded-xl mb-3 object-cover">
+        {% endif %}
+
+        {% if post.video %}
+        <video controls class="w-full rounded-xl mb-3">
+            <source src="{{ post.video.url }}">
+        </video>
+        {% endif %}
+
+        <div onclick="openActivityModal({{ post.id }}, '{% url 'post_activity' post.id %}')" 
+             class="flex justify-between items-center text-xs opacity-60 hover:opacity-100 cursor-pointer pb-2 mb-1 border-b transition"
+             style="border-color: var(--border-color);">
+            <div class="flex gap-3">
+                <span><i class="bi bi-heart-fill text-red-500"></i> <span id="metric-like-count-{{ post.id }}">{{ post.total_likes }}</span> Likes</span>
+                <span><i class="bi bi-star-fill text-amber-500"></i> <span id="metric-interest-count-{{ post.id }}">{{ post.total_interested }}</span> Interested</span>
+            </div>
+            <div>
+                <span id="metric-comment-count-{{ post.id }}">{{ post.comments.count }} comments</span>
+            </div>
+        </div>
+
+        <div class="flex gap-5 pt-3" style="color: var(--text-primary);">
+
+            <button type="button"
+                onclick="likePost({{ post.id }}, '{% url 'like_post' post.id %}')"
+                class="flex items-center gap-1 opacity-70 hover:opacity-100 transition">
+
+            <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"
+            id="heart-icon-{{ post.id }}"
+            style="{% if post.is_liked %}color:#ef4444;{% endif %}">
+            </i>
+
+                <span id="like-count-{{ post.id }}">
+                    {{ post.total_likes }}
+                </span>
+            </button>
+
+            {% if post.user != request.user %}
+            <button type="button"
+                    onclick="interestPost({{ post.id }}, '{% url 'interested_post' post.id %}')"
+                    class="flex items-center gap-1 opacity-70 hover:opacity-100 transition">
+
+                <i class="bi {% if post.user_interested %}bi-star-fill{% else %}bi-star{% endif %}"
+                id="interest-icon-{{ post.id }}"
+                style="{% if post.user_interested %}color:#fbbf24;{% endif %}">
+                </i>
+
+                <span id="interest-count-{{ post.id }}">
+                    {{ post.total_interested }}
+                </span>
+            </button>
+            {% endif %}
+
+            <button onclick="toggleCommentBox({{ post.id }})"
+                    class="flex items-center gap-1 opacity-70 hover:opacity-100 transition">
+                <i class="bi bi-chat"></i>
+                <span id="action-comment-count-{{ post.id }}">{{ post.comments.count }}</span>
+            </button>
+        </div>
+
+        <div id="comment-box-{{ post.id }}"
+     class="hidden mt-3 pt-3 border-t space-y-4"
+     style="border-color: var(--border-color);">
+
+    <form onsubmit="submitComment(event, {{ post.id }}, '{% url 'comment_post' post.id %}')"
+          class="flex gap-2 items-center">
+
+        {% csrf_token %}
+
+        <input type="text"
+               name="content"
+               id="comment-input-{{ post.id }}"
+               placeholder="Write a comment..."
+               class="w-full p-2 rounded-lg text-sm"
+               style="background-color: var(--border-color);
+                      color: var(--text-primary);
+                      border: 1px solid var(--border-color);">
+
+        <button type="submit"
+                class="btn btn-sm text-xs rounded-lg px-3 py-2 text-white font-medium"
+                style="background: linear-gradient(135deg,
+                       var(--accent-primary),
+                       var(--accent-ocean));
+                       border:none;
+                       height:38px;">
+
+            <i class="bi bi-send"></i>
+        </button>
+    </form>
+
+    <div class="space-y-4 mt-3" id="comments-list-{{ post.id }}">
+
+        {% for comment in post.comments.all %}
+            {% if not comment.parent %}
+
+            <div class="text-sm pb-1">
+
+                <div class="flex items-start gap-2.5">
+
+                    <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+
+                        {% if comment.user.userprofile.profile_picture %}
+                            <img src="{{ comment.user.userprofile.profile_picture.url }}"
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-xs">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex-1">
+
+                        <div class="p-2.5 rounded-xl"
+                             style="background-color: var(--border-color);">
+
+                            <span class="font-semibold text-xs block mb-0.5"
+                                  style="color: var(--text-primary);">
+
+                                {{ comment.user.username }}
+                            </span>
+
+                            <span style="color: var(--text-primary);">
+                                {{ comment.content }}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-3 mt-1 ml-1 text-[11px] opacity-60">
+
+                            <span>{{ comment.created_at|timesince }} ago</span>
+
+                            <button type="button"
+                                    onclick="toggleReplyInput('{{ comment.id }}')"
+                                    class="font-semibold hover:underline cursor-pointer"
+                                    style="color: var(--accent-primary);">
+
+                                Reply
+                            </button>
+                        </div>
+
+                        <!-- replies -->
+                        <div class="ml-4 mt-2 pl-3 border-l-2 space-y-3"
+                             style="border-color: var(--border-color);"
+                             id="replies-container-{{ comment.id }}">
+
+                            {% for reply in comment.replies.all %}
+
+                            <div class="flex items-start gap-2">
+
+                                <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+
+                                    {% if reply.user.userprofile.profile_picture %}
+                                        <img src="{{ reply.user.userprofile.profile_picture.url }}"
+                                             class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-[10px]">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex-1 p-2 rounded-xl"
+                                     style="background-color: var(--border-color); opacity:0.95;">
+
+                                    <span class="font-semibold text-xs block mb-0.5"
+                                          style="color: var(--text-primary);">
+
+                                        {{ reply.user.username }}
+                                    </span>
+
+                                    <span class="text-xs"
+                                          style="color: var(--text-primary);">
+
+                                        {{ reply.content }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {% endfor %}
+                        </div>
+
+                        <!-- reply form -->
+                        <div id="reply-form-{{ comment.id }}"
+                             class="hidden ml-4 mt-2">
+
+                            <form onsubmit="submitComment(event,
+                                                          {{ post.id }},
+                                                          '{% url 'comment_post' post.id %}',
+                                                          '{{ comment.id }}')"
+                                  class="flex gap-2 items-center">
+
+                                {% csrf_token %}
+
+                                <input type="text"
+                                       placeholder="Reply to @{{ comment.user.username }}..."
+                                       id="reply-input-{{ comment.id }}"
+                                       class="w-full p-2 rounded-lg text-xs"
+                                       style="background-color: var(--border-color);
+                                              color: var(--text-primary);
+                                              border:1px solid var(--border-color);"
+                                       required>
+
+                                <button type="submit"
+                                        class="btn btn-xs rounded-md px-2.5 py-1 text-white text-[11px]"
+                                        style="background: linear-gradient(135deg,
+                                               var(--accent-primary),
+                                               var(--accent-ocean));
+                                               border:none;
+                                               height:28px;">
+
+                                    Reply
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+    </div>
+</div>
+
+<div id="activityModal"
+     class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+    <div class="rounded-2xl p-6 w-[480px] max-w-[95%] shadow-xl flex flex-col max-h-[80vh]"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Post Activity</h2>
+            <button onclick="closeActivityModal()" class="text-xl opacity-70 hover:opacity-100">&times;</button>
+        </div>
+
+        <div class="flex border-b text-sm mb-3" style="border-color: var(--border-color);">
+            <button onclick="switchTab('likes')" id="tab-likes" class="py-2 px-4 border-b-2 border-blue-500 font-medium" style="color: var(--text-primary);">Likes</button>
+            <button onclick="switchTab('interests')" id="tab-interests" class="py-2 px-4 border-b-2 border-transparent opacity-60" style="color: var(--text-primary);">Interested</button>
+            <button onclick="switchTab('comments')" id="tab-comments" class="py-2 px-4 border-b-2 border-transparent opacity-60" style="color: var(--text-primary);">Comments</button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 space-y-2 text-sm" id="activity-content" style="color: var(--text-primary);">
+            </div>
+    </div>
+</div>
+
+<script>
+const viewProfileBaseUrl = "{% url 'view_other_profile' 0 %}".replace('/0/', '/');
+
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function likePost(postId, url) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const heartIcon = document.getElementById(`heart-icon-${postId}`);
+        const likeCount = document.getElementById(`like-count-${postId}`);
+        const metricLikeCount = document.getElementById(`metric-like-count-${postId}`);
+
+        if (data.status === 'liked') {
+            heartIcon.classList.replace('bi-heart', 'bi-heart-fill');
+            heartIcon.style.color = '#ef4444';
+        } else {
+            heartIcon.classList.replace('bi-heart-fill', 'bi-heart');
+            heartIcon.style.color = '';
+        }
+
+        likeCount.textContent = data.total_likes;
+        if(metricLikeCount) metricLikeCount.textContent = data.total_likes;
+    });
+}
+
+function interestPost(postId, url) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const interestIcon = document.getElementById(`interest-icon-${postId}`);
+        const interestCount = document.getElementById(`interest-count-${postId}`);
+        const metricInterestCount = document.getElementById(`metric-interest-count-${postId}`);
+
+        if (data.status === 'interested') {
+            interestIcon.classList.replace('bi-star', 'bi-star-fill');
+            interestIcon.style.color = '#fbbf24'; 
+        } else {
+            interestIcon.classList.replace('bi-star-fill', 'bi-star');
+            interestIcon.style.color = '';
+        }
+
+        interestCount.textContent = data.total_interests;
+        if(metricInterestCount) metricInterestCount.textContent = data.total_interests;
+    });
+}
+
+function submitComment(event, postId, url, parentId = null) {
+
+    event.preventDefault();
+
+    let inputElement;
+
+    if (parentId) {
+        inputElement =
+            document.getElementById(`reply-input-${parentId}`);
+    } else {
+        inputElement =
+            document.getElementById(`comment-input-${postId}`);
+    }
+
+    const content = inputElement.value.trim();
+
+    if (!content) return;
+
+    const formData = new FormData();
+
+    formData.append('content', content);
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+
+    if (parentId) {
+        formData.append('parent_id', parentId);
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === 'success') {
+
+            inputElement.value = '';
+
+            const actionCounter =
+                document.getElementById(`action-comment-count-${postId}`);
+
+            const metricCounter =
+                document.getElementById(`metric-comment-count-${postId}`);
+
+            if (actionCounter)
+                actionCounter.textContent = data.total_comments;
+
+            if (metricCounter)
+                metricCounter.textContent =
+                    data.total_comments + " comments";
+
+            const userImg = data.profile_picture
+                ? `<img src="${data.profile_picture}"
+                        class="w-full h-full object-cover">`
+                : `<div class="w-full h-full flex items-center justify-center text-xs">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            // ===== REPLY =====
+            if (parentId) {
+
+                document.getElementById(
+                    `reply-form-${parentId}`
+                ).classList.add('hidden');
+
+                const targetRepliesContainer =
+                    document.getElementById(
+                        `replies-container-${parentId}`
+                    );
+
+                const replyNodeMarkup = `
+                    <div class="flex items-start gap-2">
+
+                        <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+                            ${userImg}
+                        </div>
+
+                        <div class="flex-1 p-2 rounded-xl"
+                             style="background-color: var(--border-color); opacity: 0.95;">
+
+                            <span class="font-semibold text-xs block mb-0.5"
+                                  style="color: var(--text-primary);">
+
+                                ${data.username}
+                            </span>
+
+                            <span class="text-xs"
+                                  style="color: var(--text-primary);">
+
+                                ${data.text}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                targetRepliesContainer.insertAdjacentHTML(
+                    'beforeend',
+                    replyNodeMarkup
+                );
+            }
+
+            // ===== TOP LEVEL COMMENT =====
+            else {
+
+                const targetCommentsRootList =
+                    document.getElementById(
+                        `comments-list-${postId}`
+                    );
+
+                const parentNodeMarkup = `
+                    <div class="text-sm pb-1">
+
+                        <div class="flex items-start gap-2.5">
+
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+                                ${userImg}
+                            </div>
+
+                            <div class="flex-1">
+
+                                <div class="p-2.5 rounded-xl"
+                                     style="background-color: var(--border-color);">
+
+                                    <span class="font-semibold text-xs block mb-0.5"
+                                          style="color: var(--text-primary);">
+
+                                        ${data.username}
+                                    </span>
+
+                                    <span style="color: var(--text-primary);">
+                                        ${data.text}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-3 mt-1 ml-1 text-[11px] opacity-60">
+
+                                    <span>Just now</span>
+
+                                    <button type="button"
+                                            onclick="toggleReplyInput('${data.comment_id}')"
+                                            class="font-semibold hover:underline cursor-pointer"
+                                            style="color: var(--accent-primary);">
+
+                                        Reply
+                                    </button>
+                                </div>
+
+                                <div class="ml-4 mt-2 pl-3 border-l-2 space-y-3"
+                                     style="border-color: var(--border-color);"
+                                     id="replies-container-${data.comment_id}"></div>
+
+                                <div id="reply-form-${data.comment_id}"
+                                     class="hidden ml-4 mt-2">
+
+                                    <form onsubmit="submitComment(event,
+                                                                  ${postId},
+                                                                  '${url}',
+                                                                  '${data.comment_id}')"
+                                          class="flex gap-2 items-center">
+
+                                        <input type="text"
+                                               placeholder="Reply..."
+                                               id="reply-input-${data.comment_id}"
+                                               class="w-full p-2 rounded-lg text-xs"
+                                               style="background-color: var(--border-color);
+                                                      color: var(--text-primary);
+                                                      border:1px solid var(--border-color);"
+                                               required>
+
+                                        <button type="submit"
+                                                class="btn btn-xs rounded-md px-2.5 py-1 text-white text-[11px]"
+                                                style="background: linear-gradient(135deg,
+                                                       var(--accent-primary),
+                                                       var(--accent-ocean));
+                                                       border:none;
+                                                       height:28px;">
+
+                                            Reply
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                targetCommentsRootList.insertAdjacentHTML(
+                    'beforeend',
+                    parentNodeMarkup
+                );
+            }
+        }
+    });
+}
+
+function toggleCommentBox(postId) {
+    document.getElementById(`comment-box-${postId}`).classList.toggle('hidden');
+}
+
+/* Dynamic Modal Sync Trackers */
+let currentActivityData = { likes: [], interests: [], comments: [] };
+
+function openActivityModal(postId, url) {
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        currentActivityData = data;
+        document.getElementById('activityModal').classList.remove('hidden');
+        switchTab('likes');
+    });
+}
+
+function closeActivityModal() {
+    document.getElementById('activityModal').classList.add('hidden');
+}
+
+function switchTab(tabName) {
+
+    const tabs = ['likes', 'interests', 'comments'];
+
+    // reset tab styles
+    tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (!el) return;
+
+        el.classList.remove('border-blue-500', 'font-medium');
+        el.classList.add('border-transparent', 'opacity-60');
+    });
+
+    // activate selected tab
+    const activeTab = document.getElementById(`tab-${tabName}`);
+    if (activeTab) {
+        activeTab.classList.remove('border-transparent', 'opacity-60');
+        activeTab.classList.add('border-blue-500', 'font-medium');
+    }
+
+    const container = document.getElementById('activity-content');
+    container.innerHTML = '';
+
+    // ================= LIKES =================
+    if (tabName === 'likes') {
+
+        if (!currentActivityData.likes.length) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">No likes yet</p>`;
+            return;
+        }
+
+        currentActivityData.likes.forEach(item => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${item.id}/`;
+
+            const imgHtml = item.profile_picture
+                ? `<img src="${item.profile_picture}" class="w-8 h-8 rounded-full object-cover">`
+                : `<div class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            container.innerHTML += `
+                <div class="p-2 border-b flex items-center justify-between hover:bg-black/5 rounded-xl"
+                     style="border-color: var(--border-color);">
+
+                    <a href="${profileUrl}"
+                       class="flex items-center gap-3 font-medium hover:underline"
+                       style="color: var(--text-primary);">
+
+                        ${imgHtml}
+                        <span>${item.username}</span>
+                    </a>
+
+                    <i class="bi bi-heart-fill text-red-500 text-sm mr-2"></i>
+                </div>
+            `;
+        });
+    }
+
+    // ================= INTERESTS =================
+    else if (tabName === 'interests') {
+
+        if (!currentActivityData.interests.length) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">No interested users yet</p>`;
+            return;
+        }
+
+        currentActivityData.interests.forEach(item => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${item.id}/`;
+
+            const imgHtml = item.profile_picture
+                ? `<img src="${item.profile_picture}" class="w-8 h-8 rounded-full object-cover">`
+                : `<div class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            container.innerHTML += `
+                <div class="p-2 border-b flex items-center justify-between hover:bg-black/5 rounded-xl"
+                     style="border-color: var(--border-color);">
+
+                    <a href="${profileUrl}"
+                       class="flex items-center gap-3 font-medium hover:underline"
+                       style="color: var(--text-primary);">
+
+                        ${imgHtml}
+                        <span>${item.username}</span>
+                    </a>
+
+                    <i class="bi bi-star-fill text-amber-500 text-sm mr-2"></i>
+                </div>
+            `;
+        });
+    }
+
+    // ================= COMMENTS =================
+    else if (tabName === 'comments') {
+
+        if (!currentActivityData.comments.length) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">No comments yet</p>`;
+            return;
+        }
+
+        // parent comments only
+        const parents =
+            currentActivityData.comments.filter(c => !c.parent_id);
+
+        parents.forEach(comment => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${comment.user_id}/`;
+
+            const imgHtml =
+                comment.profile_picture
+                    ? `<img src="${comment.profile_picture}"
+                            class="w-8 h-8 rounded-full object-cover">`
+                    : `<div class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
+                            <i class="bi bi-person"></i>
+                       </div>`;
+
+            // find replies
+            const replies =
+                currentActivityData.comments.filter(
+                    r => r.parent_id == comment.comment_id
+                );
+
+            let repliesHtml = '';
+
+            replies.forEach(reply => {
+
+                const replyUrl =
+                    `${viewProfileBaseUrl}${reply.user_id}/`;
+
+                const replyImg =
+                    reply.profile_picture
+                        ? `<img src="${reply.profile_picture}"
+                                class="w-6 h-6 rounded-full object-cover">`
+                        : `<div class="w-6 h-6 rounded-full flex items-center justify-center bg-gray-700">
+                                <i class="bi bi-person"></i>
+                           </div>`;
+
+                repliesHtml += `
+                    <div class="flex gap-2 mt-2">
+
+                        <a href="${replyUrl}">
+                            ${replyImg}
+                        </a>
+
+                        <div class="flex-1 p-2 rounded-xl"
+                             style="background-color: rgba(255,255,255,0.05);">
+
+                            <a href="${replyUrl}"
+                               class="font-semibold text-xs hover:underline"
+                               style="color: var(--text-primary);">
+
+                                ${reply.user}
+                            </a>
+
+                            <p class="text-xs mt-1"
+                               style="color: var(--text-primary);">
+
+                                ${reply.text}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML += `
+                <div class="p-3 rounded-xl mb-3"
+                     style="background-color: var(--border-color);">
+
+                    <div class="flex gap-3 items-start">
+
+                        <a href="${profileUrl}">
+                            ${imgHtml}
+                        </a>
+
+                        <div class="flex-1">
+
+                            <a href="${profileUrl}"
+                               class="font-semibold text-xs hover:underline block"
+                               style="color: var(--text-primary);">
+
+                                ${comment.user}
+                            </a>
+
+                            <p style="color: var(--text-primary);">
+                                ${comment.text}
+                            </p>
+
+                            ${replies.length > 0 ? `
+                                <button
+                                    id="reply-btn-${comment.comment_id}"
+                                    onclick="toggleReplies(${comment.comment_id}, ${replies.length})"
+                                    class="mt-2 text-xs font-semibold hover:underline"
+                                    style="color: var(--accent-primary);">
+
+                                    View replies (${replies.length})
+                                </button>
+
+                                <div id="replies-${comment.comment_id}"
+                                     class="hidden ml-3 mt-2 border-l pl-3"
+                                     style="border-color: var(--border-color);">
+
+                                    ${repliesHtml}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+}
+function toggleReplies(commentId, totalReplies) {
+
+    const box =
+        document.getElementById(`replies-${commentId}`);
+
+    const btn =
+        document.getElementById(`reply-btn-${commentId}`);
+
+    if (!box || !btn) return;
+
+    if (box.classList.contains('hidden')) {
+
+        box.classList.remove('hidden');
+        btn.innerText = `Hide replies (${totalReplies})`;
+
+    } else {
+
+        box.classList.add('hidden');
+        btn.innerText = `View replies (${totalReplies})`;
+    }
+}
+function toggleReplyInput(commentId) {
+    const el = document.getElementById(`reply-form-${commentId}`);
+
+    if(el) {
+        el.classList.toggle('hidden');
+
+        if(!el.classList.contains('hidden')) {
+            el.querySelector('input').focus();
+        }
+    }
+}
+</script>
+{% endblock %}
