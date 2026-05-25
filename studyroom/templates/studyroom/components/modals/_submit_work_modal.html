@@ -12,7 +12,7 @@
             <i class="bi bi-cloud-upload" style="color: var(--accent-primary);"></i>
             Submit: {{ work.title }}
         </h3>
-        <form method="POST" action="{% url 'submit_work' work.id %}" enctype="multipart/form-data">
+      <form method="POST" action="{% url 'studyroom:submit_work' work.id %}" enctype="multipart/form-data"></form>
             {% csrf_token %}
             <div class="form-control mb-4">
                 <label class="label" style="color: var(--text-primary);">Your Work</label>

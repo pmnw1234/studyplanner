@@ -112,16 +112,16 @@ class Notification(models.Model):
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='sent_notifications'
+        related_name='feedview_sent_notifications'  # Changed from 'sent_notifications'
     )
 
     receiver = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='received_notifications'
+        related_name='feedview_received_notifications'  # Changed from 'received_notifications'
     )
 
-    post = models.ForeignKey(   # ADD THIS
+    post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         null=True,

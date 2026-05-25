@@ -16,7 +16,7 @@ urlpatterns = [
     path('room/<int:room_id>/leave/', views.leave_room, name='leave_room'),
     path('room/<int:room_id>/transfer/', views.transfer_ownership, name='transfer_ownership'),
     path('work/<int:work_id>/add-comment/', views.add_stream_comment, name='add_stream_comment'),
-    
+    path('room/<int:room_id>/leave/', views.leave_room, name='leave_room'),
     path('notifications/api/', views.notification_api, name='notification_api'),
     path('notifications/mark-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     path('notes/', views.notes_list, name='notes'),
