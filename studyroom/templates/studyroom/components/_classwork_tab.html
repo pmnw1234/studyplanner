@@ -61,31 +61,37 @@
                             <button class="btn btn-xs btn-ghost text-red-500" onclick="if(confirm('Delete {{ work.title }}?')) document.getElementById('delete-form-{{ work.id }}').submit()">
                                 <i class="bi bi-trash"></i>
                             </button>
-                            <form id="delete-form-{{ work.id }}" method="POST" action="{% url 'delete_classwork' work.id %}" style="display: none;">
+                            <form id="delete-form-{{ work.id }}" method="POST" action="{% url 'studyroom:delete_classwork' work.id %}" style="display: none;">
                                 {% csrf_token %}
                             </form>
                         </div>
                         {% endif %}
                     </div>
                     
-                    <!-- Submission area for students -->
+                    <!-- Submission area for students - FIXED without get_item filter -->
                     {% if is_member and request.user != room.creator %}
                     <div class="mt-3 pt-2 border-t" style="border-color: var(--border-color);">
-                        {% with submission=user_submissions %}
-                        {% if submission and submission.status == 'submitted' %}
-                        <div class="flex items-center gap-2 text-sm">
-                            <i class="bi bi-check-circle-fill text-green-500"></i>
-                            <span style="color: var(--text-secondary);">Submitted on {{ submission.submitted_at|date:"M d, Y" }}</span>
-                            {% if submission.grade %}
-                            <span class="badge" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
-                            {% endif %}
-                        </div>
+                        {% if work.id in user_submissions %}
+                            {% with submission=user_submissions|default:'' %}
+                                {% if submission and submission.status == 'submitted' %}
+                                <div class="flex items-center gap-2 text-sm">
+                                    <i class="bi bi-check-circle-fill text-green-500"></i>
+                                    <span style="color: var(--text-secondary);">Submitted on {{ submission.submitted_at|date:"M d, Y" }}</span>
+                                    {% if submission.grade %}
+                                    <span class="badge" style="background-color: var(--accent-primary); color: white;">{{ submission.grade }}%</span>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <button class="btn btn-sm gap-1" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
+                                    <i class="bi bi-cloud-upload"></i> Add or create
+                                </button>
+                                {% endif %}
+                            {% endwith %}
                         {% else %}
-                        <button class="btn btn-sm gap-1" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
-                            <i class="bi bi-cloud-upload"></i> Add or create
-                        </button>
+                            <button class="btn btn-sm gap-1" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('submit-modal-{{ work.id }}').showModal()">
+                                <i class="bi bi-cloud-upload"></i> Add or create
+                            </button>
                         {% endif %}
-                        {% endwith %}
                     </div>
                     {% endif %}
                     
@@ -202,7 +208,7 @@
                             <button class="btn btn-xs btn-ghost text-red-500" onclick="if(confirm('Delete {{ work.title }}?')) document.getElementById('delete-form-material-{{ work.id }}').submit()">
                                 <i class="bi bi-trash"></i>
                             </button>
-                            <form id="delete-form-material-{{ work.id }}" method="POST" action="{% url 'delete_classwork' work.id %}" style="display: none;">
+                            <form id="delete-form-material-{{ work.id }}" method="POST" action="{% url 'studyroom:delete_classwork' work.id %}" style="display: none;">
                                 {% csrf_token %}
                             </form>
                         </div>

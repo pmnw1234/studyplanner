@@ -19,7 +19,7 @@
                     <i class="bi bi-people"></i> {{ members|length }}/3
                 </div>
                 {% if is_member and request.user != room.creator %}
-                <a href="{% url 'leave_room' room.id %}" class="badge badge-lg gap-2" style="background-color: #ef4444; color: white; border: none;" onclick="return confirm('Are you sure you want to leave this room?')">
+                <a href="{% url 'studyroom:leave_room' room.id %}" class="btn btn-outline gap-2">
                     <i class="bi bi-box-arrow-left"></i> Leave
                 </a>
                 {% endif %}
