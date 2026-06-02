@@ -7,6 +7,8 @@ from django.utils.timesince import timesince
 from datetime import datetime
 from feedview.models import Like, Interested
 import json
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
 def check_level_compatibility(teacher_level, learner_level, category):
     """Check if teacher's level is appropriate for the learner"""
@@ -320,11 +322,24 @@ def dashboard_home(request):
             return "evening"
     
     recently_watched = []
-    saved_items = []
     unread_count = Notification.objects.filter(receiver=request.user, is_read=False).count()
+    saved_posts = Post.objects.filter(
+    interests__user=request.user
+    ).distinct().order_by('-created_at')
+    saved_items = saved_posts.count()
+    for post in saved_posts:
+        post.is_liked = Like.objects.filter(
+        user=request.user,
+        post=post
+        ).exists()
+        post.user_interested = Interested.objects.filter(
+          user=request.user,
+          post=post
+          ).exists()
     context = {
         'profile': profile,
         'matches': matches,
+        'saved_posts': saved_posts,
         'study_feed': study_feed,
         'user_activities': user_activities,
         'unread_count': unread_count,
@@ -340,8 +355,12 @@ def dashboard_home(request):
         'today': datetime.now(),
         'recently_watched': recently_watched,
         'saved_items': saved_items,
+        
         'my_teach_skills': [{'name': s.skill_name, 'level': s.proficiency_level, 'category': s.category} for s in my_teach_skills],
         'my_learn_skills': [{'name': s.skill_name, 'level': s.proficiency_level, 'category': s.category} for s in my_learn_skills],
+        
+        
+        
     }
     
     print(f"\n{'='*60}")
@@ -369,7 +388,7 @@ def post_detail(request, post_id):
     return render(request, 'feedview/post_detail.html', {
         'post': post
     })
-from django.http import JsonResponse
+
 
 @login_required
 def mark_notifications_read(request):
@@ -377,3 +396,23 @@ def mark_notifications_read(request):
         Notification.objects.filter(receiver=request.user, is_read=False).update(is_read=True)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
+# views.py
+@login_required
+def saved_items(request):
+
+    saved_posts = Post.objects.filter(
+        interests__user=request.user
+    ).distinct().order_by('-created_at')
+
+    for post in saved_posts:
+        post.user_interested = True
+
+        post.is_liked = Like.objects.filter(
+            user=request.user,
+            post=post
+        ).exists()
+   
+
+    return render(request, 'saved_items.html', {
+        'saved_posts': saved_posts
+    })

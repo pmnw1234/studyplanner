@@ -32,7 +32,7 @@
                     Matches <span class="text-xs opacity-50 ml-1">{{ matches|length }}</span>
                 </button>
                 <button class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition" data-tab="saved" style="color: var(--text-primary);">
-                    Saved Items <span class="text-xs opacity-50 ml-1">{{ saved_items|length }}</span>
+                    Saved Items <span class="text-xs opacity-50 ml-1">{{ saved_items }}</span>
                 </button>
                 
                 <button id="activity-tab-btn" class="tab-button text-sm pb-2 opacity-50 hover:opacity-100 transition flex items-center gap-1" data-tab="activity" style="color: var(--text-primary); background: none; border: none; cursor: pointer;">
@@ -56,10 +56,15 @@
                 </div>
                 
                 <div id="saved-tab" class="tab-content hidden" style="display: none;">
-                    {% include 'dashboard/components/saved_items.html' %}
+                    {% include 'dashboard/components/saved_items.html' %}  
+                      
                 </div>
+                
+                     
 
                 <div id="activity-tab" class="tab-content hidden space-y-3" style="display: none;">
+                    
+
                     {% for activity in user_activities %}
                         <div class="block">
                         
@@ -151,10 +156,9 @@
                         </div>
                     {% endfor %}
                 </div>
-
+                 
             </div>
-            
-            {% include 'dashboard/partials/quick_actions.html' %}
+         {% include 'dashboard/partials/quick_actions.html' %}
         </div>
     </div>
 </div>
