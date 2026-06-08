@@ -10,6 +10,9 @@ from useraccount.models import UserProfile, UserSkill, ConnectionRequest, Connec
 from django.db.models import Avg
 from django.db.models import Q
 from reviews.models import Review
+from feedview.models import  Like, Interested
+from django.http import JsonResponse
+from feedview.models import Comment
 
 
 # --- HELPER FUNCTIONS ---
@@ -177,6 +180,16 @@ def view_other_profile(request, user_id):
     posts = Post.objects.filter(
     user=other_user
     ).order_by('-created_at')
+    for post in posts:
+        post.user_interested = Interested.objects.filter(
+        user=request.user,
+        post=post
+        ).exists()
+
+        post.is_liked = Like.objects.filter(
+        user=request.user,
+        post=post
+        ).exists()
     context = {
         'other_user': other_user,
         'other_profile': other_profile,

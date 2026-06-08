@@ -1,0 +1,32 @@
+{% if activity_type == 'likes' %}
+
+    {% for like in post.likes.all %}
+        <div class="activity-item">
+            ❤️ {{ like.user.username }}
+        </div>
+    {% empty %}
+        <p>No likes yet.</p>
+    {% endfor %}
+
+{% elif activity_type == 'interested' %}
+
+    {% for interest in post.interested_users.all %}
+        <div class="activity-item">
+            ⭐ {{ interest.user.username }}
+        </div>
+    {% empty %}
+        <p>No interested users yet.</p>
+    {% endfor %}
+
+{% elif activity_type == 'comments' %}
+
+    {% for comment in post.comments.all %}
+        <div class="activity-item">
+            <strong>{{ comment.user.username }}</strong>
+            <p>{{ comment.content }}</p>
+        </div>
+    {% empty %}
+        <p>No comments yet.</p>
+    {% endfor %}
+
+{% endif %}

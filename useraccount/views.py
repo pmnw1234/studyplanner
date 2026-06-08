@@ -6,6 +6,11 @@ from django.contrib.auth.models import User
 from reviews.models import Review
 from django.db.models import Avg
 from feedview.models import Post
+from feedview.models import  Like, Interested
+from django.http import JsonResponse
+from feedview.models import Comment   # if you have Comment model
+from itertools import chain
+
 from .forms import (
     UserRegistrationForm,
     UserProfileEditForm,
@@ -110,8 +115,9 @@ def profile_view(request):
         }
         for skill in profile.skills.filter(skill_type='learn')
     ]
-
+              
     # Certifications
+    
     certifications = profile.certifications.all()
     reviews = Review.objects.filter(
     reviewed_user=request.user
@@ -123,6 +129,36 @@ def profile_view(request):
     posts = Post.objects.filter(
         user=request.user
     ).order_by('-created_at')
+    # ======================
+# 🔥 ACTIVITY FEED DATA
+# ======================
+# 
+    likes = Like.objects.filter(
+    post__user=request.user
+    ).select_related('user', 'post')
+
+    interests = Interested.objects.filter(
+    post__user=request.user
+    ).select_related('user', 'post')
+
+    comments = Comment.objects.filter(
+    post__user=request.user
+    ).select_related('user', 'post')
+    activities = sorted(
+    chain(likes, interests, comments),
+    key=lambda x: x.created_at,
+    reverse=True
+    )
+    for post in posts:
+        post.user_interested = Interested.objects.filter(
+        user=request.user,
+        post=post
+        ).exists()
+
+        post.is_liked = Like.objects.filter(
+        user=request.user,
+        post=post
+        ).exists()
     context = {
         'profile': profile,
         'teach_skills_data': teach_skills_data,
@@ -131,7 +167,8 @@ def profile_view(request):
         'study_partners_count': profile.study_partners_count,  # merged feature
         'reviews': reviews,
         'avg_rating': avg_rating,
-         'posts': posts,
+        'posts': posts,
+        'activities': activities,
     }
 
     return render(request, 'useraccount/profile.html', context)
@@ -177,6 +214,71 @@ def edit_profile(request):
         'teach_skills_data': teach_skills_data,
         'learn_skills_data': learn_skills_data,
     })
+
+# LIKE POST
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    like, created = Like.objects.get_or_create(
+        user=request.user,
+        post=post
+    )
+
+    if not created:
+        like.delete()
+        status = 'unliked'
+    else:
+        status = 'liked'
+
+    return JsonResponse({
+        'status': status,
+        'total_likes': post.likes.count()
+    })
+
+
+# INTEREST POST
+@login_required
+def interest_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    interest, created = Interested.objects.get_or_create(
+        user=request.user,
+        post=post
+    )
+
+    if not created:
+        interest.delete()
+        status = 'uninterested'
+    else:
+        status = 'interested'
+
+    return JsonResponse({
+        'status': status,
+        'total_interests': post.interested.count()
+    })
+
+
+# COMMENT POST
+@login_required
+def comment_post(request, post_id):
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
+
+        content = request.POST.get('content')
+
+        comment = Comment.objects.create(
+            user=request.user,
+            post=post,
+            content=content
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'text': comment.content,
+            'username': request.user.username,
+            'total_comments': post.comments.count()
+        })
 
 
 @login_required

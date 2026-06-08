@@ -1,76 +1,1038 @@
+<!-- Saved Items Card -->
+<div class="rounded-2xl p-5 h-[400px] flex flex-col"
+     style="background-color: var(--bg-card);
+            border: 1px solid var(--border-color);">
 
-<!-- Saved Courses & Videos -->
-<div class="rounded-2xl p-5" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-    <div class="flex items-center justify-between mb-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
         <div class="flex items-center gap-2">
-            <i class="bi bi-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
-            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-bookmark-fill text-lg"
+               style="color: var(--accent-primary);"></i>
+
+            <h3 class="font-semibold text-sm uppercase tracking-wide opacity-70"
+                style="color: var(--text-primary);">
+
                 Saved Items
             </h3>
         </div>
-        <a href="#" class="text-xs opacity-50 hover:opacity-100">View all →</a>
+    </div>
+
+    <!-- Scrollable Posts Area -->
+<div class="flex-1 overflow-y-auto pr-2 space-y-4">
+
+    <div class="mt-8">
+
+    <h2 class="text-xl font-bold mb-4"
+        style="color: var(--text-primary);">
+        My  Interested Posts
+    </h2>
+
+    {% for post in saved_posts %}
+
+    <div class="p-4 rounded-2xl shadow-sm post-card mb-4"
+         id="post-{{ post.id }}"
+         style="background-color: var(--bg-card);
+                border: 1px solid var(--border-color);">
+
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-3">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                     style="background-color: var(--border-color);">
+
+                    {% if post.user.userprofile.profile_picture %}
+                        <img src="{{ post.user.userprofile.profile_picture.url }}"
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <p class="text-sm font-semibold"
+                       style="color: var(--text-primary);">
+                        {{ post.user.username }}
+                    </p>
+
+                    <p class="text-xs opacity-50">
+                        {{ post.created_at|timesince }} ago
+
+                        {% if post.is_edited %}
+                        • edited
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Post Type -->
+            <div class="flex items-center gap-2">
+
+                <span class="text-xs px-3 py-1 rounded-full whitespace-nowrap"
+                      style="background: linear-gradient(135deg,
+                             var(--accent-primary),
+                             var(--accent-ocean));
+                             color:white;">
+
+                    {{ post.get_post_type_display|default:post.post_type|title }}
+                </span>
+
+                <!-- Edit/Delete -->
+                <div class="dropdown dropdown-end">
+
+                    <label tabindex="0"
+                           class="btn btn-ghost btn-sm">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </label>
+
+                    <ul tabindex="0"
+                        class="dropdown-content menu p-2 shadow rounded-box w-40 z-10"
+                        style="background-color: var(--bg-card);
+                               border:1px solid var(--border-color);">
+
+                        <li>
+                            <a href="{% url 'edit_post' post.id %}">
+                                <i class="bi bi-pencil"></i>
+                                Edit
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'delete_post' post.id %}">
+                                <i class="bi bi-trash text-red-500"></i>
+                                Delete
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Topic -->
+        {% if post.topic %}
+        <div class="mb-2">
+            <span class="text-xs px-2 py-0.5 rounded-full"
+                  style="background-color: var(--border-color);
+                         color: var(--text-secondary);">
+
+                <i class="bi bi-tag"></i>
+                {{ post.get_topic_display }}
+
+            </span>
+        </div>
+        {% endif %}
+
+        <!-- Content -->
+        {% if post.content %}
+        <p class="text-sm mb-3"
+           style="color: var(--text-primary);">
+
+            {{ post.content }}
+
+        </p>
+        {% endif %}
+        
+
+        <!-- Hashtags -->
+        {% if post.hashtags %}
+        <p class="text-xs mb-3"
+           style="color: var(--accent-primary);">
+
+            {{ post.hashtags }}
+
+        </p>
+        {% endif %}
+
+        <!-- Image -->
+        {% if post.image %}
+        <img src="{{ post.image.url }}"
+             class="w-full rounded-xl mb-3 object-cover">
+        {% endif %}
+
+        <!-- Video -->
+        {% if post.video %}
+        <video controls class="w-full rounded-xl mb-3">
+            <source src="{{ post.video.url }}">
+        </video>
+        {% endif %}
+
+        <!-- Metrics -->
+<div class="flex justify-between items-center text-xs opacity-60 pb-2 mb-1 border-b"
+     style="border-color: var(--border-color);">
+
+    <button
+        onclick="openActivityModal(
+            {{ post.id }},
+            '{% url 'post_activity' post.id %}'
+        )"
+        class="flex gap-3 hover:opacity-100 transition">
+
+        <span>
+            <i class="bi bi-heart-fill text-red-500"></i>
+
+            <span id="metric-like-count-{{ post.id }}">
+                {{ post.total_likes }}
+            </span>
+
+            Likes
+        </span>
+
+        <span>
+            <i class="bi bi-star-fill text-amber-500"></i>
+
+            <span id="metric-interest-count-{{ post.id }}">
+                {{ post.total_interested }}
+            </span>
+
+            Interested
+        </span>
+    </button>
+
+    <button
+        onclick="openActivityModal(
+            {{ post.id }},
+            '{% url 'post_activity' post.id %}'
+        )"
+        class="hover:opacity-100 transition">
+
+        <span id="metric-comment-count-{{ post.id }}">
+            {{ post.comments.count }}
+        </span>
+
+        comments
+    </button>
+</div>
+        <!-- Actions -->
+        <div class="flex gap-4 text-sm pt-2"
+     style="color: var(--text-primary);">
+
+    <!-- LIKE -->
+    <button
+        onclick="likePost({{ post.id }}, '{% url 'like_post' post.id %}')"
+        class="flex items-center gap-1 opacity-70">
+
+        <i id="heart-icon-{{ post.id }}"
+           class="bi {% if post.is_liked %}bi-heart-fill text-red-500{% else %}bi-heart{% endif %}">
+        </i>
+
+        <span id="like-count-{{ post.id }}">
+            {{ post.total_likes }}
+        </span>
+    </button>
+
+    <!-- INTEREST -->
+    <button
+        onclick="interestPost({{ post.id }}, '{% url 'interest_post' post.id %}')"
+        class="flex items-center gap-1 opacity-70">
+
+        <i id="interest-icon-{{ post.id }}"
+           class="bi {% if post.user_interested %}bi-star-fill text-yellow-400{% else %}bi-star{% endif %}">
+        </i>
+
+        <span id="interest-count-{{ post.id }}">
+            {{ post.total_interested }}
+        </span>
+    </button>
+
+    <!-- COMMENT -->
+    <button
+        onclick="toggleCommentBox({{ post.id }})"
+        class="flex items-center gap-1 opacity-70">
+
+        <i class="bi bi-chat"></i>
+
+        <span id="action-comment-count-{{ post.id }}">
+            {{ post.comments.count }}
+        </span>
+    </button>
+
+</div>
+        <!-- Comment Box -->
+<div id="comment-box-{{ post.id }}" class="hidden mt-4">
+
+    <form
+        onsubmit="submitComment(event,
+        '{{ post.id }}',
+        '{% url 'comment_post' post.id %}')">
+
+        {% csrf_token %}
+
+        <div class="flex gap-2">
+
+            <input
+                type="text"
+                id="comment-input-{{ post.id }}"
+                placeholder="Write a comment..."
+                class="w-full p-2 rounded-lg text-sm"
+                style="background-color: var(--border-color);
+                       color: var(--text-primary);
+                       border:1px solid var(--border-color);">
+
+            <button
+                type="submit"
+                class="btn btn-sm text-white"
+                style="background: linear-gradient(135deg,
+                       var(--accent-primary),
+                       var(--accent-ocean));
+                       border:none;">
+
+                Send
+            </button>
+
+        </div>
+    </form>
+
+    <!-- Comments List -->
+    <div id="comments-list-{{ post.id }}"
+         class="mt-4 space-y-3">
+
+        
+    </div>
+</div>
+    </div>
+
+    {% empty %}
+
+    <div class="text-center py-10 rounded-xl"
+         style="background-color: var(--bg-card);
+                border: 1px solid var(--border-color);">
+
+        <i class="bi bi-journal-text text-4xl opacity-40"></i>
+
+        <p class="mt-3 text-sm opacity-60">
+            No Interested posts yet
+        </p>
+
+       
     </div>
     
-    <div class="space-y-3 max-h-[400px] overflow-y-auto">
-        {% for item in saved_items %}
-        <div class="flex gap-3 p-3 rounded-xl hover:scale-[1.01] transition-transform cursor-pointer" 
-             style="background-color: var(--bg-page); border: 1px solid var(--border-color);"
-             onclick="window.open('{{ item.url }}', '_blank')">
-            
-            <!-- Thumbnail -->
-            <div class="flex-shrink-0">
-                {% if item.thumbnail %}
-                <img src="{{ item.thumbnail }}" alt="{{ item.title }}" class="w-24 h-16 rounded-lg object-cover">
-                {% elif item.youtube_id %}
-                <img src="https://img.youtube.com/vi/{{ item.youtube_id }}/mqdefault.jpg" alt="{{ item.title }}" class="w-24 h-16 rounded-lg object-cover">
-                {% else %}
-                <div class="w-24 h-16 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));">
-                    <i class="bi bi-journal-bookmark-fill text-white text-2xl"></i>
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Info -->
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs px-2 py-0.5 rounded" style="background-color: var(--border-color);">
-                        {% if item.platform %}
-                            {{ item.platform }}
-                        {% elif item.course_title %}
-                            Course
-                        {% else %}
-                            Video
-                        {% endif %}
-                    </span>
-                </div>
-                <h4 class="text-sm font-medium truncate mt-1" style="color: var(--text-primary);">
-                    {{ item.title }}
-                </h4>
-                <p class="text-xs opacity-50 mt-1">
-                    {% if item.course_title %}
-                        {{ item.course_title }}
-                    {% elif item.description %}
-                        {{ item.description|truncatechars:60 }}
-                    {% endif %}
-                </p>
-                <p class="text-xs opacity-40 mt-1">
-                    <i class="bi bi-bookmark-check"></i> Saved {{ item.time_ago }} ago
-                </p>
-            </div>
-            
-            <!-- Remove button -->
-            <button class="px-2 py-1 rounded-lg text-xs whitespace-nowrap h-fit opacity-50 hover:opacity-100" 
-                    onclick="event.stopPropagation(); removeSavedItem({{ forloop.counter0 }})"
-                    style="color: #ef4444;">
-                <i class="bi bi-trash"></i>
+    {% endfor %}
+</div>
+
+<div id="activityModal"
+     class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+    <div class="rounded-2xl p-6 w-[480px] max-w-[95%] shadow-xl flex flex-col max-h-[80vh]"
+         style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+        
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Post Activity</h2>
+            <button onclick="closeActivityModal()" class="text-xl opacity-70 hover:opacity-100">&times;</button>
+        </div>
+
+        <div class="flex border-b text-sm mb-3" style="border-color: var(--border-color);">
+            <button onclick="switchTab('likes')" id="tab-likes" class="py-2 px-4 border-b-2 border-blue-500 font-medium" style="color: var(--text-primary);">Likes</button>
+            <button onclick="switchTab('interests')" id="tab-interests" class="py-2 px-4 border-b-2 border-transparent opacity-60" style="color: var(--text-primary);">Interested</button>
+            <button onclick="switchTab('comments')" id="tab-comments" class="py-2 px-4 border-b-2 border-transparent opacity-60" style="color: var(--text-primary);">Comments</button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 space-y-2 text-sm" id="activity-content" style="color: var(--text-primary);">
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal"
+     class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+    <div class="rounded-2xl p-6 w-[420px] max-w-[95%] shadow-xl"
+         style="background-color: var(--bg-card);">
+
+        <h2 class="text-xl font-semibold mb-4"
+            style="color: var(--text-primary);">
+            Delete Post
+        </h2>
+
+        <p class="text-sm mb-6 opacity-80"
+           style="color: var(--text-primary);">
+            Are you sure you want to delete this post?
+        </p>
+
+        <div class="flex justify-end gap-3">
+            <button onclick="confirmDelete()"
+                    class="btn px-6 text-white text-sm"
+                    style="background:#ff5b6b; border:none;">
+                Yes
+            </button>
+
+            <button onclick="closeDeleteModal()"
+                    class="btn px-6 text-sm"
+                    style="background-color: var(--border-color); color: var(--text-primary); border:none;">
+                No
             </button>
         </div>
-        {% empty %}
-        <div class="text-center py-8 opacity-50">
-            <i class="bi bi-bookmark text-3xl"></i>
-            <p class="text-sm mt-2">No saved items yet</p>
-            <p class="text-xs mt-1">Save courses and videos to see them here!</p>
+    </div>
+</div>
+<div id="interestModal"
+     class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+    <div class="rounded-2xl p-6 w-[420px] max-w-[95%] shadow-xl"
+         style="background-color: var(--bg-card); border:1px solid var(--border-color);">
+
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold"
+                style="color: var(--text-primary);">
+                Add a note?
+            </h2>
+
+            <button onclick="closeInterestModal()"
+                    class="text-xl opacity-70 hover:opacity-100">
+                &times;
+            </button>
         </div>
-        {% endfor %}
+
+        <p class="text-sm mb-4 opacity-70"
+           style="color: var(--text-primary);">
+            Personalize your interest request with a note.
+        </p>
+
+        <textarea id="interest-note"
+                  rows="4"
+                  class="w-full p-3 rounded-xl text-sm"
+                  placeholder="Write a note..."
+                  style="background-color: var(--border-color);
+                         color: var(--text-primary);
+                         border:1px solid var(--border-color);"></textarea>
+
+        <div class="flex justify-end gap-3 mt-5">
+
+            <button onclick="sendInterestRequest(false)"
+                    class="btn text-sm px-4"
+                    style="background-color: var(--border-color);
+                           color: var(--text-primary);
+                           border:none;">
+
+                Send without a note
+            </button>
+
+            <button onclick="sendInterestRequest(true)"
+                    class="btn text-sm px-4 text-white"
+                    style="background: linear-gradient(135deg,
+                           var(--accent-primary),
+                           var(--accent-ocean));
+                           border:none;">
+
+                Add a note
+            </button>
+
+        </div>
+    </div>
+</div>
+<script>
+const viewProfileBaseUrl = "{% url 'view_other_profile' 0 %}".replace('/0/', '/');
+
+let userInterestState = {};
+
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function likePost(postId, url) {
+    const csrftoken = getCSRFToken();
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const heartIcon = document.getElementById(`heart-icon-${postId}`);
+        const likeCount = document.getElementById(`like-count-${postId}`);
+        const metricLikeCount = document.getElementById(`metric-like-count-${postId}`);
+
+        if (data.status === 'liked') {
+            heartIcon.classList.replace('bi-heart', 'bi-heart-fill');
+            heartIcon.style.color = '#ef4444';
+        } else {
+            heartIcon.classList.replace('bi-heart-fill', 'bi-heart');
+            heartIcon.style.color = '';
+        }
+
+        likeCount.textContent = data.total_likes;
+        if(metricLikeCount) metricLikeCount.textContent = data.total_likes;
+    });
+}
+
+function submitComment(event, postId, url, parentId = null) {
+    event.preventDefault();
+    
+    let inputElement;
+    if (parentId) {
+        inputElement = document.getElementById(`reply-input-${parentId}`);
+    } else {
+        inputElement = document.getElementById(`comment-input-${postId}`);
+    }
+    
+    const content = inputElement.value.trim();
+    if (!content) return;
+
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    if (parentId) {
+        formData.append('parent_id', parentId);
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            inputElement.value = ''; // Clear input field
+            
+            // Instantly update counter views
+            const actionCounter = document.getElementById(`action-comment-count-${postId}`);
+            const metricCounter = document.getElementById(`metric-comment-count-${postId}`);
+            if (actionCounter) actionCounter.textContent = data.total_comments;
+            if (metricCounter) metricCounter.textContent = data.total_comments ;
+
+            // Setup variables to display profile picture fallback safely inside JavaScript
+            const userImg = data.profile_picture 
+                ? `<img src="${data.profile_picture}" class="w-full h-full object-cover">` 
+                : `<div class="w-full h-full flex items-center justify-center text-xs"><i class="bi bi-person"></i></div>`;
+
+            if (parentId) {
+                // Dynamic insertion logic for inline sub-replies without forcing full reload routines
+                document.getElementById(`reply-form-${parentId}`).classList.add('hidden');
+                const targetRepliesContainer = document.getElementById(`replies-container-${parentId}`);
+                
+                const replyNodeMarkup = `
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+                            ${userImg}
+                        </div>
+                        <div class="flex-1 p-2 rounded-xl" style="background-color: var(--border-color); opacity: 0.95;">
+                            <span class="font-semibold text-xs block mb-0.5" style="color: var(--text-primary);">${data.username}</span>
+                            <span class="text-xs" style="color: var(--text-primary);">${data.text}</span>
+                        </div>
+                    </div>
+                `;
+                targetRepliesContainer.insertAdjacentHTML('beforeend', replyNodeMarkup);
+            } else {
+                // Dynamic insertion logic for top-level parent comments without forcing full reload routines
+                const targetCommentsRootList = document.getElementById(`comments-list-${postId}`);
+                
+                const parentNodeMarkup = `
+                    <div class="text-sm pb-1" id="comment-node-${data.comment_id}">
+                        <div class="flex items-start gap-2.5">
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mt-0.5">
+                                ${userImg}
+                            </div>
+                            <div class="flex-1">
+                                <div class="p-2.5 rounded-xl" style="background-color: var(--border-color);">
+                                    <span class="font-semibold text-xs block mb-0.5" style="color: var(--text-primary);">${data.username}</span>
+                                    <span style="color: var(--text-primary);">${data.text}</span>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 mt-1 ml-1 text-[11px] opacity-60">
+                                    <span>Just now</span>
+                                    <button type="button" onclick="toggleReplyInput('${data.comment_id}')" class="font-semibold hover:underline cursor-pointer" style="color: var(--accent-primary);">Reply</button>
+                                </div>
+
+                                <div class="ml-4 mt-2 pl-3 border-l-2 space-y-3" style="border-color: var(--border-color);" id="replies-container-${data.comment_id}"></div>
+
+                                <div id="reply-form-${data.comment_id}" class="hidden ml-4 mt-2">
+                                    <form onsubmit="submitComment(event, ${postId}, '${url}', '${data.comment_id}')" class="flex gap-2 items-center">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
+                                        <input type="text" placeholder="Reply to @${data.username}..." id="reply-input-${data.comment_id}" class="w-full p-2 rounded-lg text-xs" style="background-color: var(--border-color); color: var(--text-primary); border: 1px solid var(--border-color);" required>
+                                        <button type="submit" class="btn btn-xs rounded-md px-2.5 py-1 text-white text-[11px]" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); border:none; height:28px;">Reply</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                targetCommentsRootList.insertAdjacentHTML('beforeend', parentNodeMarkup);
+            }
+        }
+    });
+}
+
+function toggleReplyInput(commentId) {
+    const el = document.getElementById(`reply-form-${commentId}`);
+    if(el) {
+        el.classList.toggle('hidden');
+        if(!el.classList.contains('hidden')) {
+            el.querySelector('input').focus();
+        }
+    }
+}
+
+function sendInterest(userId, url, button) {
+    const csrftoken = getCSRFToken();
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'sent') {
+            document.getElementById(`star-icon-${userId}`).className = 'bi bi-star-fill';
+            document.getElementById(`star-icon-${userId}`).style.color = '#fbbf24';
+            document.getElementById(`interest-text-${userId}`).textContent = 'Request Sent';
+
+            button.disabled = true;
+            button.style.opacity = '0.6';
+        }
+    });
+}
+
+let deleteUrl = '';
+
+function openDeleteModal(url) {
+    deleteUrl = url;
+    document.activeElement.blur();
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+function confirmDelete() {
+    window.location.href = deleteUrl;
+}
+
+let currentInterestPostId = null;
+let currentInterestUrl = null;
+
+function interestPost(postId, url) {
+
+    const icon = document.getElementById(`interest-icon-${postId}`);
+
+    const isCurrentlyInterested = icon.classList.contains('bi-star-fill');
+
+    // If already interested → REMOVE interest directly (NO MODAL)
+    if (isCurrentlyInterested) {
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', getCSRFToken());
+        formData.append('note', '');
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            icon.classList.replace('bi-star-fill', 'bi-star');
+            icon.style.color = '';
+
+            document.getElementById(`interest-count-${postId}`).textContent = data.total_interests;
+
+            const metric = document.getElementById(`metric-interest-count-${postId}`);
+            if (metric) metric.textContent = data.total_interests;
+        });
+
+        return;
+    }
+
+    // Otherwise → show modal (FIRST TIME interest)
+    currentInterestPostId = postId;
+    currentInterestUrl = url;
+
+    document.getElementById('interest-note').value = '';
+    document.getElementById('interestModal').classList.remove('hidden');
+}
+
+function closeInterestModal() {
+
+    document.getElementById('interestModal')
+        .classList.add('hidden');
+}
+
+function sendInterestRequest(withNote=false) {
+
+    const note =
+        document.getElementById('interest-note').value;
+
+    const formData = new FormData();
+
+    formData.append(
+        'csrfmiddlewaretoken',
+        getCSRFToken()
+    );
+
+    formData.append(
+        'note',
+        withNote ? note : ''
+    );
+
+    fetch(currentInterestUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        const postId = currentInterestPostId;
+
+        const interestIcon =
+            document.getElementById(`interest-icon-${postId}`);
+
+        const interestCount =
+            document.getElementById(`interest-count-${postId}`);
+
+        const metricInterestCount =
+            document.getElementById(`metric-interest-count-${postId}`);
+
+        if (data.status === 'interested') {
+
+            interestIcon.classList.replace(
+                'bi-star',
+                'bi-star-fill'
+            );
+
+            interestIcon.style.color = '#fbbf24';
+
+        } else {
+
+            interestIcon.classList.replace(
+                'bi-star-fill',
+                'bi-star'
+            );
+
+            interestIcon.style.color = '';
+        }
+
+        interestCount.textContent =
+            data.total_interests;
+
+        if(metricInterestCount)
+            metricInterestCount.textContent =
+                data.total_interests;
+
+        closeInterestModal();
+    });
+}
+
+function toggleCommentBox(postId) {
+    document.getElementById(`comment-box-${postId}`).classList.toggle('hidden');
+}
+
+/* Dynamic Activity Tracker Logic with Profile Images */
+let currentActivityData = { likes: [], interests: [], comments: [] };
+
+function openActivityModal(postId, url) {
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        currentActivityData = data;
+        document.getElementById('activityModal').classList.remove('hidden');
+        switchTab('likes');
+    });
+}
+
+function closeActivityModal() {
+    document.getElementById('activityModal').classList.add('hidden');
+}
+
+function switchTab(tabName) {
+    const tabs = ['likes', 'interests', 'comments'];
+
+    tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        el.classList.remove('border-blue-500', 'font-medium');
+        el.classList.add('border-transparent', 'opacity-60');
+    });
+
+    const activeTab = document.getElementById(`tab-${tabName}`);
+    activeTab.classList.replace('border-transparent', 'border-blue-500');
+    activeTab.classList.replace('opacity-60', 'font-medium');
+
+    const container = document.getElementById('activity-content');
+    container.innerHTML = '';
+
+    // ================= LIKES =================
+    if (tabName === 'likes') {
+
+        if(currentActivityData.likes.length === 0) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">No likes yet</p>`;
+            return;
+        }
+
+        currentActivityData.likes.forEach(item => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${item.id}/`;
+
+            const imgHtml = item.profile_picture
+                ? `<img src="${item.profile_picture}"
+                        class="w-8 h-8 rounded-full object-cover">`
+                : `<div class="w-8 h-8 rounded-full
+                        flex items-center justify-center bg-gray-700">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            container.innerHTML += `
+                <div class="p-2 border-b flex items-center justify-between
+                            hover:bg-black/5 rounded-xl transition"
+                     style="border-color: var(--border-color);">
+
+                    <a href="${profileUrl}"
+                       class="flex items-center gap-3 font-medium hover:underline"
+                       style="color: var(--text-primary);">
+
+                        ${imgHtml}
+                        <span>${item.username}</span>
+                    </a>
+
+                    <i class="bi bi-heart-fill text-red-500 text-sm mr-2"></i>
+                </div>
+            `;
+        });
+    }
+
+    // ================= INTERESTS =================
+    else if (tabName === 'interests') {
+
+        if(currentActivityData.interests.length === 0) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">
+                    No interested users yet
+                 </p>`;
+            return;
+        }
+
+        currentActivityData.interests.forEach(item => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${item.id}/`;
+
+            const imgHtml = item.profile_picture
+                ? `<img src="${item.profile_picture}"
+                        class="w-8 h-8 rounded-full object-cover">`
+                : `<div class="w-8 h-8 rounded-full
+                        flex items-center justify-center bg-gray-700">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            container.innerHTML += `
+                <div class="p-2 border-b flex items-center justify-between
+                            hover:bg-black/5 rounded-xl transition"
+                     style="border-color: var(--border-color);">
+
+                    <a href="${profileUrl}"
+                       class="flex items-center gap-3 font-medium hover:underline"
+                       style="color: var(--text-primary);">
+
+                        ${imgHtml}
+                        <span>${item.username}</span>
+                    </a>
+
+                    <i class="bi bi-star-fill text-amber-500 text-sm mr-2"></i>
+                </div>
+            `;
+        });
+    }
+
+    // ================= COMMENTS =================
+    else if (tabName === 'comments') {
+
+        if(currentActivityData.comments.length === 0) {
+            container.innerHTML =
+                `<p class="opacity-50 py-4 text-center">
+                    No comments yet
+                 </p>`;
+            return;
+        }
+
+        // Parent comments only
+        const parentComments =
+            currentActivityData.comments.filter(
+                c => !c.parent_id
+            );
+
+        parentComments.forEach(comment => {
+
+            const profileUrl =
+                `${viewProfileBaseUrl}${comment.user_id}/`;
+
+            const imgHtml = comment.profile_picture
+                ? `<img src="${comment.profile_picture}"
+                        class="w-8 h-8 rounded-full object-cover mt-0.5">`
+                : `<div class="w-8 h-8 rounded-full
+                        flex items-center justify-center bg-gray-700 mt-0.5">
+                        <i class="bi bi-person"></i>
+                   </div>`;
+
+            // Replies of this comment
+            const replies =
+                currentActivityData.comments.filter(
+                    r => r.parent_id == comment.comment_id
+                );
+
+            let repliesHtml = '';
+
+            replies.forEach(reply => {
+
+                const replyProfileUrl =
+                    `${viewProfileBaseUrl}${reply.user_id}/`;
+
+                const replyImg = reply.profile_picture
+                    ? `<img src="${reply.profile_picture}"
+                            class="w-6 h-6 rounded-full object-cover">`
+                    : `<div class="w-6 h-6 rounded-full
+                            flex items-center justify-center bg-gray-700">
+                            <i class="bi bi-person text-[10px]"></i>
+                       </div>`;
+
+                repliesHtml += `
+                    <div class="flex gap-2 mt-3">
+                        
+                        <a href="${replyProfileUrl}">
+                            ${replyImg}
+                        </a>
+
+                        <div class="flex-1 p-2 rounded-xl"
+                             style="background-color: rgba(255,255,255,0.04);">
+
+                            <a href="${replyProfileUrl}"
+                               class="font-semibold text-xs hover:underline"
+                               style="color: var(--text-primary);">
+
+                                ${reply.user}
+                            </a>
+
+                            <p class="text-xs mt-1"
+                               style="color: var(--text-primary);">
+                                ${reply.text}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML += `
+                <div class="p-3 rounded-xl mb-3"
+                     style="background-color: var(--border-color);">
+
+                    <div class="flex gap-3 items-start">
+
+                        <a href="${profileUrl}"
+                           class="flex-shrink-0">
+
+                            ${imgHtml}
+                        </a>
+
+                        <div class="flex-1">
+
+                            <a href="${profileUrl}"
+                               class="font-semibold text-xs mb-1 block hover:underline"
+                               style="color: var(--text-primary);">
+
+                                ${comment.user}
+                            </a>
+
+                            <span style="color: var(--text-primary);">
+                                ${comment.text}
+                            </span>
+
+                            ${replies.length > 0 ? `
+                                <button
+                                    id="reply-btn-${comment.comment_id}"
+                                    onclick="toggleReplies(${comment.comment_id}, ${replies.length})"
+                                    class="mt-2 text-xs font-semibold hover:underline"
+                                    style="color: var(--accent-primary);">
+
+                                    View replies (${replies.length})
+                                </button>
+
+                                <div id="replies-${comment.comment_id}"
+                                     class="hidden ml-2 mt-2 border-l pl-3"
+                                     style="border-color: var(--border-color);">
+
+                                    ${repliesHtml}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+}
+
+// ================= TOGGLE REPLIES =================
+function toggleReplies(commentId, totalReplies) {
+
+    const repliesContainer =
+        document.getElementById(`replies-${commentId}`);
+
+    const button =
+        document.getElementById(`reply-btn-${commentId}`);
+
+    if (repliesContainer.classList.contains('hidden')) {
+
+        repliesContainer.classList.remove('hidden');
+
+        button.innerText =
+            `Hide replies (${totalReplies})`;
+
+    } else {
+
+        repliesContainer.classList.add('hidden');
+
+        button.innerText =
+            `View replies (${totalReplies})`;
+    }
+}
+</script>
+
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--border-color);
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 10px;
+    }
+    
+    /* Badge hover effect */
+    .badge-hover:hover {
+        transform: translateY(-2px);
+        transition: all 0.2s ease;
+    }
+</style>
+
     </div>
 </div>

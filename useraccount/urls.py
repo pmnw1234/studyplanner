@@ -11,7 +11,13 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('post/<int:post_id>/like/', views.like_post, name='like_post'),
+    path('post/<int:post_id>/interest/', views.interest_post, name='interest_post'),
+    path('post/<int:post_id>/comment/', views.comment_post, name='comment_post'),
     path('certification/add/', views.add_certification, name='add_certification'),
     path('certification/edit/<int:cert_id>/', views.edit_certification, name='edit_certification'),
     path('certification/delete/<int:cert_id>/', views.delete_certification, name='delete_certification'),
+    
+    
+   
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
