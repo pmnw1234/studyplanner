@@ -1,4 +1,3 @@
-# urls.py
 from django.urls import path
 from useraccount import views
 from django.conf import settings
@@ -18,6 +17,7 @@ urlpatterns = [
     path('certification/edit/<int:cert_id>/', views.edit_certification, name='edit_certification'),
     path('certification/delete/<int:cert_id>/', views.delete_certification, name='delete_certification'),
     
-    
-   
+    # ===== NEW URLS FOR CONNECTIONS =====
+    path('profile/<int:user_id>/', views.view_other_profile, name='view_other_profile'),
+    path('connect/<int:user_id>/', views.connect_user, name='connect_user'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
