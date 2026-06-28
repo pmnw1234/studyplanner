@@ -6,28 +6,6 @@
     <form method="POST" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
 
-        <!-- Post Type -->
-        <div class="flex gap-3 p-1 rounded-xl"
-             style="background-color: var(--border-color);">
-
-            <button type="button"
-                    onclick="setPostType('study')"
-                    id="studyBtn"
-                    class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
-                <i class="bi bi-people"></i> Study Partner
-            </button>
-
-            <button type="button"
-                    onclick="setPostType('skill')"
-                    id="skillBtn"
-                    class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
-                <i class="bi bi-arrow-left-right"></i> Skill Swap
-            </button>
-
-            <input type="hidden" name="post_type" id="postTypeInput" value="{{ post.post_type }}">
-            <input type="hidden" name="category" id="categoryInput" value="{{ post.category }}">
-        </div>
-
         <!-- Topic -->
         <div>
             <label class="text-sm font-medium mb-2 block"
@@ -142,30 +120,6 @@
 </div>
 
 <script>
-function setPostType(type) {
-    document.getElementById('postTypeInput').value = type;
-    document.getElementById('categoryInput').value = type;
-
-    const studyBtn = document.getElementById('studyBtn');
-    const skillBtn = document.getElementById('skillBtn');
-
-    if (type === 'study') {
-        studyBtn.style.background =
-            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
-        studyBtn.style.color = 'white';
-
-        skillBtn.style.background = 'transparent';
-        skillBtn.style.color = 'var(--text-secondary)';
-    } else {
-        skillBtn.style.background =
-            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
-        skillBtn.style.color = 'white';
-
-        studyBtn.style.background = 'transparent';
-        studyBtn.style.color = 'var(--text-secondary)';
-    }
-}
-
 function previewImage(event) {
     const file = event.target.files[0];
     const preview = document.getElementById('imagePreview');

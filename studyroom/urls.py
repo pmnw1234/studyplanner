@@ -20,5 +20,5 @@ urlpatterns = [
     path('notifications/api/', views.notification_api, name='notification_api'),
     path('notifications/mark-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     path('notes/', views.notes_list, name='notes'),
-path('notes/<int:note_id>/delete/', views.delete_note, name='delete_note'),
+    path('notes/<int:note_id>/delete/', views.delete_note, name='delete_note'),
 ]
