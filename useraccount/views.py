@@ -3,12 +3,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Avg, Q
 from reviews.models import Review
-from django.db.models import Avg
 from feedview.models import Post
-from feedview.models import  Like, Interested
+from feedview.models import Like, Interested
 from django.http import JsonResponse
-from feedview.models import Comment   # if you have Comment model
+from feedview.models import Comment
 from itertools import chain
 
 from .forms import (
@@ -18,7 +19,7 @@ from .forms import (
     EnhancedUserProfileEditForm,
     CertificationForm
 )
-from .models import UserProfile, UserSkill, Certification
+from .models import UserProfile, UserSkill, Certification, Connection
 from feedview.models import MatchRequest
 
 
@@ -66,13 +67,13 @@ def login_view(request):
             if user:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-                print(f"✅ User logged in: {user.username}")  # Debug
-                print(f"✅ Redirecting to dashboard_home")  # Debug
+                print(f"✅ User logged in: {user.username}")
+                print(f"✅ Redirecting to dashboard_home")
                 return redirect("dashboard_home")
             else:
-                print("❌ No user in cleaned_data")  # Debug
+                print("❌ No user in cleaned_data")
         else:
-            print(f"❌ Form invalid: {form.errors}")  # Debug
+            print(f"❌ Form invalid: {form.errors}")
             messages.error(request, "Invalid email/username or password.")
     else:
         form = LoginForm()
@@ -117,54 +118,56 @@ def profile_view(request):
     ]
               
     # Certifications
-    
     certifications = profile.certifications.all()
     reviews = Review.objects.filter(
-    reviewed_user=request.user
-     ).order_by('-created_at')
+        reviewed_user=request.user
+    ).order_by('-created_at')
     avg_rating = reviews.aggregate(
-    Avg('rating')
+        Avg('rating')
     )['rating__avg']
     
     posts = Post.objects.filter(
         user=request.user
     ).order_by('-created_at')
+    
     # ======================
-# 🔥 ACTIVITY FEED DATA
-# ======================
-# 
+    # 🔥 ACTIVITY FEED DATA
+    # ======================
     likes = Like.objects.filter(
-    post__user=request.user
+        post__user=request.user
     ).select_related('user', 'post')
 
     interests = Interested.objects.filter(
-    post__user=request.user
+        post__user=request.user
     ).select_related('user', 'post')
 
     comments = Comment.objects.filter(
-    post__user=request.user
+        post__user=request.user
     ).select_related('user', 'post')
+    
     activities = sorted(
-    chain(likes, interests, comments),
-    key=lambda x: x.created_at,
-    reverse=True
+        chain(likes, interests, comments),
+        key=lambda x: x.created_at,
+        reverse=True
     )
+    
     for post in posts:
         post.user_interested = Interested.objects.filter(
-        user=request.user,
-        post=post
+            user=request.user,
+            post=post
         ).exists()
 
         post.is_liked = Like.objects.filter(
-        user=request.user,
-        post=post
+            user=request.user,
+            post=post
         ).exists()
+    
     context = {
         'profile': profile,
         'teach_skills_data': teach_skills_data,
         'learn_skills_data': learn_skills_data,
         'certifications': certifications,
-        'study_partners_count': profile.study_partners_count,  # merged feature
+        'study_partners_count': profile.study_partners_count,
         'reviews': reviews,
         'avg_rating': avg_rating,
         'posts': posts,
@@ -214,6 +217,7 @@ def edit_profile(request):
         'teach_skills_data': teach_skills_data,
         'learn_skills_data': learn_skills_data,
     })
+
 
 # LIKE POST
 @login_required
@@ -369,6 +373,75 @@ def delete_certification(request, cert_id):
     return render(request, 'useraccount/delete_certification.html', {
         'certification': certification,
     })
+
+
+# ======================
+# CONNECTION MANAGEMENT
+# ======================
+
+@login_required
+def view_other_profile(request, user_id):
+    """View another user's profile"""
+    other_user = get_object_or_404(User, id=user_id)
+    other_profile = other_user.userprofile
+    
+    # Check if already connected
+    is_connected = Connection.objects.filter(
+        Q(user1=request.user, user2=other_user) | 
+        Q(user1=other_user, user2=request.user)
+    ).exists()
+    
+    # Get skills
+    teach_skills = other_profile.skills.filter(skill_type='teach')
+    learn_skills = other_profile.skills.filter(skill_type='learn')
+    
+    # Get reviews
+    reviews = Review.objects.filter(reviewed_user=other_user).order_by('-created_at')
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+    
+    context = {
+        'profile': other_profile,
+        'user': other_user,
+        'is_connected': is_connected,
+        'teach_skills': teach_skills,
+        'learn_skills': learn_skills,
+        'reviews': reviews,
+        'avg_rating': avg_rating,
+    }
+    
+    return render(request, 'useraccount/other_profile.html', context)
+
+
+@login_required
+def connect_user(request, user_id):
+    """Quick connect without going to profile page (for matches tab)"""
+    other_user = get_object_or_404(User, id=user_id)
+    
+    if other_user == request.user:
+        messages.error(request, "You cannot connect with yourself.")
+        return redirect('dashboard_home')
+    
+    # Check if already connected
+    is_connected = Connection.objects.filter(
+        Q(user1=request.user, user2=other_user) | 
+        Q(user1=other_user, user2=request.user)
+    ).exists()
+    
+    if is_connected:
+        messages.info(request, f"You are already connected with {other_user.username}.")
+    else:
+        # Create direct connection
+        Connection.objects.create(user1=request.user, user2=other_user)
+        
+        # Update study partners count
+        request.user.userprofile.study_partners_count += 1
+        request.user.userprofile.save()
+        other_user.userprofile.study_partners_count += 1
+        other_user.userprofile.save()
+        
+        messages.success(request, f"You are now connected with {other_user.username}!")
+    
+    return redirect('dashboard_home')
 
 
 # ======================

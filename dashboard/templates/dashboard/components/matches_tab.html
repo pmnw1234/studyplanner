@@ -29,19 +29,11 @@
                                 <span class="text-xs px-2 py-0.5 rounded-full" style="background-color: #6B728020; color: #6B7280;">Potential Match</span>
                             {% endif %}
                         </div>
-                        <div class="mb-3 text-sm italic"
-     style="color: var(--text-secondary);">
-
-    <i class="bi bi-robot me-1"></i>
-
-    AI Insight:
-    Strong exchange potential detected — your expertise in
-    {{ match.skills_they_want.0.name|default:"key skills" }}
-    complements their ability in
-    {{ match.skills_they_teach.0.name|default:"related areas" }},
-    suggesting a mutually beneficial learning partnership.
-
-</div>
+                        <div class="mb-3 text-sm italic" style="color: var(--text-secondary);">
+                            <i class="bi bi-robot me-1"></i>
+                            AI Insight: Strong exchange potential detected — your expertise in {{ match.skills_they_want.0.name|default:"key skills" }} complements their ability in {{ match.skills_they_teach.0.name|default:"related areas" }}, suggesting a mutually beneficial learning partnership.
+                        </div>
+                        
                         <!-- Teaching Skills -->
                         {% if match.skills_they_teach %}
                         <div class="mb-3">
@@ -88,7 +80,6 @@
                                         <div class="flex-1">
                                             <span class="font-medium">{{ direct.skill_name }}</span>
                                             <div class="text-xs opacity-60 mt-0.5">
-                                               
                                             </div>
                                         </div>
                                         {% if direct.level_compatible %}
@@ -114,9 +105,11 @@
                         <div class="text-2xl font-bold" style="color: #c49a2a;">{{ match.score }}%</div>
                         <div class="text-xs opacity-60">Match Score</div>
                     </div>
-                    <a href="{% url 'view_other_profile' match.user_id %}" 
+                    <!-- UPDATED: Connect button now uses connect_user URL -->
+                    <a href="{% url 'connect_user' match.user_id %}" 
                        class="px-5 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 whitespace-nowrap"
-                       style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; text-decoration: none;">
+                       style="background: linear-gradient(135deg, #8b6914, #c49a2a); color: white; text-decoration: none;"
+                       onclick="return confirm('Connect with {{ match.name }}?')">
                         Connect
                     </a>
                 </div>
