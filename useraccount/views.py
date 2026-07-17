@@ -10,15 +10,23 @@ from feedview.models import  Like, Interested
 from django.http import JsonResponse
 from feedview.models import Comment   # if you have Comment model
 from itertools import chain
+import json
+from useraccount.models import  Quiz,Question
 
 from .forms import (
     UserRegistrationForm,
     UserProfileEditForm,
     LoginForm,
     EnhancedUserProfileEditForm,
-    CertificationForm
+    CertificationForm,
+
 )
-from .models import UserProfile, UserSkill, Certification
+from .models import (
+    UserProfile,
+    UserSkill,
+    Certification,
+    
+)
 from feedview.models import MatchRequest
 
 
@@ -178,7 +186,7 @@ def profile_view(request):
 def edit_profile(request):
     profile = request.user.userprofile
 
-    # Load skills
+    # Load skills 
     teach_skills_data = [
         {
             'name': skill.skill_name,
@@ -198,15 +206,63 @@ def edit_profile(request):
     ]
 
     if request.method == 'POST':
-        form = EnhancedUserProfileEditForm(request.POST, request.FILES, instance=profile)
+
+        form = EnhancedUserProfileEditForm(
+        request.POST,
+        request.FILES,
+        instance=profile
+    )
+
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Your profile has been updated successfully!')
-            return redirect('profile')
+
+           request.session['pending_profile'] = request.POST.dict()
+
+           skills_data = json.loads(
+           request.POST.get('skills_data', '{}')
+           )
+           print("SKILLS DATA =", skills_data)
+           teach_skills = skills_data.get('teach', [])
+           for skill in teach_skills:
+
+               category = skill.get('category', '').lower()
+               name = skill.get('name', '').lower()
+
+               print("CATEGORY =", category)
+               print("NAME =", name)
+
+               if category == "language" and name == "english":
+
+                  form.save()
+
+                  return redirect(
+                  "take_quiz",
+                  quiz_type="english"
+                  )
+
+               elif category == "tech" and name == "python":
+
+                    form.save()
+
+                    return redirect(
+                    "take_quiz",
+                    quiz_type="python"
+                    )
+           form.save()
+
+           messages.success(
+            request,
+            'Your profile has been updated successfully!'
+            )
+           return redirect('profile')
+
         else:
-            messages.error(request, 'Please correct the errors below.')
+          messages.error(
+            request,
+            'Please correct the errors below.'
+        )
+
     else:
-        form = EnhancedUserProfileEditForm(instance=profile)
+      form = EnhancedUserProfileEditForm(instance=profile)
 
     return render(request, 'useraccount/edit_profile.html', {
         'form': form,
@@ -377,3 +433,90 @@ def delete_certification(request, cert_id):
 
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)
+
+
+
+
+@login_required
+def take_quiz(request, quiz_type):
+
+    quiz = get_object_or_404(
+        Quiz,
+        quiz_type=quiz_type
+    )
+
+    questions = quiz.questions.all()
+
+    if request.method == "POST":
+
+        score = 0
+
+        for question in questions:
+
+            answer = request.POST.get(
+                f"question_{question.id}"
+            )
+
+            if answer == question.correct_answer:
+                score += 1
+
+        # ---------- ENGLISH ----------
+        if quiz_type == "english":
+
+            if score <= 2:
+                level = "A1"
+            elif score <= 4:
+                level = "A2"
+            elif score <= 6:
+                level = "B1"
+            elif score <= 8:
+                level = "B2"
+            elif score <= 10:
+                level = "C1"
+            else:
+                level = "C2"
+
+            skill = UserSkill.objects.filter(
+                user_profile=request.user.userprofile,
+                skill_type="teach",
+                category="language",
+                skill_name__iexact="english"
+            ).first()
+
+        # ---------- PYTHON ----------
+        elif quiz_type == "python":
+
+            if score <= 3:
+                level = "Beginner"
+            elif score <= 7:
+                level = "Intermediate"
+            else:
+                level = "Advanced"
+
+            skill = UserSkill.objects.filter(
+                user_profile=request.user.userprofile,
+                skill_type="teach",
+                category="tech",
+                skill_name__iexact="python"
+            ).first()
+
+        if skill:
+            skill.proficiency_level = level
+            skill.save()
+
+        messages.success(
+            request,
+            f"Your score is {score}/{questions.count()}. "
+            f"Your {quiz.title} level is {level}."
+        )
+
+        return redirect("profile")
+
+    return render(
+        request,
+        "useraccount/take_quiz.html",
+        {
+            "quiz": quiz,
+            "questions": questions,
+        }
+    )

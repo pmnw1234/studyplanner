@@ -17,7 +17,7 @@ urlpatterns = [
     path('certification/add/', views.add_certification, name='add_certification'),
     path('certification/edit/<int:cert_id>/', views.edit_certification, name='edit_certification'),
     path('certification/delete/<int:cert_id>/', views.delete_certification, name='delete_certification'),
-    
+    path("quiz/<str:quiz_type>/",views.take_quiz,name="take_quiz"),
     
    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

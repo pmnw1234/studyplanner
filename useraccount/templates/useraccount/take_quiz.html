@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:#0b1220;
+    color:white;
+    padding:50px 0;
+}
+
+.container{
+    width:90%;
+    max-width:900px;
+    margin:auto;
+}
+
+.quiz-card{
+    background:#161f33;
+    border-radius:18px;
+    padding:40px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+.header{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.header h1{
+    color:#f4c542;
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.header p{
+    color:#cbd5e1;
+    font-size:17px;
+}
+
+.question{
+    background:#1d2942;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:30px;
+    border-left:6px solid #f4c542;
+}
+
+.question-title{
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:20px;
+    color:white;
+}
+
+.option{
+    display:block;
+    background:#273550;
+    margin-bottom:12px;
+    padding:15px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{
+    background:#31405f;
+}
+
+.option input{
+    margin-right:10px;
+    accent-color:#f4c542;
+}
+
+.submit-area{
+    text-align:center;
+    margin-top:40px;
+}
+
+button{
+    background:#f4c542;
+    color:#111827;
+    border:none;
+    padding:15px 50px;
+    font-size:18px;
+    font-weight:bold;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    background:#ffd95e;
+    transform:translateY(-2px);
+}
+
+.progress{
+    text-align:center;
+    margin-bottom:30px;
+    color:#94a3b8;
+    font-size:15px;
+}
+
+hr{
+    border:none;
+    height:1px;
+    background:#334155;
+    margin:30px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="quiz-card">
+
+<div class="header">
+
+    <h1>{{ quiz.title }}</h1>
+
+    {% if quiz.quiz_type == "english" %}
+        <p>
+            Answer all questions honestly. Your English level will be calculated automatically.
+        </p>
+    {% elif quiz.quiz_type == "python" %}
+        <p>
+            Answer all questions honestly. Your Python programming level will be calculated automatically.
+        </p>
+    {% endif %}
+
+</div>
+<div class="progress">
+{{ questions|length }} Questions
+</div>
+
+<form method="POST">
+
+{% csrf_token %}
+
+{% for question in questions %}
+
+<div class="question">
+
+<div class="question-title">
+
+{{ forloop.counter }}.
+{{ question.question_text }}
+
+</div>
+
+<label class="option">
+<input
+type="radio"
+name="question_{{ question.id }}"
+value="A"
+required>
+
+{{ question.option_a }}
+</label>
+
+<label class="option">
+<input
+type="radio"
+name="question_{{ question.id }}"
+value="B">
+
+{{ question.option_b }}
+</label>
+
+<label class="option">
+<input
+type="radio"
+name="question_{{ question.id }}"
+value="C">
+
+{{ question.option_c }}
+</label>
+
+<label class="option">
+<input
+type="radio"
+name="question_{{ question.id }}"
+value="D">
+
+{{ question.option_d }}
+</label>
+
+</div>
+
+{% if not forloop.last %}
+<hr>
+{% endif %}
+
+{% endfor %}
+
+<div class="submit-area">
+
+<button type="submit">
+Submit Test
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</body>
+</html>
