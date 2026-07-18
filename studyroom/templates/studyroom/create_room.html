@@ -5,11 +5,11 @@
     <div class="card bg-base-100 shadow-xl p-8">
         <h2 class="text-2xl font-bold mb-5">Create Study Room</h2>
 
-        <form method="POST">
+        <form method="POST" action="{% url 'studyroom:create_room' %}">
             {% csrf_token %}
             {{ form.as_p }}
 
-            <button class="btn btn-primary w-full mt-4">
+            <button type="submit" class="btn btn-primary w-full mt-4">
                 Create Room
             </button>
         </form>
