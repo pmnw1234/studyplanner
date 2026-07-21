@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
-
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-4xl font-bold mb-2" style="color: var(--text-primary);">
@@ -140,7 +139,6 @@
     </div>
 </div>
 
-
 <!-- CREATE ROOM MODAL -->
 <div id="createModal"
      class="hidden fixed inset-0 bg-black/50 flex justify-center items-center z-50">
@@ -150,7 +148,8 @@
 
         <h2 class="text-3xl mb-6 font-semibold" style="color: var(--text-primary);">Create Study Room</h2>
 
-        <form method="POST" action="{% url 'studyroom:create_room' %}"></form>
+        <!-- FIXED: Removed the extra </form> tag and added proper form -->
+        <form method="POST" action="{% url 'studyroom:create_room' %}">
             {% csrf_token %}
 
             <input type="text"
@@ -182,7 +181,6 @@
         </form>
     </div>
 </div>
-
 
 <!-- JOIN ROOM MODAL -->
 <div id="joinModal"
@@ -221,8 +219,8 @@
     </div>
 </div>
 
-
 <script>
+// Modal functions
 function openCreateModal() {
     document.getElementById("createModal").classList.remove("hidden");
 }
@@ -240,13 +238,86 @@ function closeJoinModal() {
 }
 
 // Close modals when clicking outside
-document.getElementById("createModal").addEventListener("click", function(e) {
-    if (e.target === this) closeCreateModal();
+document.addEventListener('DOMContentLoaded', function() {
+    const createModal = document.getElementById("createModal");
+    const joinModal = document.getElementById("joinModal");
+    
+    createModal.addEventListener("click", function(e) {
+        if (e.target === this) closeCreateModal();
+    });
+    
+    joinModal.addEventListener("click", function(e) {
+        if (e.target === this) closeJoinModal();
+    });
 });
 
-document.getElementById("joinModal").addEventListener("click", function(e) {
-    if (e.target === this) closeJoinModal();
+// Handle form submissions with AJAX for better UX
+document.addEventListener('DOMContentLoaded', function() {
+    // Create room form
+    const createForm = document.querySelector('#createModal form');
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            // Form will submit normally - no preventDefault needed
+            console.log('Create room form submitted');
+        });
+    }
+    
+    // Join room form
+    const joinForm = document.querySelector('#joinModal form');
+    if (joinForm) {
+        joinForm.addEventListener('submit', function(e) {
+            console.log('Join room form submitted');
+        });
+    }
 });
+
+// Show messages if any
+{% if messages %}
+document.addEventListener('DOMContentLoaded', function() {
+    {% for message in messages %}
+        // You can use a toast or alert
+        console.log('Message: {{ message }}');
+    {% endfor %}
+});
+{% endif %}
 </script>
 
+<!-- FIX: Handle CSRF token for AJAX if needed -->
+<script>
+// Get CSRF token from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+</script>
+
+<!-- Add this to handle any error messages -->
+{% if messages %}
+<div class="fixed top-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-info{% endif %} shadow-lg max-w-sm"
+         style="background-color: {% if message.tags == 'success' %}var(--accent-primary){% elif message.tags == 'error' %}#ef4444{% else %}var(--bg-card){% endif %}; 
+                color: {% if message.tags == 'success' or message.tags == 'error' %}white{% else %}var(--text-primary){% endif %};
+                border: 1px solid var(--border-color);">
+        <div>
+            <span>{{ message }}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="btn btn-ghost btn-xs">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}

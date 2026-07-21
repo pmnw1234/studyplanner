@@ -9,7 +9,8 @@
         <span>This room is full (max 3 members).</span>
     </div>
     {% else %}
-    <form method="POST" action="{% url 'join_room' %}">
+    <!-- FIXED: Added studyroom: namespace to the URL -->
+    <form method="POST" action="{% url 'studyroom:join_room' %}">
         {% csrf_token %}
         <input type="hidden" name="room_code" value="{{ room.room_code }}">
         <p class="mb-4" style="color: var(--text-secondary);">
