@@ -59,10 +59,7 @@
 
                 <div class="relative flex items-center gap-2">
 
-                    <span class="text-xs px-3 py-1 rounded-full whitespace-nowrap"
-                          style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color:white;">
-                        {{ post.get_post_type_display|default:post.post_type|title }}
-                    </span>
+                   
 
                     {% if post.user == request.user %}
                     <div class="dropdown dropdown-end">

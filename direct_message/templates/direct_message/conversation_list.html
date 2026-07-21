@@ -135,6 +135,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
         background-color: var(--bg-card, #ffffff);
+        position: relative;
     }
     
     .conversation-item:hover {
@@ -152,11 +153,13 @@
         gap: 12px;
         align-items: flex-start;
         cursor: pointer;
+        width: 100%;
     }
     
     /* Avatar */
     .conversation-avatar {
         flex-shrink: 0;
+        position: relative;
     }
     
     .avatar-img {
@@ -179,6 +182,22 @@
         font-size: 20px;
     }
     
+    .avatar-placeholder.group-avatar {
+        background: linear-gradient(135deg, #6366f1, #3b82f6);
+    }
+    
+    /* Status dot */
+    .status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid white;
+        background-color: #22c55e;
+    }
+    
     /* Conversation Info */
     .conversation-info {
         flex: 1;
@@ -188,9 +207,17 @@
     .conversation-name-row {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
+        align-items: center;
         margin-bottom: 6px;
         gap: 10px;
+    }
+    
+    .conversation-name-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        flex: 1;
     }
     
     .conversation-name {
@@ -240,6 +267,9 @@
         color: var(--text-primary, #111827);
     }
     
+    /* ============================================ */
+    /* UNREAD BADGE - Yellow/Gold Style */
+    /* ============================================ */
     .unread-badge {
         background: linear-gradient(135deg, #fbbf24, #f59e0b);
         color: #000;
@@ -250,7 +280,34 @@
         display: inline-block;
         min-width: 22px;
         text-align: center;
-        margin-left: 8px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        animation: badgePulse 2s ease-in-out infinite;
+        line-height: 1.4;
+    }
+    
+    @keyframes badgePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .unread-badge.large {
+        min-width: 28px;
+        font-size: 11px;
+        padding: 2px 10px;
+    }
+    
+    .group-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        color: #6366f1;
+        font-weight: 600;
+    }
+    
+    .group-indicator i {
+        font-size: 14px;
     }
     
     /* Right Panel - Chat Area */
@@ -399,99 +456,150 @@
         animation: fadeIn 0.2s ease forwards;
     }
     
-    /* ==================== */
-    /* RESPONSIVE DESIGN */
-    /* ==================== */
-    
-    /* Tablet View */
-    @media (max-width: 1024px) and (min-width: 769px) {
-        .conversations-sidebar {
-            width: 320px;
-        }
-        
-        .conversation-item {
-            padding: 14px 16px;
-        }
-        
-        .avatar-img,
-        .avatar-placeholder {
-            width: 48px;
-            height: 48px;
-            font-size: 18px;
-        }
-        
-        .conversation-name {
-            font-size: 14px;
-        }
-        
-        .preview-text {
-            font-size: 12px;
-        }
+    /* Group Modal Styling */
+    .group-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
     }
-    
-    /* Mobile View - Stack Layout */
-    @media (max-width: 768px) {
-        .messages-container {
-            flex-direction: column;
-            height: calc(100vh - 56px);
-        }
-        
-        .conversations-sidebar {
-            width: 100%;
-            height: 100%;
-            border-right: none;
-            border-bottom: 1px solid var(--border-color, #e5e7eb);
-        }
-        
-        .chat-area {
-            height: 100%;
-        }
-        
-        .messages-container.conversation-open .conversations-sidebar {
-            display: none;
-        }
-        
-        .messages-container.conversation-open .chat-area {
-            display: flex;
-        }
-        
-        .conversations-header {
-            padding: 16px;
-        }
-        
-        .conversations-header h2 {
-            font-size: 18px;
-            margin-bottom: 12px;
-        }
-        
-        .conversation-item {
-            padding: 14px 16px;
-        }
-        
-        .avatar-img,
-        .avatar-placeholder {
-            width: 48px;
-            height: 48px;
-            font-size: 18px;
-        }
-        
-        .conversation-name {
-            font-size: 14px;
-        }
-        
-        .preview-text {
-            font-size: 12px;
-        }
-        
-        .filter-btn {
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-        
-        .search-box input {
-            font-size: 13px;
-            padding: 9px 12px 9px 38px;
-        }
+
+    .group-modal-card {
+        background-color: var(--bg-card, #ffffff);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 440px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        max-height: 85vh;
+        animation: modalSlideUp 0.3s ease;
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .group-modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .group-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary, #111827);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--text-secondary, #6b7280);
+    }
+
+    .group-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .group-input-field {
+        margin-bottom: 20px;
+    }
+
+    .group-input-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text-primary, #111827);
+    }
+
+    .group-input-field input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 8px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .group-input-field input:focus {
+        border-color: var(--accent-ocean, #0f766e);
+    }
+
+    .friends-checkbox-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .friend-select-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .friend-select-item:hover {
+        background-color: var(--bg-page, #f9fafb);
+    }
+
+    .friend-select-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent-ocean, #0f766e);
+        cursor: pointer;
+    }
+
+    .group-modal-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border-color, #e5e7eb);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .btn-cancel {
+        background: none;
+        border: 1px solid var(--border-color, #e5e7eb);
+        padding: 8px 16px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .btn-submit-group {
+        background: linear-gradient(135deg, var(--accent-ocean, #0f766e), #14b8a6);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
     }
     
     /* Small Mobile View */
@@ -532,6 +640,12 @@
         .conversation-time {
             font-size: 9px;
         }
+        
+        .unread-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+            min-width: 18px;
+        }
     }
 </style>
 {% endblock %}
@@ -544,15 +658,43 @@
             <h2>
                 <i class="bi bi-chat-dots-fill"></i>
                 Messages
+                <span id="totalUnreadBadge" class="unread-badge" style="display: none; margin-left: auto; font-size: 12px; min-width: 28px;">0</span>
             </h2>
             
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">
+            <div class="filter-buttons" style="flex-wrap: wrap;">
+                <button class="filter-btn active" data-filter="all" style="flex: 1 1 auto;">
                     <i class="bi bi-inbox"></i> All
                 </button>
-                <button class="filter-btn" data-filter="unread">
+                <button class="filter-btn" data-filter="unread" style="flex: 1 1 auto;">
                     <i class="bi bi-envelope-exclamation"></i> Unread
                 </button>
+                <button class="filter-btn btn-group-trigger" onclick="openGroupModal()" style="flex: 0 0 auto; background: linear-gradient(135deg, var(--accent-ocean, #0f766e), #14b8a6); color: white; border: none;">
+                    <i class="bi bi-people-fill"></i> New Group
+                </button>
+            </div>
+
+            <!-- Group Creation Modal -->
+            <div id="groupModal" class="group-modal-overlay" style="display: none;">
+                <div class="group-modal-card">
+                    <div class="group-modal-header">
+                        <h3><i class="bi bi-plus-circle-fill"></i> Create Group Chat</h3>
+                        <button onclick="closeGroupModal()" class="modal-close-btn">&times;</button>
+                    </div>
+                    <div class="group-modal-body">
+                        <div class="group-input-field">
+                            <label for="groupNameInput">Group Name</label>
+                            <input type="text" id="groupNameInput" placeholder="e.g., Python Study Group">
+                        </div>
+                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block;">Select Friends</label>
+                        <div id="friendsListContainer" class="friends-checkbox-list">
+                            <!-- Friends loaded by JS -->
+                        </div>
+                    </div>
+                    <div class="group-modal-footer">
+                        <button onclick="closeGroupModal()" class="btn-cancel">Cancel</button>
+                        <button onclick="submitCreateGroup()" class="btn-submit-group">Create Group</button>
+                    </div>
+                </div>
             </div>
             
             <div class="search-box">
@@ -569,7 +711,7 @@
         </div>
     </div>
     
-    <!-- Right Panel - Chat Area (Placeholder) -->
+    <!-- Right Panel - Chat Area -->
     <div class="chat-area" id="chatArea">
         <div class="no-chat-selected">
             <i class="bi bi-chat-square-heart"></i>
@@ -585,12 +727,24 @@
     let allConversations = [];
     let currentFilter = 'all';
     let currentSearchTerm = '';
+    let refreshInterval = null;
+    let totalUnreadCount = 0;
+
+    function updateHeaderBadge() {
+        const badge = document.getElementById('totalUnreadBadge');
+        if (totalUnreadCount > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = totalUnreadCount;
+            badge.style.animation = 'badgePulse 2s ease-in-out infinite';
+        } else {
+            badge.style.display = 'none';
+            badge.style.animation = 'none';
+        }
+    }
 
     async function loadConversations() {
-        const container = document.getElementById('conversationsList');
-        
         try {
-            const response = await fetch('/messages/conversations/');
+            const response = await fetch(`/messages/conversations/?search=${encodeURIComponent(currentSearchTerm)}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -600,8 +754,13 @@
             
             if (data && data.conversations && data.conversations.length > 0) {
                 allConversations = data.conversations;
+                totalUnreadCount = allConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
+                updateHeaderBadge();
                 applyFilterAndDisplay();
             } else {
+                allConversations = [];
+                totalUnreadCount = 0;
+                updateHeaderBadge();
                 showEmptyState();
             }
             
@@ -614,16 +773,14 @@
     function applyFilterAndDisplay() {
         let filtered = [...allConversations];
         
-        // Apply unread filter
         if (currentFilter === 'unread') {
             filtered = filtered.filter(conv => conv.unread_count > 0);
         }
         
-        // Apply search filter
         if (currentSearchTerm) {
             filtered = filtered.filter(conv => {
-                const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
-                return userName.toLowerCase().includes(currentSearchTerm);
+                const nameToSearch = conv.name || conv.username || '';
+                return nameToSearch.toLowerCase().includes(currentSearchTerm);
             });
         }
         
@@ -642,44 +799,77 @@
     
     function displayConversations(conversations) {
         const container = document.getElementById('conversationsList');
-        
         let html = '';
         
+        conversations.sort((a, b) => {
+            if (!a.last_message_time) return 1;
+            if (!b.last_message_time) return -1;
+            return new Date(b.last_message_time) - new Date(a.last_message_time);
+        });
+        
         conversations.forEach(conv => {
-            const userName = conv.first_name ? `${conv.first_name} ${conv.last_name}` : conv.username;
-            const userInitial = (conv.first_name ? conv.first_name[0] : conv.username[0]).toUpperCase();
-            const hasProfilePic = conv.profile_picture && conv.profile_picture !== '';
+            const isGroup = conv.is_group === true;
+            const displayName = conv.name || conv.username || 'Unknown';
+            const initialLetter = displayName.charAt(0).toUpperCase();
+            
             const lastMessage = conv.last_message || 'No messages yet';
             const lastMessageTime = conv.last_message_time || '';
             const unreadCount = conv.unread_count || 0;
             const isUnread = unreadCount > 0;
             
-            // Truncate message
             const truncatedMessage = lastMessage.length > 50 ? lastMessage.substring(0, 47) + '...' : lastMessage;
             
+            const clickActionHtml = isGroup 
+                ? `onclick="openGroupConversation(${conv.group_id})"`
+                : `onclick="openConversation(${conv.user_id}, '${escapeHtml(displayName)}')"`;
+
+            let avatarHtml = '';
+            if (isGroup) {
+                avatarHtml = `<div class="avatar-placeholder group-avatar">👥</div>`;
+            } else if (conv.profile_picture) {
+                avatarHtml = `
+                    <img src="${escapeHtml(conv.profile_picture)}" class="avatar-img" alt="${escapeHtml(displayName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-placeholder" style="display: none;">${escapeHtml(initialLetter)}</div>
+                `;
+            } else {
+                avatarHtml = `<div class="avatar-placeholder">${escapeHtml(initialLetter)}</div>`;
+            }
+
+            let nameDisplay = '';
+            if (isGroup) {
+                nameDisplay = `<span class="group-indicator"><i class="bi bi-people-fill"></i> ${escapeHtml(displayName)}</span>`;
+            } else {
+                nameDisplay = escapeHtml(displayName);
+            }
+
+            let badgeHtml = '';
+            if (unreadCount > 0) {
+                const badgeClass = unreadCount > 9 ? 'unread-badge large' : 'unread-badge';
+                badgeHtml = `<span class="${badgeClass}">${unreadCount}</span>`;
+            }
+
             html += `
-                <div class="conversation-item" data-user-id="${conv.user_id}" data-username="${escapeHtml(userName)}" onclick="openConversation(${conv.user_id}, '${escapeHtml(userName)}')">
+                <div class="conversation-item ${isUnread ? 'unread' : ''}" ${clickActionHtml}>
                     <div class="conversation-link">
                         <div class="conversation-avatar">
-                            ${hasProfilePic ? 
-                                `<img src="${escapeHtml(conv.profile_picture)}" class="avatar-img" alt="${escapeHtml(userName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` +
-                                `<div class="avatar-placeholder" style="display: none;">${escapeHtml(userInitial)}</div>` :
-                                `<div class="avatar-placeholder">${escapeHtml(userInitial)}</div>`
-                            }
+                            ${avatarHtml}
+                            ${!isGroup ? '<div class="status-dot"></div>' : ''}
                         </div>
                         <div class="conversation-info">
                             <div class="conversation-name-row">
-                                <div class="conversation-name ${isUnread ? 'unread' : ''}">
-                                    ${escapeHtml(userName)}
-                                    ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
+                                <div class="conversation-name-wrapper">
+                                    <span class="conversation-name ${isUnread ? 'unread' : ''}">
+                                        ${nameDisplay}
+                                    </span>
+                                    ${badgeHtml}
                                 </div>
                                 ${lastMessageTime ? `<div class="conversation-time">${escapeHtml(lastMessageTime)}</div>` : ''}
                             </div>
                             <div class="conversation-preview">
-                                <i class="bi bi-chat-dots preview-icon"></i>
-                                <div class="preview-text ${isUnread ? 'unread' : ''}">
+                                <i class="bi ${isGroup ? 'bi-people-fill' : 'bi-chat-dots'} preview-icon"></i>
+                                <span class="preview-text ${isUnread ? 'unread' : ''}">
                                     ${escapeHtml(truncatedMessage)}
-                                </div>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -691,72 +881,113 @@
     }
     
     function openConversation(userId, userName) {
-        // On mobile, store that we're opening a conversation
         if (window.innerWidth <= 768) {
             const container = document.getElementById('messagesContainer');
-            container.classList.add('conversation-open');
-            
-            // Store the conversation state
-            sessionStorage.setItem('conversationOpen', 'true');
-            sessionStorage.setItem('currentConversationId', userId);
+            if (container) container.classList.add('conversation-open');
         }
-        
-        // Store selected user in localStorage
-        localStorage.setItem('selectedConversation', userId);
-        localStorage.setItem('selectedUserName', userName);
-        
-        // Redirect to the chat page using the correct URL pattern
         window.location.href = `/messages/chat/${userId}/`;
+    }
+    
+    function openGroupConversation(groupId) {
+        // Mark group messages as read when opening
+        markGroupAsRead(groupId);
+        
+        if (window.innerWidth <= 768) {
+            const container = document.getElementById('messagesContainer');
+            if (container) container.classList.add('conversation-open');
+        }
+        window.location.href = `/messages/group-chat/${groupId}/`;
+    }
+    
+    function markGroupAsRead(groupId) {
+        fetch(`/messages/group/${groupId}/mark-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const conv = allConversations.find(c => c.group_id === groupId);
+                if (conv) {
+                    conv.unread_count = 0;
+                    totalUnreadCount = allConversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+                    updateHeaderBadge();
+                    applyFilterAndDisplay();
+                }
+            }
+        })
+        .catch(err => console.error('Error marking group messages as read:', err));
+    }
+    
+    function getCsrfToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            if (cookie.trim().startsWith('csrftoken=')) {
+                return cookie.split('=')[1];
+            }
+        }
+        return '';
     }
     
     function showEmptyState() {
         const container = document.getElementById('conversationsList');
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="bi bi-chat-square-heart"></i>
-                <h5>No messages yet</h5>
-                <p>Start a conversation with your connections</p>
-                <a href="/dashboard/" class="btn-primary-custom">
-                    <i class="bi bi-people"></i> Find Connections
-                </a>
-            </div>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-chat-square-heart"></i>
+                    <h5>No messages yet</h5>
+                    <p>Start a conversation with your connections</p>
+                    <a href="/dashboard/" class="btn-primary-custom">
+                        <i class="bi bi-people"></i> Find Connections
+                    </a>
+                </div>
+            `;
+        }
     }
     
     function showNoUnreadState() {
         const container = document.getElementById('conversationsList');
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="bi bi-envelope-check"></i>
-                <h5>All caught up! 🎉</h5>
-                <p>You have no unread messages</p>
-            </div>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-envelope-check"></i>
+                    <h5>All caught up! 🎉</h5>
+                    <p>You have no unread messages</p>
+                </div>
+            `;
+        }
     }
     
     function showNoResultsState() {
         const container = document.getElementById('conversationsList');
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="bi bi-search"></i>
-                <h5>No conversations found</h5>
-                <p>Try a different name</p>
-            </div>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-search"></i>
+                    <h5>No conversations found</h5>
+                    <p>Try a different name</p>
+                </div>
+            `;
+        }
     }
     
     function showError() {
         const container = document.getElementById('conversationsList');
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="bi bi-wifi-off"></i>
-                <h5>Connection error</h5>
-                <p>Please check your internet connection</p>
-                <button onclick="location.reload()" class="btn-primary-custom">
-                    <i class="bi bi-arrow-repeat"></i> Try Again
-                </button>
-            </div>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-wifi-off"></i>
+                    <h5>Connection error</h5>
+                    <p>Please check your internet connection</p>
+                    <button onclick="location.reload()" class="btn-primary-custom">
+                        <i class="bi bi-arrow-repeat"></i> Try Again
+                    </button>
+                </div>
+            `;
+        }
     }
     
     function escapeHtml(text) {
@@ -766,20 +997,17 @@
         return div.innerHTML;
     }
     
-    // Debounced search handler
     let searchTimeout;
     function handleSearch() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             currentSearchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            applyFilterAndDisplay();
+            loadConversations();
         }, 300);
     }
     
     function setFilter(filter) {
         currentFilter = filter;
-        
-        // Update active button UI
         document.querySelectorAll('.filter-btn').forEach(btn => {
             if (btn.getAttribute('data-filter') === filter) {
                 btn.classList.add('active');
@@ -787,62 +1015,123 @@
                 btn.classList.remove('active');
             }
         });
-        
         applyFilterAndDisplay();
     }
     
-    // Check for selected conversation on load
-    function checkSelectedConversation() {
-        const selectedId = localStorage.getItem('selectedConversation');
-        if (selectedId) {
-            const selectedItem = document.querySelector(`.conversation-item[data-user-id="${selectedId}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('active');
-            }
+    function startAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
         }
-        
-        // Check if we're on mobile and coming back from a conversation
-        if (window.innerWidth <= 768) {
-            const wasOpen = sessionStorage.getItem('conversationOpen');
-            if (wasOpen === 'true') {
-                const container = document.getElementById('messagesContainer');
-                container.classList.add('conversation-open');
-                sessionStorage.removeItem('conversationOpen');
+        refreshInterval = setInterval(() => {
+            if (!window.location.pathname.includes('/messages/chat/') && 
+                !window.location.pathname.includes('/messages/group-chat/')) {
+                loadConversations();
             }
-        }
+        }, 10000);
     }
     
-    // Reset mobile view when page loads fresh
-    function resetMobileView() {
-        if (window.innerWidth <= 768) {
-            const container = document.getElementById('messagesContainer');
-            // Only hide sidebar if we're not coming back from a conversation
-            if (!sessionStorage.getItem('conversationOpen')) {
-                container.classList.remove('conversation-open');
-            }
-        }
-    }
-    
-    // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
-        resetMobileView();
         loadConversations();
+        startAutoRefresh();
         
-        // Search input
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
             searchInput.addEventListener('input', handleSearch);
         }
         
-        // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 setFilter(btn.getAttribute('data-filter'));
             });
         });
         
-        // Check for selected conversation after loading
-        setTimeout(checkSelectedConversation, 500);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadConversations();
+            }
+        });
     });
+    
+    window.addEventListener('beforeunload', () => {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    });
+    
+    // Modal Functions
+    function openGroupModal() {
+        document.getElementById('groupModal').style.display = 'flex';
+        const container = document.getElementById('friendsListContainer');
+        container.innerHTML = '<p style="font-size:12px;color:gray;text-align:center;padding:10px;">Loading connections...</p>';
+
+        fetch('/messages/friends/') 
+            .then(res => res.json())
+            .then(data => {
+                if(data.friends && data.friends.length > 0) {
+                    let html = '';
+                    data.friends.forEach(friend => {
+                        const name = friend.first_name ? `${friend.first_name} ${friend.last_name}` : friend.username;
+                        html += `
+                            <label class="friend-select-item">
+                                <input type="checkbox" value="${friend.user_id}" class="group-member-checkbox">
+                                <span style="font-size:14px; color:var(--text-primary,#111827);">${escapeHtml(name)}</span>
+                            </label>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="font-size:12px;color:gray;text-align:center;padding:10px;">No friends found to add.</p>';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = '<p style="font-size:12px;color:red;text-align:center;padding:10px;">Error loading connections.</p>';
+            });
+    }
+    
+    function closeGroupModal() {
+        document.getElementById('groupModal').style.display = 'none';
+        document.getElementById('groupNameInput').value = '';
+    }
+    
+    function submitCreateGroup() {
+        const groupName = document.getElementById('groupNameInput').value.trim();
+        const checkedBoxes = document.querySelectorAll('.group-member-checkbox:checked');
+        
+        if (!groupName) {
+            alert('Please give your group chat a name.');
+            return;
+        }
+        if (checkedBoxes.length === 0) {
+            alert('Please select at least one friend to join the group.');
+            return;
+        }
+        
+        const memberIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+        const csrfToken = getCsrfToken();
+        
+        fetch('/messages/group/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                name: groupName,
+                members: memberIds
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                closeGroupModal();
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error creating group: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error('Error handling request:', err));
+    }
 </script>
 {% endblock %}

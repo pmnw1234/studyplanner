@@ -1,11 +1,6 @@
 <!-- filter_component.html - Compact inline filters -->
 <div class="flex gap-2 items-center flex-wrap">
     <form method="GET" class="flex gap-2 items-center flex-wrap w-full">
-        <select name="category" class="px-3 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-primary);">
-            <option value="">All Categories</option>
-            <option value="skill_swap" {% if request.GET.category == 'skill_swap' %}selected{% endif %}>Skill Swap</option>
-            <option value="study_partner" {% if request.GET.category == 'study_partner' %}selected{% endif %}>Study Partner</option>
-        </select>
         
         <select name="topic" class="px-3 py-1.5 rounded-full text-sm" style="background-color: var(--border-color); color: var(--text-primary);">
             <option value="">All Topics</option>

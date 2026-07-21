@@ -465,7 +465,7 @@ def view_other_profile(request, user_id):
         'avg_rating': avg_rating,
     }
     
-    return render(request, 'useraccount/other_profile.html', context)
+    return render(request, 'profiles/view_other_profile.html', context)
 
 
 @login_required

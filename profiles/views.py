@@ -193,6 +193,7 @@ def view_other_profile(request, user_id):
     context = {
         'other_user': other_user,
         'other_profile': other_profile,
+        'user': request.user,
         'match_score': match_score,
         'teach_skills': other_teach_skills,  # Now using UserSkill model
         'learn_skills': other_learn_skills,  # Now using UserSkill model

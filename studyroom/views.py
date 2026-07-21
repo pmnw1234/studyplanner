@@ -40,7 +40,7 @@ def create_room(request):
 
             messages.success(request, "Study room created successfully!")
 
-    return redirect('studyroom_dashboard')
+    return redirect('studyroom:studyroom_dashboard')
 
 
 @login_required
@@ -53,11 +53,11 @@ def join_room(request):
 
             if request.user in room.members.all():
                 messages.warning(request, "You already joined this room.")
-                return redirect('studyroom_dashboard')
+                return redirect('studyroom:studyroom_dashboard')
 
             if room.is_full():
                 messages.error(request, "Room is full (max 3 members).")
-                return redirect('studyroom_dashboard')
+                return redirect('studyroom:studyroom_dashboard')
 
             room.members.add(request.user)
 
