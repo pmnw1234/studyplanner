@@ -3,6 +3,13 @@
 from django.contrib import admin
 from .models import UserProfile, Skill
 
+from .models import (
+    UserProfile,
+    Skill,
+    Quiz,
+    Question
+)
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'get_skills_to_teach_short', 'get_skills_to_learn_short', 'current_level']
@@ -22,3 +29,20 @@ class UserProfileAdmin(admin.ModelAdmin):
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
     list_display = ['name']
+    
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "title",
+        "quiz_type",
+    ]
+    
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "quiz",
+        "question_text",
+        "correct_answer",
+    ]
