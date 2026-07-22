@@ -1,10 +1,31 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class GroupChat(models.Model):
+    name = models.CharField(max_length=255)
+    members = models.ManyToManyField(User, related_name="group_chats")
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+    
+class GroupMessageRead(models.Model):
+    """Track which users have read which group messages"""
+    message = models.ForeignKey('Message', on_delete=models.CASCADE, related_name='group_reads')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        unique_together = ['message', 'user']
+    
+    def __str__(self):
+        return f"{self.user.username} - {'Read' if self.is_read else 'Unread'}"
+    
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    group = models.ForeignKey(GroupChat, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -47,3 +68,4 @@ class Message(models.Model):
     @classmethod
     def get_unread_count(cls, user):
         return cls.objects.filter(receiver=user, is_read=False).count()
+    

@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib import messages
 
 from useraccount.forms import (
     UserRegistrationForm,
@@ -21,12 +24,12 @@ def feed_view(request):
     posts = Post.objects.all().order_by('-created_at')
     
     # Apply filters
-    category = request.GET.get('category')
+    # category = request.GET.get('category')
     topic = request.GET.get('topic')
     hashtag = request.GET.get('hashtag')
     
-    if category:
-        posts = posts.filter(category=category)
+    # if category:
+    #     posts = posts.filter(category=category)
     if topic:
         posts = posts.filter(topic=topic)
     if hashtag:
@@ -48,34 +51,191 @@ def feed_view(request):
         'users': User.objects.exclude(id=request.user.id)
     })
 
+def calculate_enhanced_match_score(my_profile, other_profile):
+    """
+    Calculate enhanced match score using UserSkill model with proficiency levels
+    """
+    # Get skills from UserSkill model
+    my_teach_skills = my_profile.skills.filter(skill_type='teach')
+    my_learn_skills = my_profile.skills.filter(skill_type='learn')
+    other_teach_skills = other_profile.skills.filter(skill_type='teach')
+    other_learn_skills = other_profile.skills.filter(skill_type='learn')
+    
+    direct_matches = []
+    total_score = 0
+    max_possible_score = len(my_teach_skills) + len(my_learn_skills)
+    
+    if max_possible_score == 0:
+        return 0, []
+    
+    # Check skills where current user can teach and other wants to learn
+    for my_teach in my_teach_skills:
+        for other_learn in other_learn_skills:
+            if my_teach.skill_name.lower() == other_learn.skill_name.lower():
+                level_compatible = check_level_compatibility(
+                    my_teach.proficiency_level,
+                    other_learn.proficiency_level,
+                    my_teach.category
+                )
+                # Base score + bonus for level compatibility
+                match_score = 15 if level_compatible else 10
+                total_score += match_score
+                
+                direct_matches.append({
+                    'skill_name': my_teach.skill_name,
+                    'type': 'You teach → They learn',
+                    'user_level': my_teach.proficiency_level,
+                    'their_level': other_learn.proficiency_level,
+                    'level_compatible': level_compatible,
+                    'category': my_teach.category
+                })
+    
+    # Check skills where other can teach and current user wants to learn
+    for my_learn in my_learn_skills:
+        for other_teach in other_teach_skills:
+            if my_learn.skill_name.lower() == other_teach.skill_name.lower():
+                level_compatible = check_level_compatibility(
+                    other_teach.proficiency_level,
+                    my_learn.proficiency_level,
+                    other_teach.category
+                )
+                match_score = 15 if level_compatible else 10
+                total_score += match_score
+                
+                direct_matches.append({
+                    'skill_name': my_learn.skill_name,
+                    'type': 'They teach → You learn',
+                    'user_level': my_learn.proficiency_level,
+                    'their_level': other_teach.proficiency_level,
+                    'level_compatible': level_compatible,
+                    'category': other_teach.category
+                })
+    
+    # Calculate percentage score (max 100)
+    if max_possible_score > 0:
+        percentage = int((total_score / (max_possible_score * 15)) * 100)
+        percentage = min(percentage, 100)
+    else:
+        percentage = 0
+    
+    return percentage, direct_matches
+
+def calculate_match_score(my_teach, my_learn, other_teach, other_learn):
+    """
+    Legacy simple match score calculation (kept for compatibility)
+    """
+    my_teach_set = {skill.lower().strip() for skill in my_teach}
+    my_learn_set = {skill.lower().strip() for skill in my_learn}
+    other_teach_set = {skill.lower().strip() for skill in other_teach}
+    other_learn_set = {skill.lower().strip() for skill in other_learn}
+    
+    they_can_teach_me = my_learn_set & other_teach_set
+    i_can_teach_them = my_teach_set & other_learn_set
+    
+    total_skills = len(my_learn_set) + len(my_teach_set)
+    
+    if total_skills == 0:
+        return 0
+    
+    match_score = len(they_can_teach_me) + len(i_can_teach_them)
+    percentage = (match_score / total_skills) * 100
+    
+    return int(percentage)
 
 @login_required
 def inbox_view(request):
     requests = MatchRequest.objects.filter(
-        receiver=request.user
+        receiver=request.user,
+        status='pending'
     ).order_by('-created_at')
-    
-    return render(request, 'feedview/inbox.html', {
-        'requests': requests
-    })
 
+    my_profile = request.user.userprofile
+    ai_matches = []
+
+    all_profiles = UserProfile.objects.exclude(user=request.user)
+
+    for profile in all_profiles:
+        score, direct_matches = calculate_enhanced_match_score(
+            my_profile,
+            profile
+        )
+
+        if score > 0:
+            ai_matches.append({
+                "user": profile.user,
+                "profile": profile,
+                "score": score,
+                "direct_matches": direct_matches,
+                "teach_skills": profile.skills.filter(skill_type="teach"),
+                "learn_skills": profile.skills.filter(skill_type="learn"),
+            })
+
+    ai_matches = sorted(
+        ai_matches,
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    return render(request, "feedview/inbox.html", {
+        "requests": requests,
+        "ai_matches": ai_matches,
+    })
+def check_level_compatibility(teacher_level, learner_level, category):
+    """Check if teacher's level is appropriate for the learner"""
+    if category == 'language':
+        lang_levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+        if teacher_level in lang_levels and learner_level in lang_levels:
+            teacher_idx = lang_levels.index(teacher_level)
+            learner_idx = lang_levels.index(learner_level)
+            return teacher_idx > learner_idx
+    else:
+        levels = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+        if teacher_level in levels and learner_level in levels:
+            teacher_idx = levels.index(teacher_level)
+            learner_idx = levels.index(learner_level)
+            return teacher_idx >= learner_idx
+    return False
 
 @login_required
 def create_post(request):
-    if request.method == 'POST':
+    # Free users can only create 4 posts every 7 days
+    week_ago = timezone.now() - timedelta(days=7)
+
+    weekly_posts = Post.objects.filter(
+        user=request.user,
+        created_at__gte=week_ago
+    ).count()
+
+    FREE_POST_LIMIT = 4
+
+    if request.method == "POST":
+
+        if weekly_posts >= FREE_POST_LIMIT:
+            messages.error(
+                request,
+                "You have reached the free limit of 4 posts this week. Upgrade to Premium to post unlimited content."
+            )
+            return redirect("create_post")
+
         Post.objects.create(
             user=request.user,
-            content=request.POST.get('content'),
-            post_type=request.POST.get('post_type'),
-            category=request.POST.get('category'),
-            topic=request.POST.get('topic'),
-            hashtags=request.POST.get('hashtags'),
-            image=request.FILES.get('image'),
-            video=request.FILES.get('video')
+            content=request.POST.get("content"),
+            post_type="study",
+            topic=request.POST.get("topic"),
+            hashtags=request.POST.get("hashtags"),
+            image=request.FILES.get("image"),
+            video=request.FILES.get("video"),
         )
-        return redirect('feed')
-    
-    return render(request, 'feedview/create_post.html')
+
+        messages.success(request, "Post created successfully!")
+        return redirect("feed")
+
+    remaining_posts = max(0, FREE_POST_LIMIT - weekly_posts)
+
+    return render(request, "feedview/create_post.html", {
+        "remaining_posts": remaining_posts,
+        "weekly_posts": weekly_posts,
+    })
 
 @login_required
 def like_post(request, post_id):
@@ -217,20 +377,22 @@ def accept_request(request, request_id):
         id=request_id,
         receiver=request.user
     )
-    
+
     req.status = 'accepted'
     req.save()
-    
+
     sender_profile, _ = UserProfile.objects.get_or_create(user=req.sender)
     receiver_profile, _ = UserProfile.objects.get_or_create(user=req.receiver)
-    
+
     sender_profile.study_partners_count += 1
     receiver_profile.study_partners_count += 1
-    
+
     sender_profile.save()
     receiver_profile.save()
-    
-    return redirect('inbox')
+
+    return JsonResponse({
+        'success': True
+    })
 
 @login_required
 def comment_post(request, post_id):
@@ -329,11 +491,12 @@ def decline_request(request, request_id):
         id=request_id,
         receiver=request.user
     )
-    
-    req.status = 'declined'
-    req.save()
-    
-    return redirect('inbox')
+
+    req.delete()
+
+    return JsonResponse({
+        'success': True
+    })
 
 
 @login_required
@@ -342,8 +505,7 @@ def edit_post(request, post_id):
 
     if request.method == 'POST':
         post.content = request.POST.get('content')
-        post.post_type = request.POST.get('post_type')
-        post.category = request.POST.get('category')
+        post.post_type = 'study'
         post.topic = request.POST.get('topic')
         post.hashtags = request.POST.get('hashtags')
 

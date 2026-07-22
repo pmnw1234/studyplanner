@@ -71,6 +71,11 @@ def create_room(request):
     
     return redirect('studyroom:studyroom_dashboard')
 
+            messages.success(request, "Study room created successfully!")
+
+    return redirect('studyroom:studyroom_dashboard')
+
+
 @login_required
 def join_room(request):
     """Join an existing study room using room code"""
