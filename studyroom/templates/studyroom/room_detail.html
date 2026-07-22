@@ -32,21 +32,25 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-6 border-b mb-6" style="border-bottom-color: var(--border-color);">
-        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('students')" id="tab-students-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+    <div class="flex gap-6 border-b mb-6 overflow-x-auto" style="border-bottom-color: var(--border-color);">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('students')" id="tab-students-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-people"></i> Students
         </button>
-        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('classwork')" id="tab-classwork-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('classwork')" id="tab-classwork-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-journal-bookmark"></i> Class Work
         </button>
-        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('stream')" id="tab-stream-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('stream')" id="tab-stream-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-chat-dots"></i> Stream
         </button>
-        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('activity')" id="tab-activity-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('activity')" id="tab-activity-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-clock-history"></i> Activity
         </button>
+        <!-- NEW: Calendar Tab -->
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('calendar')" id="tab-calendar-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+            <i class="bi bi-calendar-event"></i> Calendar
+        </button>
         {% if not is_member %}
-        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2" onclick="showTab('join')" id="tab-join-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
+        <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('join')" id="tab-join-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-box-arrow-in-right"></i> Join Room
         </button>
         {% endif %}
@@ -69,6 +73,11 @@
         {% include 'studyroom/components/_activity_tab.html' %}
     </div>
 
+    <!-- NEW: Calendar Tab Content -->
+    <div id="calendar-tab" class="tab-content" style="display: none;">
+        {% include 'studyroom/components/_calendar_tab.html' %}
+    </div>
+
     <div id="join-tab" class="tab-content" style="display: none;">
         {% include 'studyroom/components/_join_tab.html' %}
     </div>
@@ -80,6 +89,8 @@
 {% include 'studyroom/components/modals/_submit_work_modal.html' %}
 {% include 'studyroom/components/modals/_grade_modal.html' %}
 {% include 'studyroom/components/modals/_transfer_modal.html' %}
+<!-- NEW: Schedule Call Modal -->
+{% include 'studyroom/components/modals/_schedule_call_modal.html' %}
 
 {% for item in works_with_stream %}
     {% include 'studyroom/components/modals/_stream_comment_modal.html' with work=item.work %}
@@ -97,7 +108,10 @@ function showTab(tabName) {
         btn.style.fontWeight = '500';
     });
     
-    document.getElementById(`${tabName}-tab`).style.display = 'block';
+    const tabContent = document.getElementById(`${tabName}-tab`);
+    if (tabContent) {
+        tabContent.style.display = 'block';
+    }
     
     const activeBtn = document.getElementById(`tab-${tabName}-btn`);
     if (activeBtn) {
@@ -127,8 +141,19 @@ function toggleSection(sectionId) {
     }
 }
 
+// Check for tab parameter in URL and show the correct tab
 document.addEventListener('DOMContentLoaded', function() {
-    showTab('students');
+    // Get tab from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    // If tab parameter exists, show that tab
+    if (tabParam && ['students', 'classwork', 'stream', 'activity', 'calendar', 'join'].includes(tabParam)) {
+        showTab(tabParam);
+    } else {
+        // Default to students tab
+        showTab('students');
+    }
     
     // Initialize sections to be visible by default
     const assignmentsSection = document.getElementById('assignments-section');
@@ -140,6 +165,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (materialsSection) materialsSection.style.display = 'block';
     if (assignmentsIcon) assignmentsIcon.className = 'bi bi-chevron-down';
     if (materialsIcon) materialsIcon.className = 'bi bi-chevron-down';
+});
+
+// Handle tab switching via URL hash
+window.addEventListener('hashchange', function() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['students', 'classwork', 'stream', 'activity', 'calendar', 'join'].includes(hash)) {
+        showTab(hash);
+    }
 });
 </script>
 {% endblock %}

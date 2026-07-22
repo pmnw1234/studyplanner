@@ -222,3 +222,75 @@ class Note(models.Model):
     
     def __str__(self):
         return self.title
+
+
+# studyplanner/studyroom/models.py
+
+# Add these imports at the top
+import secrets
+from django.utils import timezone
+from django.urls import reverse
+
+# Add this model after your existing models
+class ScheduledCall(models.Model):
+    """Model for scheduling video call sessions"""
+    CALL_STATUS = [
+        ('scheduled', 'Scheduled'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    # Use a different name for the Jitsi room identifier
+    jitsi_room_id = models.CharField(max_length=50, unique=True, default=secrets.token_urlsafe(16))
+    room = models.ForeignKey(StudyRoom, on_delete=models.CASCADE, related_name='scheduled_calls')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_calls')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, choices=CALL_STATUS, default='scheduled')
+    
+    class Meta:
+        ordering = ['start_time']
+        indexes = [
+            models.Index(fields=['room', 'start_time']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.room.course_name} ({self.start_time.strftime('%Y-%m-%d %H:%M')})"
+    
+    def get_meeting_url(self):
+        """Generate Jitsi meeting URL"""
+        base_url = "https://meet.jit.si"
+        return f"{base_url}/{self.jitsi_room_id}"
+    
+    def get_absolute_url(self):
+        return reverse('studyroom:join_call', kwargs={'jitsi_room_id': self.jitsi_room_id})
+    
+    def is_ongoing(self):
+        """Check if the call is currently happening"""
+        now = timezone.now()
+        return self.start_time <= now <= self.end_time
+    
+    def save(self, *args, **kwargs):
+        # Auto-update status based on time
+        if not self.pk:  # New object
+            self.jitsi_room_id = secrets.token_urlsafe(16)
+        super().save(*args, **kwargs)
+        
+        # Update status based on current time (avoid recursion)
+        if self.status not in ['cancelled', 'completed']:
+            now = timezone.now()
+            new_status = self.status
+            if self.end_time < now:
+                new_status = 'completed'
+            elif self.start_time <= now <= self.end_time:
+                new_status = 'ongoing'
+            
+            if new_status != self.status:
+                self.status = new_status
+                super().save(update_fields=['status'])

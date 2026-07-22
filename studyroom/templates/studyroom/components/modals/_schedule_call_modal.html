@@ -1,0 +1,102 @@
+<!-- studyplanner/studyroom/templates/studyroom/components/modals/_schedule_call_modal.html -->
+
+<dialog id="schedule-call-modal" class="modal">
+    <div class="modal-box rounded-xl" style="background-color: var(--bg-card); max-width: 550px;">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </form>
+        
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-camera-video" style="color: var(--accent-primary);"></i>
+            Schedule Video Call
+        </h3>
+        
+        <form method="POST" action="{% url 'studyroom:schedule_call' room.id %}">
+            {% csrf_token %}
+            
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">
+                    <span class="label-text" style="color: var(--text-primary);">Call Title</span>
+                </label>
+                <input type="text" name="title" class="input input-bordered w-full" 
+                       placeholder="e.g., Weekly Study Session"
+                       style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"
+                       required>
+            </div>
+            
+            <div class="form-control mb-4">
+                <label class="label" style="color: var(--text-primary);">
+                    <span class="label-text" style="color: var(--text-primary);">Description</span>
+                </label>
+                <textarea name="description" class="textarea textarea-bordered w-full" rows="3"
+                          placeholder="What will you study? Any specific topics?"
+                          style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="form-control">
+                    <label class="label" style="color: var(--text-primary);">
+                        <span class="label-text" style="color: var(--text-primary);">Start Time</span>
+                    </label>
+                    <input type="datetime-local" name="start_time" class="input input-bordered w-full"
+                           style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"
+                           required>
+                </div>
+                
+                <div class="form-control">
+                    <label class="label" style="color: var(--text-primary);">
+                        <span class="label-text" style="color: var(--text-primary);">End Time</span>
+                    </label>
+                    <input type="datetime-local" name="end_time" class="input input-bordered w-full"
+                           style="background-color: var(--bg-page); border-color: var(--border-color); color: var(--text-primary);"
+                           required>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mb-4" style="background-color: var(--bg-page); border: 1px solid var(--border-color); color: var(--text-secondary);">
+                <i class="bi bi-info-circle"></i>
+                <span>All room members can join the call using the generated meeting link.</span>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn" 
+                        style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"
+                        onclick="document.getElementById('schedule-call-modal').close()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn gap-2" 
+                        style="background-color: var(--accent-primary); color: white; border: none;">
+                    <i class="bi bi-calendar-plus"></i> Schedule Call
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+// Set default datetime-local values to current time + 1 hour
+document.addEventListener('DOMContentLoaded', function() {
+    var now = new Date();
+    var startTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    var endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 2 hours from now
+    
+    var startInput = document.querySelector('input[name="start_time"]');
+    var endInput = document.querySelector('input[name="end_time"]');
+    
+    if (startInput && endInput) {
+        startInput.value = formatDateTimeLocal(startTime);
+        endInput.value = formatDateTimeLocal(endTime);
+    }
+});
+
+function formatDateTimeLocal(date) {
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    var hours = String(date.getHours()).padStart(2, '0');
+    var minutes = String(date.getMinutes()).padStart(2, '0');
+    return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+}
+</script>
