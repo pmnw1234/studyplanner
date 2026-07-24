@@ -1,14 +1,14 @@
-# dashboard/views.py
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
-from useraccount.models import UserProfile, UserSkill
+from django.db import models
+from django.http import JsonResponse
+from useraccount.models import UserProfile, UserSkill, Connection
 from feedview.models import MatchRequest, Notification, Post
 from django.utils.timesince import timesince
 from datetime import datetime
 from feedview.models import Like, Interested
 import json
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+
 
 def check_level_compatibility(teacher_level, learner_level, category):
     """Check if teacher's level is appropriate for the learner"""
@@ -25,6 +25,7 @@ def check_level_compatibility(teacher_level, learner_level, category):
             learner_idx = levels.index(learner_level)
             return teacher_idx >= learner_idx
     return False
+
 
 def calculate_enhanced_match_score(my_profile, other_profile):
     """
@@ -52,7 +53,6 @@ def calculate_enhanced_match_score(my_profile, other_profile):
                     other_learn.proficiency_level,
                     my_teach.category
                 )
-                # Base score + bonus for level compatibility
                 match_score = 15 if level_compatible else 10
                 total_score += match_score
                 
@@ -95,6 +95,7 @@ def calculate_enhanced_match_score(my_profile, other_profile):
     
     return percentage, direct_matches
 
+
 def calculate_match_score(my_teach, my_learn, other_teach, other_learn):
     """
     Legacy simple match score calculation (kept for compatibility)
@@ -116,6 +117,21 @@ def calculate_match_score(my_teach, my_learn, other_teach, other_learn):
     percentage = (match_score / total_skills) * 100
     
     return int(percentage)
+
+
+def get_connected_user_ids(user):
+    """Get all user IDs that the given user is already connected to"""
+    # Get connections where user is user1
+    connected_as_user1 = Connection.objects.filter(user1=user).values_list('user2_id', flat=True)
+    # Get connections where user is user2
+    connected_as_user2 = Connection.objects.filter(user2=user).values_list('user1_id', flat=True)
+    
+    # Combine and convert to list
+    connected_ids = list(connected_as_user1) + list(connected_as_user2)
+    
+    print(f"🔗 Connected user IDs for {user.username}: {connected_ids}")  # Debug
+    
+    return list(set(connected_ids))
 
 
 @login_required
@@ -143,8 +159,17 @@ def dashboard_home(request):
     if not my_teach_skills and not my_learn_skills:
         matches = []
     else:
-        # Get all other users
-        other_profiles = UserProfile.objects.exclude(user=request.user)
+        # ===== CRITICAL: Get connected user IDs =====
+        connected_user_ids = get_connected_user_ids(request.user)
+        print(f"🚫 Excluding connected users: {connected_user_ids}")
+        
+        # ===== CRITICAL: Exclude connected users from the query =====
+        other_profiles = UserProfile.objects.exclude(
+            models.Q(user=request.user) | 
+            models.Q(user_id__in=connected_user_ids)
+        )
+        
+        print(f"📋 Total other users (excluding connected): {other_profiles.count()}")
         
         # Calculate matches with enhanced scores
         match_list = []
@@ -182,7 +207,6 @@ def dashboard_home(request):
                 # Determine display skill and message
                 if they_can_teach_me:
                     display_skill = they_can_teach_me[0].capitalize()
-                    # Find the level
                     skill_obj = other_teach_skills.filter(skill_name__iexact=they_can_teach_me[0]).first()
                     level_info = f" ({skill_obj.proficiency_level})" if skill_obj else ""
                     display_message = f"can teach you {display_skill}{level_info}"
@@ -264,14 +288,13 @@ def dashboard_home(request):
         ]
     
     # User activities
-
     user_activities = list(
         Notification.objects.filter(
-        receiver=request.user
+            receiver=request.user
         ).order_by('-created_at')
     )
 
-# Add system notification for matches
+    # Add system notification for matches
     if matches:
         strong_matches = sum(
             1 for m in matches if m.get('match_strength') == 'strong'
@@ -286,7 +309,7 @@ def dashboard_home(request):
             'notification_type': 'system'
         })
 
-# Empty state
+    # Empty state
     if not user_activities:
         user_activities.append({
             'sender': 'System',
@@ -308,7 +331,6 @@ def dashboard_home(request):
                 'status': 'info'
             })
     
-    
     weekly_hours = 0
     sessions_done = 0
     
@@ -324,18 +346,20 @@ def dashboard_home(request):
     recently_watched = []
     unread_count = Notification.objects.filter(receiver=request.user, is_read=False).count()
     saved_posts = Post.objects.filter(
-    interests__user=request.user
+        interests__user=request.user
     ).distinct().order_by('-created_at')
     saved_items = saved_posts.count()
+    
     for post in saved_posts:
         post.is_liked = Like.objects.filter(
-        user=request.user,
-        post=post
+            user=request.user,
+            post=post
         ).exists()
         post.user_interested = Interested.objects.filter(
-          user=request.user,
-          post=post
-          ).exists()
+            user=request.user,
+            post=post
+        ).exists()
+    
     context = {
         'profile': profile,
         'matches': matches,
@@ -351,16 +375,12 @@ def dashboard_home(request):
         'figma_progress': 40,
         'python_progress': 80,
         'time_of_day': get_time_of_day(),
-        'matches_json': json.dumps(matches, default=str),  # Added default=str for datetime
+        'matches_json': json.dumps(matches, default=str),
         'today': datetime.now(),
         'recently_watched': recently_watched,
         'saved_items': saved_items,
-        
         'my_teach_skills': [{'name': s.skill_name, 'level': s.proficiency_level, 'category': s.category} for s in my_teach_skills],
         'my_learn_skills': [{'name': s.skill_name, 'level': s.proficiency_level, 'category': s.category} for s in my_learn_skills],
-        
-        
-        
     }
     
     print(f"\n{'='*60}")
@@ -370,6 +390,7 @@ def dashboard_home(request):
     print(f"{'='*60}\n")
     
     return render(request, 'dashboard/index.html', context)
+
 
 @login_required
 def post_detail(request, post_id):
@@ -396,22 +417,20 @@ def mark_notifications_read(request):
         Notification.objects.filter(receiver=request.user, is_read=False).update(is_read=True)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
-# views.py
+
+
 @login_required
 def saved_items(request):
-
     saved_posts = Post.objects.filter(
         interests__user=request.user
     ).distinct().order_by('-created_at')
 
     for post in saved_posts:
         post.user_interested = True
-
         post.is_liked = Like.objects.filter(
             user=request.user,
             post=post
         ).exists()
-   
 
     return render(request, 'saved_items.html', {
         'saved_posts': saved_posts
