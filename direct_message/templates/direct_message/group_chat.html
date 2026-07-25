@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Group: {{ group.name }} - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn {
+        display: none !important;
+    }
+    
+    .chat-layout-main {
+        display: flex;
+        max-width: 1200px;
+        margin: 0 auto;
+        height: calc(100vh - 90px);
+        background: var(--bg-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .chat-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color);
+        background: var(--bg-card);
+    }
+
+    /* HEADER - MADE CLICKABLE NOW */
+    .chat-header {
+        padding: 15px 18px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg-card);
+    }
+
+    .chat-user-clickable {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 10px;
+        transition: background 0.2s;
+    }
+
+    .chat-user-clickable:hover {
+        background: var(--bg-page);
+    }
+
+    .chat-avatar, .member-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .chat-user-info h3 {
+        margin: 0;
+        font-size: 16px;
+        color: var(--text-primary);
+    }
+
+    .chat-user-info p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    /* MESSAGES AREA */
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: var(--bg-page);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .message-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sent-row {
+        align-items: flex-end;
+    }
+
+    .received-row {
+        align-items: flex-start;
+    }
+
+    .sender-profile-link {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-bottom: 3px;
+        margin-left: 6px;
+        margin-right: 6px;
+        text-decoration: none;
+    }
+    
+    .sender-profile-link:hover {
+        text-decoration: underline;
+        color: var(--accent-primary);
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 14px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+    }
+
+    .sent {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .received {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-bottom-left-radius: 4px;
+    }
+
+    .message-image, .message-video {
+        width: 100%;
+        max-width: 250px;
+        border-radius: 12px;
+        margin-top: 8px;
+    }
+
+    .file-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .received .file-link {
+        color: var(--accent-primary);
+    }
+
+    .message-footer {
+        margin-top: 6px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        opacity: 0.8;
+    }
+
+    /* INPUT FOOTER */
+    .chat-input-container {
+        padding: 14px;
+        border-top: 1px solid var(--border-color);
+        background: var(--bg-card);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .attach-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: var(--bg-page);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .chat-input {
+        flex: 1;
+        height: 45px;
+        border-radius: 30px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        padding: 0 18px;
+        outline: none;
+    }
+
+    .send-btn {
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    /* MANAGEMENT SIDEBAR PANEL */
+    .info-sidebar {
+        width: 300px;
+        background: var(--bg-card);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        overflow-y: auto;
+    }
+
+    .info-section h4 {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        letter-spacing: 0.5px;
+    }
+
+    .member-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .member-link-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        text-decoration: none;
+        color: inherit;
+        padding: 6px;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+
+    .member-link-item:hover {
+        background: var(--bg-page);
+    }
+
+    .owner-badge {
+        font-size: 10px;
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-weight: 500;
+        margin-left: auto;
+    }
+
+    .action-btn {
+        width: 100%;
+        padding: 11px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-layout-main">
+    
+    <!-- LEFT PANEL: CHAT FRAMEWORK -->
+    <div class="chat-wrapper">
+        <!-- HEADER (Circled Section in your photo - Click toggles Sidebar view on mobile or triggers alerts) -->
+        <div class="chat-header">
+            <div class="chat-user-clickable" onclick="handleHeaderClick()">
+                <div class="avatar-placeholder">{{ group.name|first|upper }}</div>
+                <div class="chat-user-info">
+                    <h3>{{ group.name }}</h3>
+                    <p>{{ group.members.count }} Members</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC MESSAGES BOX -->
+        <div id="messagesBox" class="messages-container"></div>
+
+        <!-- SEND MESSAGE FORM -->
+        <form id="messageForm">
+            {% csrf_token %}
+            <div class="chat-input-container">
+                <label class="attach-btn">
+                    <i class="bi bi-plus-lg"></i>
+                    <input type="file" id="fileInput" hidden>
+                </label>
+                <input type="text" id="messageInput" class="chat-input" placeholder="Message group..." autocomplete="off">
+                <button type="submit" class="send-btn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL: GROUP OPTIONS & ACCOUNT MEMBERS -->
+    <div class="info-sidebar" id="groupInfoSidebar">
+        <div class="info-section">
+            <h4>Group Options</h4>
+            
+            <!-- FIXED: Dynamically handles layout whether Owner or Member viewing -->
+            {% if is_owner %}
+                <form action="{% url 'delete_group_chat' group.id %}" method="POST" onsubmit="return confirm('Owner Action: Are you sure you want to permanently delete this group?');">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn btn-danger">
+                        <i class="bi bi-trash3-fill"></i> Delete Group (Owner)
+                    </button>
+                </form>
+            {% else %}
+                <form action="{% url 'leave_group_chat' group.id %}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group chat?');">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn btn-danger">
+                        <i class="bi bi-box-arrow-right"></i> Leave Group
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="info-section">
+            <h4>Members ({{ group.members.count }})</h4>
+            <div class="member-list">
+                {% for m in group.members.all %}
+                    <!-- FIXED: Link wrappers go straight to your view_other_profile path -->
+                    <a href="{% url 'view_other_profile' m.id %}" class="member-link-item">
+                        {% if m.userprofile.profile_picture %}
+                            <img src="{{ m.userprofile.profile_picture.url }}" class="member-avatar" style="width:32px; height:32px;">
+                        {% else %}
+                            <div class="avatar-placeholder" style="width:32px; height:32px; font-size:13px;">
+                                {{ m.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: var(--text-primary);">{{ m.get_full_name|default:m.username }}</span>
+                            <span style="font-size: 11px; color: var(--text-secondary);">@{{ m.username }}</span>
+                        </div>
+                        {% if m == group_owner %}
+                            <span class="owner-badge">Owner</span>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const groupId = "{{ group.id }}";
+
+// Alert actions or show toggles when clicking the top group banner card
+function handleHeaderClick() {
+    const isOwner = "{{ is_owner }}" === "True";
+    if (isOwner) {
+        alert("Group Settings Profile Panel: You are the Owner of this group. You can use the panel on the right side to manage or delete it completely.");
+    } else {
+        alert("Group Settings Profile Panel: You are a member of this conversation room.");
+    }
+}
+
+async function loadGroupMessages() {
+    try {
+        const response = await fetch("{% url 'get_group_messages' group.id %}");
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        
+        const data = await response.json();
+        const box = document.getElementById('messagesBox');
+        
+        if (!data.messages || data.messages.length === 0) {
+            box.innerHTML = `
+                <div style="text-align:center; padding:40px; opacity:0.5;">
+                    <i class="bi bi-chat-dots" style="font-size:48px;"></i>
+                    <p>No messages yet. Send a note to start the group conversation!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const wasAtBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 50;
+        box.innerHTML = '';
+
+        data.messages.forEach(msg => {
+            const row = document.createElement('div');
+            row.className = `message-row ${msg.is_mine ? 'sent-row' : 'received-row'}`;
+
+            // Render message rows with active user profile profile anchors
+            row.innerHTML = `
+                ${!msg.is_mine ? `<a href="/profile/${msg.sender_id}/" class="sender-profile-link">@${escapeHtml(msg.sender)}</a>` : ''}
+                <div class="message-bubble ${msg.is_mine ? 'sent' : 'received'}">
+                    ${msg.message ? `<div>${escapeHtml(msg.message)}</div>` : ''}
+                    ${msg.image ? `<img src="${msg.image}" class="message-image">` : ''}
+                    ${msg.video ? `<video controls class="message-video"><source src="${msg.video}"></video>` : ''}
+                    ${msg.file ? `<a href="${msg.file}" target="_blank" class="file-link"><i class="bi bi-paperclip"></i> Open File</a>` : ''}
+                    <div class="message-footer">
+                        <span>${msg.time}</span>
+                    </div>
+                </div>
+            `;
+            box.appendChild(row);
+        });
+
+        if (wasAtBottom) {
+            box.scrollTop = box.scrollHeight;
+        }
+    } catch(error) {
+        console.error('Error executing group load:', error);
+    }
+}
+
+document.getElementById('messageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
+    
+    // Fallback if completely empty submission
+    if (!messageInput.value.trim() && !fileInput.files[0]) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('message', messageInput.value.trim());
+    
+    // Check if a file attachment exists
+    if (fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const fileType = file.type;
+
+        // Map the correct key name so request.FILES finds it smoothly in views.py
+        if (fileType.startsWith('image/')) {
+            formData.append('image', file);
+        } else if (fileType.startsWith('video/')) {
+            formData.append('video', file);
+        } else {
+            formData.append('file', file);
+        }
+    }
+
+    try {
+        const response = await fetch("{% url 'send_group_message' group.id %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData // Sends multi-part form data containing raw file binaries smoothly
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Reset input values completely
+            messageInput.value = '';
+            fileInput.value = '';
+            
+            // Reload message box layout
+            loadGroupMessages();
+            
+            // Push layout down to show the new attachment card frame
+            const box = document.getElementById('messagesBox');
+            box.scrollTop = box.scrollHeight;
+        } else {
+            console.error('Server side message rejection error:', data.error);
+        }
+    } catch(error) {
+        console.error('Network or processing failure during file broadcast upload:', error);
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+loadGroupMessages();
+setInterval(loadGroupMessages, 3000);
+</script>
+{% endblock %}

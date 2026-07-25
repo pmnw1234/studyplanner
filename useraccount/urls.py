@@ -16,13 +16,8 @@ urlpatterns = [
     path('certification/add/', views.add_certification, name='add_certification'),
     path('certification/edit/<int:cert_id>/', views.edit_certification, name='edit_certification'),
     path('certification/delete/<int:cert_id>/', views.delete_certification, name='delete_certification'),
-
-    path("quiz/<str:quiz_type>/",views.take_quiz,name="take_quiz"),
     
-
-
     # ===== NEW URLS FOR CONNECTIONS =====
     path('profile/<int:user_id>/', views.view_other_profile, name='view_other_profile'),
     path('connect/<int:user_id>/', views.connect_user, name='connect_user'),
-
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

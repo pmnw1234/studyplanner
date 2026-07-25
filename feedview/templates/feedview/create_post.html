@@ -3,24 +3,46 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
 
+<!-- Weekly Limit -->
+<div class="mb-4 p-4 rounded-xl"
+     style="background-color: var(--bg-card); border:1px solid var(--border-color);">
+
+    <div class="flex justify-between items-center">
+
+        <div>
+            <h3 class="font-semibold">
+                Weekly Posting Limit
+            </h3>
+
+            <p class="text-sm opacity-70">
+                {{ remaining_posts }} of 4 free posts remaining this week.
+            </p>
+        </div>
+
+        {% if remaining_posts == 0 %}
+            <span class="px-3 py-1 rounded-full text-xs text-white"
+                  style="background:#ef4444;">
+                Premium Required
+            </span>
+        {% endif %}
+
+    </div>
+
+</div>
+{% if messages %}
+    {% for message in messages %}
+        <div class="mb-4 p-3 rounded-xl
+            {% if message.tags == 'error' %}
+                bg-red-500 text-white
+            {% else %}
+                bg-green-500 text-white
+            {% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
     <form method="POST" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
-
-        <!-- Post Type Selection - Toggle Style -->
-        <div class="flex gap-3 p-1 rounded-xl" style="background-color: var(--border-color);">
-            <button type="button" onclick="setPostType('study')" id="studyBtn" class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean)); color: white;">
-                <i class="bi bi-people"></i> Study Partner
-            </button>
-            <button type="button" onclick="setPostType('skill')" id="skillBtn" class="flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2" style="color: var(--text-secondary);">
-                <i class="bi bi-arrow-left-right"></i> Skill Swap
-            </button>
-            <input type="hidden" name="post_type" id="postTypeInput" value="study">
-
-            <input type="hidden" name="category" id="categoryInput" value="study">
-
-             <input type="hidden" name="category" id="categoryInput" value="study">
-
-        </div>
 
         <!-- Topic Selection -->
         <div>
@@ -90,29 +112,6 @@
 
 </div>
 <script>
-function setPostType(type) {
-    document.getElementById('postTypeInput').value = type;
-    document.getElementById('categoryInput').value = type;
-
-    const studyBtn = document.getElementById('studyBtn');
-    const skillBtn = document.getElementById('skillBtn');
-
-    if (type === 'study') {
-        studyBtn.style.background =
-            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
-        studyBtn.style.color = 'white';
-
-        skillBtn.style.background = 'transparent';
-        skillBtn.style.color = 'var(--text-secondary)';
-    } else {
-        skillBtn.style.background =
-            'linear-gradient(135deg, var(--accent-primary), var(--accent-ocean))';
-        skillBtn.style.color = 'white';
-
-        studyBtn.style.background = 'transparent';
-        studyBtn.style.color = 'var(--text-secondary)';
-    }
-}
 
 function previewImage(event) {
     const file = event.target.files[0];
