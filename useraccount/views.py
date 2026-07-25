@@ -28,6 +28,9 @@ from .models import (
     Certification,
     
 )
+
+from .models import UserProfile, UserSkill, Certification, Connection
+
 from feedview.models import MatchRequest
 
 
