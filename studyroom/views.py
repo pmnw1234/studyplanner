@@ -1,5 +1,3 @@
-# studyplanner/studyroom/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,22 +8,36 @@ from django.views.decorators.http import require_http_methods
 from django.db import models
 from .notifications import notify_new_classwork, notify_new_submission, notify_grade
 from .models import StudyRoom, RoomActivity, ClassWork, WorkComment, Submission, RoomActivityLog, ScheduledCall, Note
+from Subscription.models import Subscription
 from .forms import StudyRoomForm, ScheduledCallForm
 import json
-
+from django.urls import reverse
 # ============================================
 # EXISTING VIEWS (Keep these as they are)
 # ============================================
 
+
 @login_required
 def studyroom_dashboard(request):
     my_rooms = request.user.study_rooms.all() | request.user.created_rooms.all()
+   
     form = StudyRoomForm()
+    
+    # Get subscription info
+    premium = is_premium_user(request.user)
+    max_members = get_max_members(request.user)
+    rooms_this_month = get_rooms_created_this_month(request.user)
+    free_room_limit = 5
+    
     return render(request, 'studyroom/dashboard.html', {
         'my_rooms': my_rooms.distinct(),
-        'form': form
+        'form': form,
+        'is_premium': premium,
+        'max_members': max_members,
+        'rooms_this_month': rooms_this_month,
+        'free_room_limit': free_room_limit,
+        'subscription': get_user_subscription(request.user),
     })
-
 # studyplanner/studyroom/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -45,22 +57,49 @@ import json
 
 @login_required
 def create_room(request):
-    """Create a new study room"""
+    """Create a new study room - SAFE version, keeps existing functionality"""
     if request.method == 'POST':
         form = StudyRoomForm(request.POST)
+
         if form.is_valid():
+            # Check if user is premium
+            premium = is_premium_user(request.user)
+            
+            # Check room creation limit for free users (limit to 5 rooms per month)
+            if not premium:
+                rooms_this_month = get_rooms_created_this_month(request.user)
+                if rooms_this_month >= 5:
+                    messages.error(
+                        request, 
+                        f"You've reached the free limit of 5 rooms per month. "
+                        f'<a href="{reverse("plans")}" style="color: var(--accent-primary); text-decoration: underline;">Upgrade to Premium</a> '
+                        f'to create unlimited rooms.'
+                    )
+                    return redirect('studyroom:studyroom_dashboard')
+            
             room = form.save(commit=False)
             room.creator = request.user
-            room.save()
-            room.members.add(request.user)
             
+            # Set max members based on subscription
+            room.max_members = get_max_members(request.user)
+            
+            room.save()
+
+            # This is the existing way - keep it
+            room.members.add(request.user)
+
             RoomActivity.objects.create(
                 room=room,
                 user=request.user,
                 action='Created room'
             )
             
-            messages.success(request, f"Study room '{room.course_name}' created successfully!")
+            # Add premium badge message
+            if premium:
+                messages.success(request, f"✨ Premium Study room '{room.course_name}' created with unlimited members!")
+            else:
+                messages.success(request, f"Study room '{room.course_name}' created successfully! (Max {room.max_members} members)")
+            
             return redirect('studyroom:room_detail', room_id=room.id)
         else:
             for field, errors in form.errors.items():
@@ -71,28 +110,36 @@ def create_room(request):
     
     return redirect('studyroom:studyroom_dashboard')
 
-            messages.success(request, "Study room created successfully!")
-
-    return redirect('studyroom:studyroom_dashboard')
-
 
 @login_required
-def join_room(request):
-    """Join an existing study room using room code"""
+def join_room(request):  
+    """Join an existing study room using room code - SAFE version"""
     if request.method == 'POST':
         code = request.POST.get('room_code', '').strip().upper()
 
         try:
             room = StudyRoom.objects.get(room_code=code)
 
+            # Check if already joined - using existing ManyToMany field
             if request.user in room.members.all():
                 messages.warning(request, "You already joined this room.")
                 return redirect('studyroom:studyroom_dashboard')
 
+            # Check if room is full based on max_members
             if room.is_full():
-                messages.error(request, "Room is full (max 3 members).")
+                premium = is_premium_user(request.user)
+                if not premium:
+                    messages.error(
+                        request, 
+                        f"Room is full (max {room.max_members} members). "
+                        f'<a href="{reverse("plans")}" style="color: var(--accent-primary); text-decoration: underline;">Upgrade to Premium</a> '
+                        f'to join rooms with unlimited members.'
+                    )
+                else:
+                    messages.error(request, "Room has reached its maximum capacity.")
                 return redirect('studyroom:studyroom_dashboard')
 
+            # Keep existing way - add to ManyToMany
             room.members.add(request.user)
 
             RoomActivity.objects.create(
@@ -109,18 +156,45 @@ def join_room(request):
             return redirect('studyroom:studyroom_dashboard')
     
     return redirect('studyroom:studyroom_dashboard')
+
+
+@login_required
+def delete_room(request, room_id):
+    """Delete a study room (creator only)"""
+    room = get_object_or_404(StudyRoom, id=room_id)
+    
+    if request.user != room.creator:
+        messages.error(request, "Only the room creator can delete this room.")
+        return redirect('studyroom:studyroom_dashboard')
+    
+    if request.method == 'POST':
+        room_name = room.course_name
+        room.delete()
+        messages.success(request, f"Room '{room_name}' deleted successfully.")
+        return redirect('studyroom:studyroom_dashboard')
+    
+    return redirect('studyroom:studyroom_dashboard')
+
+
 @login_required
 def room_detail(request, room_id):
     room = get_object_or_404(StudyRoom, id=room_id)
     
+    # Check if user is a member or creator - using existing ManyToMany
     is_member = request.user in room.members.all() or request.user == room.creator
     
+    # Get all members (including creator) - using existing ManyToMany
     members = list(room.members.all())
     if room.creator not in members:
         members.insert(0, room.creator)
     
+    # Get subscription info
+    premium = is_premium_user(request.user)
+    
+    # Get class works for this room with optimized prefetching
     classworks = room.classworks.all().order_by('-created_at')
     
+    # 🔧 FIX: Prefetch submissions for teacher view
     if request.user == room.creator:
         classworks = classworks.prefetch_related(
             models.Prefetch('submissions', 
@@ -129,6 +203,7 @@ def room_detail(request, room_id):
             )
         )
     
+    # Prepare stream data: for each class work, get comments
     works_with_stream = []
     for work in classworks:
         stream_comments = work.comments.filter(user=work.created_by).order_by('-created_at')
@@ -138,6 +213,7 @@ def room_detail(request, room_id):
             'creator': work.created_by,
         })
     
+    # Get submissions for current user (for class work tab)
     user_submissions = {}
     for work in classworks:
         try:
@@ -145,9 +221,11 @@ def room_detail(request, room_id):
             user_submissions[work.id] = submission
         except Submission.DoesNotExist:
             user_submissions[work.id] = None
-    
+
     assignments_count = classworks.filter(content_type='assignment').count()
     materials_count = classworks.filter(content_type='material').count()
+
+    # Get activity logs
     activity_logs = room.activity_logs.all()[:50]
     
     return render(request, 'studyroom/room_detail.html', {
@@ -160,7 +238,12 @@ def room_detail(request, room_id):
         'activity_logs': activity_logs,
         'assignments_count': assignments_count,
         'materials_count': materials_count,
+        'is_premium': premium,
+        'max_members': room.max_members,
+        'current_members': len(members),
+        'subscription': get_user_subscription(request.user),
     })
+
 
 @login_required
 def create_classwork(request, room_id):
@@ -199,8 +282,10 @@ def create_classwork(request, room_id):
                 details=f'Created {content_type}: {title}'
             )
             
+            # Notify only for assignments
             if content_type == 'assignment':
                 try:
+                    from .notifications import notify_new_classwork
                     notify_new_classwork(work)
                 except ImportError:
                     pass
@@ -209,8 +294,84 @@ def create_classwork(request, room_id):
         else:
             messages.error(request, "Title is required.")
     
-    return redirect('room_detail', room_id=room.id)
+    return redirect('studyroom:room_detail', room_id=room.id)
+@login_required
+def submit_work(request, work_id):
+    work = get_object_or_404(ClassWork, id=work_id)
+    room = work.room
+    
+    # Check if user is a member
+    if request.user not in room.members.all() and request.user != room.creator:
+        messages.error(request, "You must be a room member to submit work.")
+        return redirect('studytoom:room_detail', room_id=room.id)
+    
+    # Check if already submitted
+    submission, created = Submission.objects.get_or_create(
+        work=work,
+        student=request.user,
+        defaults={'status': 'pending'}
+    )
+    
+    if request.method == 'POST':
+        content = request.POST.get('content', '')
+        file = request.FILES.get('file')
+        
+        if content:
+            submission.content = content
+        if file:
+            submission.file = file
+        
+        submission.status = 'submitted'
+        submission.submitted_at = timezone.now()
+        submission.save()
+        
+        RoomActivityLog.objects.create(
+            room=room,
+            user=request.user,
+            action='submit_work',
+            details=f'Submitted: {work.title}'
+        )
+        
+        # ✅ ADD THIS: Notify the teacher
+        notify_new_submission(submission)
+        
+        messages.success(request, "Work submitted successfully!")
+    
+    return redirect('studytoom:room_detail', room_id=room.id)
+@login_required
+def add_stream_comment(request, work_id):
+    work = get_object_or_404(ClassWork, id=work_id)
+    room = work.room
+    
+    # Only the person who created the work can comment on their own work's stream
+    if request.user != work.created_by:
+        messages.error(request, "Only the creator of this work can post stream updates.")
+        return redirect('studytoom:room_detail', room_id=room.id)
+    
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment_text', '').strip()
+        
+        if comment_text:
+            WorkComment.objects.create(
+                work=work,
+                user=request.user,
+                text=comment_text
+            )
+            
+            RoomActivity.objects.create(
+                room=room,
+                user=request.user,
+                action=f'Posted stream update on: {work.title}'
+            )
+            
+            messages.success(request, "Stream update posted!")
+        else:
+            messages.error(request, "Comment cannot be empty.")
+    
+    return redirect('studytoom:room_detail', room_id=room.id)
 
+
+# Class Work: Edit
 @login_required
 def edit_classwork(request, work_id):
     work = get_object_or_404(ClassWork, id=work_id)
@@ -218,7 +379,7 @@ def edit_classwork(request, work_id):
     
     if request.user != room.creator:
         messages.error(request, "Only the room creator can edit class work.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -236,6 +397,7 @@ def edit_classwork(request, work_id):
             work.resource_link = resource_link if resource_link else None
             
             if resource_file:
+                # Delete old file if exists
                 if work.resource_file:
                     work.resource_file.delete()
                 work.resource_file = resource_file
@@ -251,8 +413,9 @@ def edit_classwork(request, work_id):
             
             messages.success(request, "Class work updated successfully!")
     
-    return redirect('room_detail', room_id=room.id)
+    return redirect('studytoom:room_detail', room_id=room.id)
 
+# Class Work: Delete
 @login_required
 def delete_classwork(request, work_id):
     work = get_object_or_404(ClassWork, id=work_id)
@@ -260,7 +423,7 @@ def delete_classwork(request, work_id):
     
     if request.user != room.creator:
         messages.error(request, "Only the room creator can delete class work.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.method == 'POST':
         title = work.title
@@ -275,17 +438,21 @@ def delete_classwork(request, work_id):
         
         messages.success(request, "Class work deleted successfully!")
     
-    return redirect('room_detail', room_id=room.id)
+    return redirect('studytoom:room_detail', room_id=room.id)
 
+
+# Submit work (for students)
 @login_required
 def submit_work(request, work_id):
     work = get_object_or_404(ClassWork, id=work_id)
     room = work.room
     
+    # Check if user is a member
     if request.user not in room.members.all() and request.user != room.creator:
         messages.error(request, "You must be a room member to submit work.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
+    # Check if already submitted
     submission, created = Submission.objects.get_or_create(
         work=work,
         student=request.user,
@@ -319,8 +486,7 @@ def submit_work(request, work_id):
         
         messages.success(request, "Work submitted successfully!")
     
-    return redirect('room_detail', room_id=room.id)
-
+    return redirect('studytoom:room_detail', room_id=room.id)
 @login_required
 def add_stream_comment(request, work_id):
     work = get_object_or_404(ClassWork, id=work_id)
@@ -328,7 +494,7 @@ def add_stream_comment(request, work_id):
     
     if request.user != work.created_by:
         messages.error(request, "Only the creator of this work can post stream updates.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.method == 'POST':
         comment_text = request.POST.get('comment_text', '').strip()
@@ -350,8 +516,7 @@ def add_stream_comment(request, work_id):
         else:
             messages.error(request, "Comment cannot be empty.")
     
-    return redirect('room_detail', room_id=room.id)
-
+    return redirect('studytoom:room_detail', room_id=room.id)
 @login_required
 def grade_submission(request, submission_id):
     submission = get_object_or_404(Submission, id=submission_id)
@@ -359,7 +524,7 @@ def grade_submission(request, submission_id):
     
     if request.user != room.creator:
         messages.error(request, "Only the room creator can grade submissions.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.method == 'POST':
         grade = request.POST.get('grade')
@@ -383,17 +548,19 @@ def grade_submission(request, submission_id):
             except ImportError:
                 pass
             
+            
             messages.success(request, f"Graded {submission.student.username}'s work!")
     
-    return redirect('room_detail', room_id=room.id)
+    return redirect('studytoom:room_detail', room_id=room.id)
 
+# Leave room
 @login_required
 def leave_room(request, room_id):
     room = get_object_or_404(StudyRoom, id=room_id)
     
     if request.user == room.creator:
         messages.error(request, "Creator cannot leave. Transfer ownership first or delete the room.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.user in room.members.all():
         room.members.remove(request.user)
@@ -411,13 +578,15 @@ def leave_room(request, room_id):
     
     return redirect('studyroom_dashboard')
 
+
+# Transfer ownership (creator can transfer to another member)
 @login_required
 def transfer_ownership(request, room_id):
     room = get_object_or_404(StudyRoom, id=room_id)
     
     if request.user != room.creator:
         messages.error(request, "Only the room creator can transfer ownership.")
-        return redirect('room_detail', room_id=room.id)
+        return redirect('studytoom:room_detail', room_id=room.id)
     
     if request.method == 'POST':
         new_owner_id = request.POST.get('new_owner')
@@ -426,8 +595,11 @@ def transfer_ownership(request, room_id):
         if new_owner not in room.members.all():
             messages.error(request, "New owner must be a room member.")
         else:
+            # Transfer ownership
             room.creator = new_owner
             room.save()
+            
+            # Add old creator as regular member
             room.members.add(request.user)
             
             RoomActivityLog.objects.create(
@@ -439,7 +611,10 @@ def transfer_ownership(request, room_id):
             
             messages.success(request, f"Room ownership transferred to {new_owner.username}.")
     
-    return redirect('room_detail', room_id=room.id)
+    return redirect('studytoom:room_detail', room_id=room.id)
+
+
+from django.http import JsonResponse
 
 @login_required
 def notification_api(request):
@@ -463,18 +638,30 @@ def notification_api(request):
     }
     return JsonResponse(data)
 
+
 @login_required
 def mark_all_notifications_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return redirect(request.META.get('HTTP_REFERER', 'studyroom_dashboard'))
 
+
+# Add these imports at the top of studyroom/views.py if not already there
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import Note  # Make sure Note model exists
+
+# Add these functions at the end of your views.py file
+
 @login_required
 def notes_list(request):
+    """Display user's saved notes"""
     notes = Note.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'studyroom/notes.html', {'notes': notes})
 
 @login_required
 def delete_note(request, note_id):
+    """Delete a note"""
     if request.method == 'DELETE':
         note = get_object_or_404(Note, id=note_id, user=request.user)
         note.delete()
@@ -642,3 +829,38 @@ def cancel_call(request, call_id):
     call.save()
     
     return JsonResponse({'success': True})
+
+# ============================================
+# SUBSCRIPTION HELPER FUNCTIONS
+# ============================================
+
+def get_user_subscription(user):
+    """Get user's subscription or create one if doesn't exist"""
+    subscription, created = Subscription.objects.get_or_create(
+        user=user,
+        defaults={
+            'plan': 'free',
+            'is_active': True,
+            'start_date': timezone.now()
+        }
+    )
+    return subscription
+
+def is_premium_user(user):
+    """Check if user has premium subscription"""
+    subscription = get_user_subscription(user)
+    return subscription.is_premium()
+
+def get_max_members(user):
+    """Get max members allowed for user's subscription"""
+    if is_premium_user(user):
+        return 999  # Unlimited for premium
+    return 3  # Free users get 3 members max
+
+def get_rooms_created_this_month(user):
+    """Count rooms created this month (for premium limit)"""
+    start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return StudyRoom.objects.filter(
+        creator=user,
+        created_at__gte=start_of_month
+    ).count()

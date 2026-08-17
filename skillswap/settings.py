@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'studyroom',
     'reviews',
     'ai_assistant',  
+    'Subscription',
     
 ]
 

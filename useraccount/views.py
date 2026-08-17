@@ -13,6 +13,7 @@ from feedview.models import Comment
 from itertools import chain
 import json
 from useraccount.models import  Quiz,Question
+from django.views.decorators.csrf import csrf_protect
 
 from .forms import (
     UserRegistrationForm,
@@ -69,6 +70,7 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 
+@csrf_protect
 def login_view(request):
     """Login view that works with custom LoginForm"""
     if request.method == "POST":
@@ -78,13 +80,14 @@ def login_view(request):
             if user:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')
-                print(f"✅ User logged in: {user.username}")
-                print(f"✅ Redirecting to dashboard_home")
-                return redirect("dashboard_home")
-            else:
-                print("❌ No user in cleaned_data")
+                
+                # Redirect staff users to admin dashboard
+                if user.is_staff:
+                    return redirect("admin_dashboard")
+                else:
+                    return redirect("dashboard_home")
         else:
-            print(f"❌ Form invalid: {form.errors}")
+            # Form errors will be displayed in the template
             messages.error(request, "Invalid email/username or password.")
     else:
         form = LoginForm()
@@ -509,8 +512,6 @@ def connect_user(request, user_id):
 
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)
-
-
 
 
 @login_required

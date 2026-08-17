@@ -127,10 +127,16 @@ class UserProfileEditForm(forms.ModelForm):
 
 class LoginForm(forms.Form):
     email = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Email or Username'})
+        widget=forms.TextInput(attrs={
+            'class': 'input input-bordered w-full',
+            'placeholder': 'Email or Username'
+        })
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'input input-bordered w-full', 'placeholder': 'Password'})
+        widget=forms.PasswordInput(attrs={
+            'class': 'input input-bordered w-full',
+            'placeholder': 'Password'
+        })
     )
     
     def clean(self):
@@ -140,6 +146,8 @@ class LoginForm(forms.Form):
         
         if email_or_username and password:
             user = None
+            
+            # Try to find user by email
             if '@' in email_or_username:
                 try:
                     user_obj = User.objects.get(email=email_or_username)
@@ -148,13 +156,18 @@ class LoginForm(forms.Form):
                 except User.DoesNotExist:
                     pass
             
+            # If not found by email, try as username
             if user is None:
                 user = authenticate(username=email_or_username, password=password)
             
             if not user:
                 raise forms.ValidationError("Invalid email/username or password.")
             
+            if not user.is_active:
+                raise forms.ValidationError("This account is inactive.")
+            
             cleaned_data['user'] = user
+        
         return cleaned_data
 
 

@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn {
+        display: none !important;
+    }
+    
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .admin-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .admin-header p {
+        color: var(--text-secondary);
+    }
+    
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .filter-bar a {
+        padding: 6px 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        background: var(--bg-page);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+    
+    .filter-bar a.active {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        border-color: transparent;
+    }
+    
+    .filter-bar a:hover:not(.active) {
+        background: var(--border-color);
+    }
+    
+    .search-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .search-bar input {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        font-size: 14px;
+        outline: none;
+        min-width: 200px;
+    }
+    
+    .search-bar input:focus {
+        border-color: var(--accent-primary);
+    }
+    
+    .search-bar button {
+        padding: 10px 24px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .search-bar button:hover {
+        opacity: 0.9;
+    }
+    
+    .table-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table-container th,
+    .table-container td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .table-container th {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: var(--bg-page);
+    }
+    
+    .table-container td {
+        font-size: 14px;
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+    
+    .table-container tr:hover td {
+        background: var(--bg-page);
+    }
+    
+    .status-badge {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+    
+    .status-badge.inactive {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    
+    .status-badge.premium {
+        background: rgba(139, 105, 20, 0.15);
+        color: var(--accent-primary);
+    }
+    
+    .status-badge.free {
+        background: var(--bg-page);
+        color: var(--text-secondary);
+    }
+    
+    .status-badge.staff {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+    
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-avatar-placeholder {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    
+    .action-btn {
+        padding: 4px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 2px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .action-btn.view {
+        background: var(--bg-page);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .action-btn.view:hover {
+        background: var(--border-color);
+    }
+    
+    .action-btn.toggle {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .action-btn.toggle:hover {
+        background: #d97706;
+    }
+    
+    .action-btn.staff-toggle {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .action-btn.staff-toggle:hover {
+        background: #2563eb;
+    }
+    
+    .action-btn.delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .action-btn.delete:hover {
+        background: #dc2626;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 20px 0;
+    }
+    
+    .pagination a, .pagination span {
+        padding: 8px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .pagination .current {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        border-color: transparent;
+    }
+    
+    .pagination a:hover {
+        background: var(--border-color);
+    }
+    
+    .stats-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .stats-row .stat-item {
+        padding: 8px 16px;
+        border-radius: 12px;
+        background: var(--bg-page);
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+    
+    .stats-row .stat-item strong {
+        color: var(--text-primary);
+    }
+    
+    @media (max-width: 768px) {
+        .table-container {
+            overflow-x: auto;
+        }
+        .filter-bar {
+            flex-direction: row;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .filter-bar a {
+            white-space: nowrap;
+        }
+        .search-bar {
+            flex-direction: column;
+        }
+        .search-bar button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    
+    <div class="admin-header">
+        <div>
+            <h1><i class="bi bi-people" style="color: var(--accent-primary);"></i> Manage Users</h1>
+            <p>View and manage all users on the platform</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="action-btn view" style="padding: 8px 16px; border-radius: 8px; text-decoration: none;">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-item"><strong>Total Users:</strong> {{ total_users }}</div>
+        <div class="stat-item"><strong>Premium:</strong> {{ total_premium }}</div>
+        <div class="stat-item"><strong>Free:</strong> {{ total_free }}</div>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <a href="{% url 'admin_users' %}" class="{% if not filter_type %}active{% endif %}">All</a>
+        <a href="{% url 'admin_users' %}?filter=active" class="{% if filter_type == 'active' %}active{% endif %}">Active</a>
+        <a href="{% url 'admin_users' %}?filter=inactive" class="{% if filter_type == 'inactive' %}active{% endif %}">Inactive</a>
+        <a href="{% url 'admin_users' %}?filter=premium" class="{% if filter_type == 'premium' %}active{% endif %}">Premium</a>
+        <a href="{% url 'admin_users' %}?filter=free" class="{% if filter_type == 'free' %}active{% endif %}">Free</a>
+        <a href="{% url 'admin_users' %}?filter=staff" class="{% if filter_type == 'staff' %}active{% endif %}">Staff</a>
+    </div>
+    
+    <!-- Search -->
+    <form method="GET" class="search-bar">
+        <input type="text" name="search" placeholder="Search by username, email, or name..." value="{{ search_query }}">
+        {% if filter_type %}
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+        {% endif %}
+        <button type="submit"><i class="bi bi-search"></i> Search</button>
+        {% if search_query or filter_type %}
+            <a href="{% url 'admin_users' %}" class="action-btn view" style="padding: 10px 20px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="bi bi-x"></i> Clear
+            </a>
+        {% endif %}
+    </form>
+    
+    <!-- Users Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if user.userprofile.profile_picture %}
+                                <img src="{{ user.userprofile.profile_picture.url }}" class="user-avatar">
+                            {% else %}
+                                <div class="user-avatar-placeholder">{{ user.username|first|upper }}</div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 500;">{{ user.get_full_name|default:user.username }}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size: 13px;">{{ user.email|default:"-" }}</td>
+                    <td>
+                        {% with subscription=user.subscription %}
+                            {% if subscription and subscription.plan == 'premium' and subscription.is_active %}
+                                <span class="status-badge premium">✨ Premium</span>
+                            {% else %}
+                                <span class="status-badge free">Free</span>
+                            {% endif %}
+                        {% endwith %}
+                        {% if user.is_staff %}
+                            <span class="status-badge staff">Staff</span>
+                        {% endif %}
+                        {% if user.is_superuser %}
+                            <span class="status-badge" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">Admin</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge {% if user.is_active %}active{% else %}inactive{% endif %}">
+                            {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td style="font-size: 13px; color: var(--text-secondary);">
+                        {{ user.date_joined|date:"M d, Y" }}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                            <a href="{% url 'view_other_profile' user.id %}" class="action-btn view" title="View Profile">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form method="POST" action="{% url 'admin_toggle_user_status' user.id %}" style="display: inline-block;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn toggle" title="Toggle Active Status">
+                                    <i class="bi bi-{% if user.is_active %}pause-circle{% else %}play-circle{% endif %}"></i>
+                                </button>
+                            </form>
+                            {% if not user.is_staff and user != request.user %}
+                                <form method="POST" action="{% url 'admin_toggle_staff_status' user.id %}" style="display: inline-block;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn staff-toggle" title="Toggle Staff Status">
+                                        <i class="bi bi-shield"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                            {% if user != request.user %}
+                                <form method="POST" action="{% url 'admin_delete_user' user.id %}" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete {{ user.username }}? This action cannot be undone!')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn delete" title="Delete User">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="bi bi-people" style="font-size: 48px; display: block; opacity: 0.3;"></i>
+                        No users found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">‹</a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}">›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

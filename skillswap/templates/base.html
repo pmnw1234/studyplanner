@@ -44,6 +44,9 @@
             background-color: var(--bg-page);
             color: var(--text-primary);
             transition: all 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .container-custom {
@@ -134,6 +137,44 @@
         #sidebar.open {
             left: 0;
         }
+        
+        /* Admin badge in navbar */
+        .admin-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 4px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-page);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+        
+        /* Alert styles */
+        .alert {
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -154,8 +195,11 @@
                     </a>
                 </div>
                 
+                <!-- Navigation Center - Hidden for Admin Users -->
                 <div class="navbar-center">
                     <ul class="menu menu-horizontal px-1 gap-1">
+                        {% if not user.is_staff %}
+                        <!-- Regular User Navigation -->
                         <li>
                             <a href="{% url 'feed' %}" class="text-sm" style="color: var(--text-primary);">
                                 <i class="bi bi-house-door"></i> <span>Feed</span>
@@ -177,6 +221,30 @@
                                 <span id="unreadMessageBadge" class="badge" style="display: none;">0</span>
                             </a>
                         </li>
+                        {% endif %}
+                        
+                        {% if user.is_staff %}
+                        <!-- Admin Navigation -->
+                        <li>
+                            <a href="{% url 'admin_dashboard' %}" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-speedometer2" style="color: var(--accent-primary);"></i> 
+                                <span>Admin</span>
+                                <span class="admin-badge">Staff</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_users' %}" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-people" style="color: var(--accent-primary);"></i> 
+                                <span>Users</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_payments' %}" class="text-sm" style="color: var(--text-primary);">
+                                <i class="bi bi-credit-card" style="color: var(--accent-primary);"></i> 
+                                <span>Payments</span>
+                            </a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
                 
@@ -211,8 +279,17 @@
                             <i class="bi bi-chevron-down text-xs"></i>
                         </label>
                         <ul tabindex="0" class="dropdown-content menu p-2 shadow rounded-box w-48 mt-2" style="background-color: var(--bg-card); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+                            {% if not user.is_staff %}
                             <li><a href="{% url 'profile' %}" style="color: var(--text-primary);"><i class="bi bi-person"></i> My Profile</a></li>
                             <li><a href="{% url 'edit_profile' %}" style="color: var(--text-primary);"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
+                            {% endif %}
+                            <li><a href="{% url 'my_subscription' %}" style="color: var(--text-primary);"><i class="bi bi-gem" style="color: var(--accent-primary);"></i> Subscription</a></li>
+                            {% if user.is_staff %}
+                            <li><hr class="my-1" style="border-color: var(--border-color);"></li>
+                            <li><a href="{% url 'admin_dashboard' %}" style="color: var(--text-primary);"><i class="bi bi-speedometer2" style="color: var(--accent-primary);"></i> Admin Dashboard</a></li>
+                            <li><a href="{% url 'admin_users' %}" style="color: var(--text-primary);"><i class="bi bi-people" style="color: var(--accent-primary);"></i> Manage Users</a></li>
+                            <li><a href="{% url 'admin_payments' %}" style="color: var(--text-primary);"><i class="bi bi-credit-card" style="color: var(--accent-primary);"></i> Payments</a></li>
+                            {% endif %}
                             <li><hr class="my-1" style="border-color: var(--border-color);"></li>
                             <li><a href="{% url 'logout' %}" style="color: var(--text-primary);"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                         </ul>
@@ -224,8 +301,11 @@
                 </div>
             </div>
             
+            <!-- Mobile Menu -->
             <div id="mobile-menu" class="mobile-menu-enter md:hidden overflow-hidden">
                 <ul class="menu py-2 space-y-1" style="border-top: 1px solid var(--border-color);">
+                    {% if not user.is_staff %}
+                    <!-- Regular User Mobile Navigation -->
                     <li>
                         <a href="{% url 'dashboard_home' %}" class="justify-between" style="color: var(--text-primary);">
                             <span><i class="bi bi-speedometer2"></i> Dashboard</span>
@@ -252,7 +332,33 @@
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
                     </li>
+                    {% endif %}
+                    
+                    {% if user.is_staff %}
+                    <!-- Admin Mobile Navigation -->
+                    <li>
+                        <a href="{% url 'admin_dashboard' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-speedometer2" style="color: var(--accent-primary);"></i> Admin Dashboard</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_users' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-people" style="color: var(--accent-primary);"></i> Manage Users</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_payments' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-credit-card" style="color: var(--accent-primary);"></i> Payments</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                     <li><hr class="my-1" style="border-color: var(--border-color);"></li>
+                    
+                    {% if not user.is_staff %}
                     <li>
                         <a href="{% url 'profile' %}" class="justify-between" style="color: var(--text-primary);">
                             <span><i class="bi bi-person"></i> My Profile</span>
@@ -265,6 +371,37 @@
                             <i class="bi bi-chevron-right text-xs"></i>
                         </a>
                     </li>
+                    {% endif %}
+                    
+                    <li>
+                        <a href="{% url 'my_subscription' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-gem" style="color: var(--accent-primary);"></i> Subscription</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    
+                    {% if user.is_staff %}
+                    <li>
+                        <a href="{% url 'admin_dashboard' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-speedometer2" style="color: var(--accent-primary);"></i> Admin Dashboard</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_users' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-people" style="color: var(--accent-primary);"></i> Manage Users</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'admin_payments' %}" class="justify-between" style="color: var(--text-primary);">
+                            <span><i class="bi bi-credit-card" style="color: var(--accent-primary);"></i> Payments</span>
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li><hr class="my-1" style="border-color: var(--border-color);"></li>
                     <li>
                         <a href="{% url 'logout' %}" class="justify-between" style="color: var(--text-primary);">
                             <span><i class="bi bi-box-arrow-right"></i> Logout</span>
@@ -276,14 +413,14 @@
         </div>
     </nav>
 
-    <main class="container-custom py-4 md:py-6 lg:py-8">
+    <main class="container-custom py-4 md:py-6 lg:py-8 flex-1">
         {% if messages %}
             <div class="mb-4 space-y-2">
                 {% for message in messages %}
-                    <div class="alert shadow-lg rounded-xl" style="background-color: var(--bg-card); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+                    <div class="alert shadow-lg rounded-xl" style="background-color: var(--bg-card); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); border: 1px solid var(--border-color);">
                         <div>
                             <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill text-green-500{% elif message.tags == 'error' %}exclamation-triangle-fill text-red-500{% else %}info-circle-fill text-blue-500{% endif %} mr-2"></i>
-                            <span style="color: var(--text-primary);">{{ message }}</span>
+                            <span style="color: var(--text-primary);">{{ message|safe }}</span>
                         </div>
                     </div>
                 {% endfor %}
@@ -315,16 +452,19 @@
     <div id="sidebar" class="fixed top-0 left-[-250px] w-[240px] h-full z-50 p-5 transition-all duration-300" style="background-color: var(--bg-card); border-right: 1px solid var(--border-color);">
         <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Skill Menu</h2>
 
+        {% if not user.is_staff %}
+        <!-- Regular User Sidebar -->
         <a href="{% url 'ai_assistant:dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
             <i class="bi bi-robot text-xl" style="color: var(--accent-primary);"></i>
             <span>AI Assistant</span>
         </a>
-        <!-- Add this after AI Assistant or before My Library -->
-<a href="{% url 'studyroom:notes' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
-    <i class="bi bi-journal-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
-    <span>My Notes</span>
-</a>
-        <a href=" {% url 'studyroom:studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+        
+        <a href="{% url 'studyroom:notes' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-journal-bookmark-fill text-lg" style="color: var(--accent-primary);"></i>
+            <span>My Notes</span>
+        </a>
+        
+        <a href="{% url 'studyroom:studyroom_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
             <i class="bi bi-book text-lg" style="color: var(--accent-primary);"></i>
             <span>My Library</span>
         </a>
@@ -338,6 +478,30 @@
             <i class="bi bi-pencil-square text-lg" style="color: var(--accent-primary);"></i>
             <span>Assignments</span>
         </a>
+        {% endif %}
+        
+        {% if user.is_staff %}
+        <!-- Admin Sidebar -->
+        <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Admin Panel</div>
+        
+        <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-speedometer2 text-lg" style="color: var(--accent-primary);"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'admin_users' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-people text-lg" style="color: var(--accent-primary);"></i>
+            <span>Manage Users</span>
+        </a>
+        <a href="{% url 'admin_payments' %}" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-credit-card text-lg" style="color: var(--accent-primary);"></i>
+            <span>Payments</span>
+        </a>
+        <hr class="my-2" style="border-color: var(--border-color);">
+        <a href="/admin/" class="flex items-center gap-3 py-2 px-3 rounded transition hover:opacity-70" style="color: var(--text-primary);">
+            <i class="bi bi-gear text-lg" style="color: var(--accent-primary);"></i>
+            <span>Django Admin</span>
+        </a>
+        {% endif %}
     </div>
 
     <script>
