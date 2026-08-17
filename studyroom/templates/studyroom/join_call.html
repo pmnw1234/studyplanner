@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static studyroom_filters %}
 
 {% block title %}{{ room.course_name }} | Study Room{% endblock %}
 
@@ -76,14 +76,46 @@
         </div>
     </div>
 
-    <!-- Upcoming Calls Section -->
-    <div id="upcoming-calls" class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+    <!-- Upcoming Calls Section - SERVER SIDE RENDERED (NO JAVASCRIPT) -->
+    <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
         <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
             <i class="bi bi-camera-video mr-2" style="color: var(--accent-primary);"></i> Upcoming Calls
         </h2>
-        <div id="calls-container">
-            <p style="color: var(--text-secondary);">Loading calls...</p>
-        </div>
+        
+        {% with upcoming_calls=room.scheduled_calls.all %}
+            {% if upcoming_calls %}
+                <div class="space-y-3">
+                    {% for call in upcoming_calls %}
+                    {% if call.status != 'cancelled' %}
+                    <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+                        <div>
+                            <p class="font-semibold" style="color: var(--text-primary);">{{ call.title }}</p>
+                            <p class="text-sm" style="color: var(--text-secondary);">
+                                <i class="bi bi-clock"></i> {{ call.start_time|date:"M d, Y g:i A" }} - {{ call.end_time|date:"g:i A" }}
+                            </p>
+                            <p class="text-xs" style="color: var(--text-secondary);">Hosted by {{ call.created_by.username }}</p>
+                        </div>
+                        <div>
+                            {% if call.is_ongoing %}
+                                <a href="{% url 'studyroom:join_call' call.jitsi_room_id %}" class="btn btn-sm" style="background-color: #10b981; color: white; border: none;">
+                                    <i class="bi bi-camera-video-fill"></i> Join Now
+                                </a>
+                            {% else %}
+                                <span class="badge" style="background-color: var(--bg-page); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                                    <i class="bi bi-clock"></i> Scheduled
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-secondary);">
+                    <i class="bi bi-clock mr-2"></i> No upcoming calls scheduled.
+                </p>
+            {% endif %}
+        {% endwith %}
     </div>
 
     <!-- Class Work Section -->
@@ -323,62 +355,6 @@
     </div>
 </dialog>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadUpcomingCalls();
-    setInterval(loadUpcomingCalls, 30000);
-});
+<!-- No JavaScript for loading calls - everything is server-side rendered -->
 
-function loadUpcomingCalls() {
-    const container = document.getElementById('calls-container');
-    
-    fetch('{% url "studyroom:upcoming_calls" room.id %}')
-        .then(response => response.json())
-        .then(data => {
-            if (data.upcoming_calls && data.upcoming_calls.length > 0) {
-                let html = '<div class="space-y-3">';
-                data.upcoming_calls.forEach(call => {
-                    const isOngoing = call.is_ongoing;
-                    // FIXED: Correct URL path
-                    const joinUrl = '/library/call/join/' + call.jitsi_room_id + '/';
-                    html += `
-                        <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                            <div>
-                                <p class="font-semibold" style="color: var(--text-primary);">${call.title}</p>
-                                <p class="text-sm" style="color: var(--text-secondary);">
-                                    <i class="bi bi-clock"></i> ${new Date(call.start_time).toLocaleString()}
-                                </p>
-                                <p class="text-xs" style="color: var(--text-secondary);">Hosted by ${call.created_by}</p>
-                            </div>
-                            <div>
-                                ${isOngoing ? 
-                                    `<a href="${joinUrl}" 
-                                        class="btn btn-sm" 
-                                        style="background-color: #10b981; color: white; border: none;">
-                                        <i class="bi bi-camera-video-fill"></i> Join Now
-                                    </a>` :
-                                    `<span class="badge" style="background-color: var(--bg-page); color: var(--text-secondary); border: 1px solid var(--border-color);">
-                                        <i class="bi bi-clock"></i> Scheduled
-                                    </span>`
-                                }
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = `
-                    <p style="color: var(--text-secondary);">
-                        <i class="bi bi-clock mr-2"></i> No upcoming calls scheduled.
-                    </p>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading calls:', error);
-            container.innerHTML = '<p style="color: var(--text-secondary);">Failed to load calls. Please refresh the page.</p>';
-        });
-}
-</script>
 {% endblock %}
