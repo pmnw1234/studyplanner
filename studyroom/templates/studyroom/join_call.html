@@ -3,6 +3,45 @@
 
 {% block title %}{{ room.course_name }} | Study Room{% endblock %}
 
+{% block extra_head %}
+<script>
+    // DISABLE ALL OLD JAVASCRIPT FUNCTIONS
+    // This runs before anything else
+    console.log('🛑 Disabling old JavaScript functions');
+    
+    // Override any existing functions
+    window.loadUpcomingCalls = function() { 
+        console.log('⛔ loadUpcomingCalls blocked');
+        return; 
+    };
+    window.loadCalendarData = function() { 
+        console.log('⛔ loadCalendarData blocked');
+        return; 
+    };
+    
+    // Prevent any fetch calls to these endpoints
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        if (typeof url === 'string') {
+            if (url.includes('upcoming-calls') || url.includes('calendar-data')) {
+                console.log('⛔ Blocked fetch to:', url);
+                return Promise.reject(new Error('Fetch blocked by override'));
+            }
+        }
+        return originalFetch.call(this, url, options);
+    };
+    
+    // Remove any event listeners that might trigger old code
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Old JavaScript functions disabled');
+    });
+</script>
+<style>
+    /* Hide any error messages */
+    .call-error, .calendar-error { display: none !important; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-6">
     <!-- Room Header -->
@@ -76,46 +115,44 @@
         </div>
     </div>
 
-    <!-- Upcoming Calls Section - SERVER SIDE RENDERED (NO JAVASCRIPT) -->
+    <!-- Upcoming Calls Section - SERVER SIDE RENDERED -->
     <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
         <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
             <i class="bi bi-camera-video mr-2" style="color: var(--accent-primary);"></i> Upcoming Calls
         </h2>
-        
-        {% with upcoming_calls=room.scheduled_calls.all %}
-            {% if upcoming_calls %}
-                <div class="space-y-3">
-                    {% for call in upcoming_calls %}
-                    {% if call.status != 'cancelled' %}
-                    <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                        <div>
-                            <p class="font-semibold" style="color: var(--text-primary);">{{ call.title }}</p>
-                            <p class="text-sm" style="color: var(--text-secondary);">
-                                <i class="bi bi-clock"></i> {{ call.start_time|date:"M d, Y g:i A" }} - {{ call.end_time|date:"g:i A" }}
-                            </p>
-                            <p class="text-xs" style="color: var(--text-secondary);">Hosted by {{ call.created_by.username }}</p>
-                        </div>
-                        <div>
-                            {% if call.is_ongoing %}
-                                <a href="{% url 'studyroom:join_call' call.jitsi_room_id %}" class="btn btn-sm" style="background-color: #10b981; color: white; border: none;">
-                                    <i class="bi bi-camera-video-fill"></i> Join Now
-                                </a>
-                            {% else %}
-                                <span class="badge" style="background-color: var(--bg-page); color: var(--text-secondary); border: 1px solid var(--border-color);">
-                                    <i class="bi bi-clock"></i> Scheduled
-                                </span>
-                            {% endif %}
-                        </div>
+
+        {% if room.scheduled_calls.all %}
+            <div class="space-y-3">
+                {% for call in room.scheduled_calls.all %}
+                {% if call.status != 'cancelled' %}
+                <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
+                    <div>
+                        <p class="font-semibold" style="color: var(--text-primary);">{{ call.title }}</p>
+                        <p class="text-sm" style="color: var(--text-secondary);">
+                            <i class="bi bi-clock"></i> {{ call.start_time|date:"M d, Y g:i A" }} - {{ call.end_time|date:"g:i A" }}
+                        </p>
+                        <p class="text-xs" style="color: var(--text-secondary);">Hosted by {{ call.created_by.username }}</p>
                     </div>
-                    {% endif %}
-                    {% endfor %}
+                    <div>
+                        {% if call.is_ongoing %}
+                            <a href="{% url 'studyroom:join_call' call.jitsi_room_id %}" class="btn btn-sm" style="background-color: #10b981; color: white; border: none;">
+                                <i class="bi bi-camera-video-fill"></i> Join Now
+                            </a>
+                        {% else %}
+                            <span class="badge" style="background-color: var(--bg-page); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                                <i class="bi bi-clock"></i> Scheduled
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
-            {% else %}
-                <p style="color: var(--text-secondary);">
-                    <i class="bi bi-clock mr-2"></i> No upcoming calls scheduled.
-                </p>
-            {% endif %}
-        {% endwith %}
+                {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--text-secondary);">
+                <i class="bi bi-clock mr-2"></i> No upcoming calls scheduled.
+            </p>
+        {% endif %}
     </div>
 
     <!-- Class Work Section -->
@@ -354,7 +391,5 @@
         </form>
     </div>
 </dialog>
-
-<!-- No JavaScript for loading calls - everything is server-side rendered -->
 
 {% endblock %}

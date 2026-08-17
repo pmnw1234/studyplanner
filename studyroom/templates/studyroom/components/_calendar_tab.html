@@ -71,7 +71,8 @@ function loadCalendarData() {
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
     
-    fetch(`/studyroom/room/${roomId}/calendar-data/?start=${startStr}&end=${endStr}`)
+    // ✅ FIXED: Changed /studyroom/ to /library/
+    fetch(`/library/room/${roomId}/calendar-data/?start=${startStr}&end=${endStr}`)
         .then(response => response.json())
         .then(data => {
             callsData = data;
@@ -191,7 +192,8 @@ function loadUpcomingCalls() {
     
     if (!container) return;
     
-    fetch('/studyroom/room/' + roomId + '/upcoming-calls/')
+    // ✅ FIXED: Changed /studyroom/ to /library/
+    fetch('/library/room/' + roomId + '/upcoming-calls/')
         .then(response => response.json())
         .then(data => {
             if (data.upcoming_calls && data.upcoming_calls.length > 0) {
@@ -207,6 +209,9 @@ function loadUpcomingCalls() {
                     
                     const isOngoing = call.is_ongoing || false;
                     const btnColor = isOngoing ? '#10B981' : 'var(--accent-primary)';
+                    
+                    // ✅ FIXED: Changed /studyroom/call/ to /library/call/join/
+                    const joinUrl = '/library/call/join/' + call.jitsi_room_id + '/';
                     
                     html += `
                         <div class="flex items-center justify-between p-3 rounded-lg" 
@@ -227,7 +232,7 @@ function loadUpcomingCalls() {
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <a href="/studyroom/call/${call.jitsi_room_id}/join/" 
+                                <a href="${joinUrl}" 
                                    class="btn btn-sm gap-1" 
                                    style="background-color: ${btnColor}; color: white; border: none;">
                                     <i class="bi bi-camera-video"></i> ${isOngoing ? 'Join Now' : 'Join'}
