@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static studyroom_filters %}
 
 {% block title %}{{ room.course_name }} | Study Room{% endblock %}
 
@@ -29,6 +30,27 @@
             <i class="bi bi-person-circle"></i>
             <span>Created by <span class="font-semibold" style="color: var(--text-primary);">{{ room.creator.username }}</span></span>
         </div>
+        <!-- Video Call Buttons - MOVED HERE -->
+        <div class="mt-4 flex flex-wrap gap-2">
+            {% if request.user == room.creator %}
+            <!-- Instant Call Button -->
+            <a href="{% url 'studyroom:start_instant_call' room.id %}" 
+               class="btn" 
+               style="background-color: #10B981; color: white; border: none;"
+               onclick="return confirm('Start an instant video call now? Members will be notified.')">
+                <i class="bi bi-camera-video-fill"></i> Start Instant Call
+            </a>
+            <!-- Schedule Call Button -->
+            <button class="btn" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('schedule-call-modal').showModal()">
+                <i class="bi bi-calendar-plus"></i> Schedule Call
+            </button>
+            {% endif %}
+            {% if request.user == room.creator %}
+            <button class="btn btn-ghost" style="border: 1px solid var(--border-color); color: var(--text-primary);" onclick="document.getElementById('add_work_modal').showModal()">
+                <i class="bi bi-plus-circle"></i> Add Work
+            </button>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Tabs -->
@@ -45,7 +67,7 @@
         <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('activity')" id="tab-activity-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-clock-history"></i> Activity
         </button>
-        <!-- NEW: Calendar Tab -->
+        <!-- Calendar Tab -->
         <button class="tab-btn py-2 px-1 font-medium flex items-center gap-2 whitespace-nowrap" onclick="showTab('calendar')" id="tab-calendar-btn" style="color: var(--text-secondary); border-bottom: 2px solid transparent;">
             <i class="bi bi-calendar-event"></i> Calendar
         </button>
@@ -73,7 +95,7 @@
         {% include 'studyroom/components/_activity_tab.html' %}
     </div>
 
-    <!-- NEW: Calendar Tab Content -->
+    <!-- Calendar Tab Content -->
     <div id="calendar-tab" class="tab-content" style="display: none;">
         {% include 'studyroom/components/_calendar_tab.html' %}
     </div>
@@ -89,9 +111,8 @@
 {% include 'studyroom/components/modals/_submit_work_modal.html' %}
 {% include 'studyroom/components/modals/_grade_modal.html' %}
 {% include 'studyroom/components/modals/_transfer_modal.html' %}
-<!-- NEW: Schedule Call Modal -->
+<!-- Schedule Call Modal - FIXED ID -->
 {% include 'studyroom/components/modals/_schedule_call_modal.html' %}
-
 {% for item in works_with_stream %}
     {% include 'studyroom/components/modals/_stream_comment_modal.html' with work=item.work %}
 {% endfor %}

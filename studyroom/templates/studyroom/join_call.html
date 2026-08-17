@@ -1,395 +1,219 @@
 {% extends 'base.html' %}
-{% load static studyroom_filters %}
+{% load studyroom_filters %}
 
-{% block title %}{{ room.course_name }} | Study Room{% endblock %}
+{% block title %}Join Call: {{ call.title }} | Study Room{% endblock %}
 
 {% block extra_head %}
 <script>
-    // DISABLE ALL OLD JAVASCRIPT FUNCTIONS
-    // This runs before anything else
-    console.log('🛑 Disabling old JavaScript functions');
-    
-    // Override any existing functions
-    window.loadUpcomingCalls = function() { 
-        console.log('⛔ loadUpcomingCalls blocked');
-        return; 
-    };
-    window.loadCalendarData = function() { 
-        console.log('⛔ loadCalendarData blocked');
-        return; 
-    };
-    
-    // Prevent any fetch calls to these endpoints
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options) {
-        if (typeof url === 'string') {
-            if (url.includes('upcoming-calls') || url.includes('calendar-data')) {
-                console.log('⛔ Blocked fetch to:', url);
-                return Promise.reject(new Error('Fetch blocked by override'));
-            }
-        }
-        return originalFetch.call(this, url, options);
-    };
-    
-    // Remove any event listeners that might trigger old code
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Old JavaScript functions disabled');
-    });
+    console.log('🔍 Debug info from template:');
+    console.log('📌 is_ongoing: {{ is_ongoing|yesno:"True,False" }}');
+    console.log('📌 call.status: {{ call.status }}');
+    console.log('📌 jitsi_room_id: {{ call.jitsi_room_id }}');
 </script>
-<style>
-    /* Hide any error messages */
-    .call-error, .calendar-error { display: none !important; }
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-6">
-    <!-- Room Header -->
+<div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <a href="{% url 'studyroom:room_detail' room.id %}" class="btn btn-ghost gap-2" style="color: var(--text-primary);">
+            <i class="bi bi-arrow-left"></i> Back to Room
+        </a>
+    </div>
+    
+    <!-- Call Info -->
     <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex justify-between items-start flex-wrap gap-4">
             <div>
-                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ room.course_name }}</h1>
-                <p class="mt-1" style="color: var(--text-secondary);">
-                    <i class="bi bi-code-square mr-2"></i> Room Code: <span class="font-mono font-bold" style="color: var(--accent-primary);">{{ room.room_code }}</span>
-                </p>
-                <p class="mt-1" style="color: var(--text-secondary);">
-                    <i class="bi bi-people mr-2"></i> {{ room.members.count|add:1 }} / 3 members
-                </p>
-                {% if room.description %}
-                <p class="mt-3 p-3 rounded" style="background-color: var(--bg-page); color: var(--text-primary);">
-                    {{ room.description }}
-                </p>
-                {% endif %}
-            </div>
-            <div class="flex flex-wrap gap-2">
-                {% if request.user == room.creator %}
-                <button class="btn" style="background-color: var(--accent-primary); color: white; border: none;" onclick="document.getElementById('schedule_call_modal').showModal()">
-                    <i class="bi bi-camera-video"></i> Schedule Call
-                </button>
-                <button class="btn btn-ghost" style="border: 1px solid var(--border-color); color: var(--text-primary);" onclick="document.getElementById('add_work_modal').showModal()">
-                    <i class="bi bi-plus-circle"></i> Add Work
-                </button>
-                {% endif %}
-                {% if request.user != room.creator %}
-                <a href="{% url 'studyroom:leave_room' room.id %}" class="btn" style="background-color: #ef4444; color: white; border: none;" onclick="return confirm('Are you sure you want to leave this room?')">
-                    <i class="bi bi-box-arrow-right"></i> Leave Room
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="rounded-xl shadow p-4 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <p class="text-2xl font-bold" style="color: var(--accent-primary);">{{ assignments_count }}</p>
-            <p style="color: var(--text-secondary);">Assignments</p>
-        </div>
-        <div class="rounded-xl shadow p-4 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <p class="text-2xl font-bold" style="color: var(--accent-primary);">{{ materials_count }}</p>
-            <p style="color: var(--text-secondary);">Materials</p>
-        </div>
-        <div class="rounded-xl shadow p-4 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-            <p class="text-2xl font-bold" style="color: var(--accent-primary);">{{ members|length }}</p>
-            <p style="color: var(--text-secondary);">Members</p>
-        </div>
-    </div>
-
-    <!-- Members Section -->
-    <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
-            <i class="bi bi-people mr-2" style="color: var(--accent-primary);"></i> Members
-        </h2>
-        <div class="flex flex-wrap gap-3">
-            {% for member in members %}
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background-color: var(--accent-primary);">
-                    {{ member.username|make_list|first|upper }}
-                </div>
-                <span style="color: var(--text-primary);">{{ member.username }}</span>
-                {% if member == room.creator %}
-                <span class="badge text-xs" style="background-color: var(--accent-primary); color: white;">Creator</span>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Upcoming Calls Section - SERVER SIDE RENDERED -->
-    <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
-            <i class="bi bi-camera-video mr-2" style="color: var(--accent-primary);"></i> Upcoming Calls
-        </h2>
-
-        {% if room.scheduled_calls.all %}
-            <div class="space-y-3">
-                {% for call in room.scheduled_calls.all %}
-                {% if call.status != 'cancelled' %}
-                <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                    <div>
-                        <p class="font-semibold" style="color: var(--text-primary);">{{ call.title }}</p>
-                        <p class="text-sm" style="color: var(--text-secondary);">
-                            <i class="bi bi-clock"></i> {{ call.start_time|date:"M d, Y g:i A" }} - {{ call.end_time|date:"g:i A" }}
-                        </p>
-                        <p class="text-xs" style="color: var(--text-secondary);">Hosted by {{ call.created_by.username }}</p>
-                    </div>
-                    <div>
-                        {% if call.is_ongoing %}
-                            <a href="{% url 'studyroom:join_call' call.jitsi_room_id %}" class="btn btn-sm" style="background-color: #10b981; color: white; border: none;">
-                                <i class="bi bi-camera-video-fill"></i> Join Now
-                            </a>
-                        {% else %}
-                            <span class="badge" style="background-color: var(--bg-page); color: var(--text-secondary); border: 1px solid var(--border-color);">
-                                <i class="bi bi-clock"></i> Scheduled
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        {% else %}
-            <p style="color: var(--text-secondary);">
-                <i class="bi bi-clock mr-2"></i> No upcoming calls scheduled.
-            </p>
-        {% endif %}
-    </div>
-
-    <!-- Class Work Section -->
-    <div class="rounded-xl shadow-lg p-6" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
-        <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
-            <i class="bi bi-book mr-2" style="color: var(--accent-primary);"></i> Class Work
-        </h2>
-        
-        {% if classworks %}
-            {% for item in works_with_stream %}
-            <div class="mb-6 p-4 rounded-lg" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-lg font-semibold" style="color: var(--text-primary);">{{ item.work.title }}</h3>
-                        <p class="text-sm" style="color: var(--text-secondary);">
-                            {% if item.work.content_type == 'assignment' %}
-                            <span class="badge mr-2" style="background-color: #3b82f6; color: white;">Assignment</span>
-                            {% else %}
-                            <span class="badge mr-2" style="background-color: #10b981; color: white;">Material</span>
-                            {% endif %}
-                            Posted by {{ item.work.created_by.username }}
-                        </p>
-                        {% if item.work.description %}
-                        <p class="mt-2" style="color: var(--text-primary);">{{ item.work.description }}</p>
-                        {% endif %}
-                        {% if item.work.due_date %}
-                        <p class="text-sm mt-1" style="color: var(--text-secondary);">
-                            <i class="bi bi-clock mr-1"></i> Due: {{ item.work.due_date|date:"M d, Y g:i A" }}
-                        </p>
-                        {% endif %}
-                        {% if item.work.resource_link %}
-                        <a href="{{ item.work.resource_link }}" target="_blank" class="text-sm" style="color: var(--accent-primary);">
-                            <i class="bi bi-link-45deg"></i> {{ item.work.resource_title|default:"Resource Link" }}
-                        </a>
-                        {% endif %}
-                        {% if item.work.resource_file %}
-                        <a href="{{ item.work.resource_file.url }}" target="_blank" class="text-sm" style="color: var(--accent-primary);">
-                            <i class="bi bi-file-earmark"></i> {{ item.work.resource_title|default:"Download File" }}
-                        </a>
-                        {% endif %}
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        {% if user_submissions and item.work.id in user_submissions %}
-                            {% if user_submissions|get_item:item.work.id and user_submissions|get_item:item.work.id.status == 'submitted' %}
-                            <span class="badge" style="background-color: #f59e0b; color: white;">Submitted</span>
-                            {% elif user_submissions|get_item:item.work.id and user_submissions|get_item:item.work.id.status == 'graded' %}
-                            <span class="badge" style="background-color: #10b981; color: white;">
-                                Graded: {{ user_submissions|get_item:item.work.id.grade }}/100
-                            </span>
-                            {% endif %}
-                        {% endif %}
-                        {% if request.user == room.creator %}
-                        <a href="{% url 'studyroom:edit_classwork' item.work.id %}" class="btn btn-xs btn-ghost" style="color: var(--text-secondary);">Edit</a>
-                        <form method="POST" action="{% url 'studyroom:delete_classwork' item.work.id %}" class="inline" onsubmit="return confirm('Delete this work?')">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-xs btn-ghost" style="color: #ef4444;">Delete</button>
-                        </form>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Stream Comments -->
-                {% if item.stream_comments %}
-                <div class="mt-3 pl-4 border-l-2" style="border-color: var(--accent-primary);">
-                    <p class="text-sm font-semibold" style="color: var(--text-secondary);">
-                        <i class="bi bi-chat mr-1"></i> Stream Updates
+                <h1 class="text-2xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
+                    <i class="bi bi-camera-video" style="color: var(--accent-primary);"></i>
+                    {{ call.title }}
+                </h1>
+                <div class="mt-2 space-y-1" style="color: var(--text-secondary);">
+                    <p><i class="bi bi-clock mr-2"></i> {{ call.start_time|date:"l, F j, Y" }} at {{ call.start_time|date:"g:i A" }} - {{ call.end_time|date:"g:i A" }}</p>
+                    <p><i class="bi bi-person mr-2"></i> Hosted by {{ call.created_by.username }}</p>
+                    {% if call.description %}
+                    <p class="mt-2 p-3 rounded" style="background-color: var(--bg-page); color: var(--text-primary);">
+                        {{ call.description }}
                     </p>
-                    {% for comment in item.stream_comments %}
-                    <div class="mt-2 text-sm" style="color: var(--text-primary);">
-                        <span style="color: var(--text-secondary);">{{ comment.user.username }}:</span>
-                        {{ comment.text }}
-                        <span class="text-xs" style="color: var(--text-secondary);">({{ comment.created_at|date:"M d, g:i A" }})</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Submit Work -->
-                {% if item.work.content_type == 'assignment' %}
-                    {% if request.user in room.members.all or request.user == room.creator %}
-                        {% if not user_submissions|get_item:item.work.id or user_submissions|get_item:item.work.id.status == 'pending' %}
-                        <form method="POST" action="{% url 'studyroom:submit_work' item.work.id %}" enctype="multipart/form-data" class="mt-3">
-                            {% csrf_token %}
-                            <div class="flex flex-wrap gap-3">
-                                <input type="text" name="content" placeholder="Your submission text..." class="input input-bordered flex-1 min-w-[200px]" style="background-color: var(--bg-card); color: var(--text-primary); border-color: var(--border-color);">
-                                <input type="file" name="file" class="file-input file-input-bordered flex-1 min-w-[200px]" style="background-color: var(--bg-card); color: var(--text-primary); border-color: var(--border-color);">
-                                <button type="submit" class="btn" style="background-color: var(--accent-primary); color: white; border: none;">Submit</button>
-                            </div>
-                        </form>
-                        {% endif %}
                     {% endif %}
-                {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-end gap-2">
+                <span class="badge text-sm px-4 py-2" 
+                      style="background-color: {% if is_ongoing %}#10B981{% else %}var(--bg-page){% endif %}; 
+                             color: {% if is_ongoing %}white{% else %}var(--text-secondary){% endif %}; 
+                             border: 1px solid {% if is_ongoing %}#10B981{% else %}var(--border-color){% endif %};">
+                    {% if is_ongoing %}
+                        <i class="bi bi-camera-video-fill mr-1"></i> Live Now
+                    {% else %}
+                        <i class="bi bi-clock mr-1"></i> Scheduled
+                    {% endif %}
+                </span>
                 
-                <!-- Grade Submission (Creator only) -->
-                {% if request.user == room.creator and item.work.content_type == 'assignment' %}
-                    {% for submission in item.work.submissions.all %}
-                        {% if submission.status == 'submitted' %}
-                        <div class="mt-3 p-3 rounded" style="background-color: var(--bg-page); border: 1px solid var(--border-color);">
-                            <p class="text-sm" style="color: var(--text-primary);">
-                                <strong>{{ submission.student.username }}</strong> submitted this work.
-                            </p>
-                            <form method="POST" action="{% url 'studyroom:grade_submission' submission.id %}" class="mt-2 flex flex-wrap gap-3">
-                                {% csrf_token %}
-                                <input type="number" name="grade" placeholder="Grade (0-100)" min="0" max="100" class="input input-bordered w-32" style="background-color: var(--bg-card); color: var(--text-primary); border-color: var(--border-color);">
-                                <input type="text" name="feedback" placeholder="Feedback..." class="input input-bordered flex-1 min-w-[200px]" style="background-color: var(--bg-card); color: var(--text-primary); border-color: var(--border-color);">
-                                <button type="submit" class="btn" style="background-color: #10b981; color: white; border: none;">Grade</button>
-                            </form>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
+                {% if call.status == 'cancelled' %}
+                <span class="badge text-sm px-4 py-2" style="background-color: #ef4444; color: white; border: none;">
+                    <i class="bi bi-x-circle mr-1"></i> Cancelled
+                </span>
                 {% endif %}
             </div>
-            {% endfor %}
-        {% else %}
-        <p class="text-center py-8" style="color: var(--text-secondary);">
-            <i class="bi bi-inbox text-4xl block mb-2"></i>
-            No class work yet. {% if request.user == room.creator %}Click "Add Work" to get started!{% endif %}
-        </p>
-        {% endif %}
+        </div>
     </div>
+    
+    <!-- Video Call Container -->
+    {% if call.status != 'cancelled' %}
+        {% if is_ongoing %}
+            <div class="rounded-xl shadow-lg p-4" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <div id="jitsi-container" style="height: 600px; width: 100%; border-radius: 12px; overflow: hidden;">
+                    <div class="flex items-center justify-center h-full" style="color: var(--text-secondary);">
+                        <div class="text-center">
+                            <div class="loading loading-spinner loading-lg"></div>
+                            <p class="mt-4">Loading video call...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="rounded-xl shadow-lg p-12 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+                <i class="bi bi-clock-history text-6xl" style="color: var(--text-secondary);"></i>
+                <h3 class="text-xl font-bold mt-4" style="color: var(--text-primary);">This call hasn't started yet</h3>
+                <p class="mt-2" style="color: var(--text-secondary);">
+                    The call will begin at {{ call.start_time|date:"g:i A" }} on {{ call.start_time|date:"F j, Y" }}
+                </p>
+                <div id="countdown" class="mt-4 text-2xl font-bold" style="color: var(--accent-primary);"></div>
+                <button class="btn mt-4" 
+                        style="background-color: var(--accent-primary); color: white; border: none;"
+                        onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Check Status
+                </button>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="rounded-xl shadow-lg p-12 text-center" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <i class="bi bi-x-circle text-6xl" style="color: #ef4444;"></i>
+            <h3 class="text-xl font-bold mt-4" style="color: var(--text-primary);">This call has been cancelled</h3>
+            <p class="mt-2" style="color: var(--text-secondary);">Please check with the host for more information.</p>
+            <a href="{% url 'studyroom:room_detail' room.id %}" class="btn mt-4" 
+               style="background-color: var(--accent-primary); color: white; border: none;">
+                <i class="bi bi-arrow-left"></i> Back to Room
+            </a>
+        </div>
+    {% endif %}
 </div>
 
-<!-- Schedule Call Modal -->
-<dialog id="schedule_call_modal" class="modal">
-    <div class="modal-box rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color); max-width: 500px;">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" style="color: var(--text-primary);">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </form>
-        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
-            <i class="bi bi-camera-video" style="color: var(--accent-primary);"></i>
-            Schedule Video Call
-        </h3>
-        <form method="POST" action="{% url 'studyroom:schedule_call' room.id %}">
-            {% csrf_token %}
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Call Title</span>
-                </label>
-                <input type="text" name="title" class="input input-bordered w-full" placeholder="e.g., Weekly Study Session" required style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Description (Optional)</span>
-                </label>
-                <textarea name="description" class="textarea textarea-bordered w-full" placeholder="What will this call cover?" rows="2" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"></textarea>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="form-control">
-                    <label class="label" style="color: var(--text-primary);">
-                        <span class="label-text" style="color: var(--text-primary);">Start Time</span>
-                    </label>
-                    <input type="datetime-local" name="start_time" class="input input-bordered w-full" required style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
+<!-- Jitsi Meet API - Only loads when call is ongoing -->
+{% if is_ongoing and call.status != 'cancelled' %}
+<script src="https://meet.jit.si/external_api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Loading Jitsi...');
+    console.log('🔑 Room Name: {{ call.jitsi_room_id }}');
+    console.log('📺 is_ongoing: {{ is_ongoing }}');
+    
+    const container = document.querySelector('#jitsi-container');
+    if (!container) {
+        console.error('❌ jitsi-container not found');
+        return;
+    }
+    
+    const domain = 'meet.jit.si';
+    const options = {
+        roomName: '{{ call.jitsi_room_id }}',
+        width: '100%',
+        height: '100%',
+        parentNode: container,
+        userInfo: {
+            displayName: '{{ request.user.username }}'
+        },
+        configOverwrite: {
+            startWithAudioMuted: true,
+            startWithVideoMuted: false,
+            prejoinPageEnabled: false,
+            disableInviteFunctions: true,
+            enableCalendarIntegration: false,
+            enableEmailInInvite: false,
+        },
+        interfaceConfigOverwrite: {
+            TOOLBAR_BUTTONS: [
+                'microphone', 'camera', 'desktop', 'fullscreen',
+                'fodeviceselection', 'hangup', 'settings', 'raisehand',
+                'chat', 'recording', 'livestreaming', 'sharedvideo',
+                'security', 'participants-pane'
+            ],
+            SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile'],
+            VERTICAL_FILMSTRIP: true,
+        }
+    };
+    
+    try {
+        console.log('🔄 Initializing Jitsi with options:', options);
+        const api = new JitsiMeetExternalAPI(domain, options);
+        console.log('✅ Jitsi API initialized successfully');
+        
+        api.addEventListener('videoConferenceJoined', function() {
+            console.log('✅ User joined the call');
+        });
+        
+        api.addEventListener('videoConferenceLeft', function() {
+            console.log('👋 User left the call');
+        });
+        
+        api.addEventListener('readyToClose', function() {
+            console.log('🔚 Call ended - redirecting to room');
+            window.location.href = "{% url 'studyroom:room_detail' room.id %}";
+        });
+    } catch (error) {
+        console.error('❌ Error initializing Jitsi:', error);
+        container.innerHTML = `
+            <div class="flex items-center justify-center h-full" style="color: var(--text-secondary);">
+                <div class="text-center">
+                    <i class="bi bi-exclamation-triangle text-4xl block mb-2" style="color: #ef4444;"></i>
+                    <p>Error loading video call. Please try again.</p>
+                    <p class="text-sm mt-2" style="color: var(--text-secondary);">${error.message}</p>
+                    <button class="btn mt-4" style="background-color: var(--accent-primary); color: white; border: none;" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
                 </div>
-                <div class="form-control">
-                    <label class="label" style="color: var(--text-primary);">
-                        <span class="label-text" style="color: var(--text-primary);">End Time</span>
-                    </label>
-                    <input type="datetime-local" name="end_time" class="input input-bordered w-full" required style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-                </div>
             </div>
-            <div class="modal-action">
-                <button type="submit" class="btn w-full" style="background-color: var(--accent-primary); color: white; border: none;">
-                    <i class="bi bi-calendar-plus"></i> Schedule Call
-                </button>
-            </div>
-        </form>
-    </div>
-</dialog>
+        `;
+    }
+});
+</script>
+{% endif %}
 
-<!-- Add Work Modal -->
-<dialog id="add_work_modal" class="modal">
-    <div class="modal-box rounded-xl" style="background-color: var(--bg-card); border: 1px solid var(--border-color); max-width: 500px;">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" style="color: var(--text-primary);">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </form>
-        <h3 class="font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text-primary);">
-            <i class="bi bi-plus-circle" style="color: var(--accent-primary);"></i>
-            Add Class Work
-        </h3>
-        <form method="POST" action="{% url 'studyroom:create_classwork' room.id %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Title</span>
-                </label>
-                <input type="text" name="title" class="input input-bordered w-full" placeholder="Enter title" required style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Description</span>
-                </label>
-                <textarea name="description" class="textarea textarea-bordered w-full" placeholder="Describe the work" rows="3" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);"></textarea>
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Type</span>
-                </label>
-                <select name="content_type" class="select select-bordered w-full" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-                    <option value="assignment">Assignment</option>
-                    <option value="material">Material</option>
-                </select>
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Due Date (Optional)</span>
-                </label>
-                <input type="datetime-local" name="due_date" class="input input-bordered w-full" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Resource Title (Optional)</span>
-                </label>
-                <input type="text" name="resource_title" class="input input-bordered w-full" placeholder="e.g., Textbook Chapter 5" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Resource Link (Optional)</span>
-                </label>
-                <input type="url" name="resource_link" class="input input-bordered w-full" placeholder="https://example.com" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="form-control mb-4">
-                <label class="label" style="color: var(--text-primary);">
-                    <span class="label-text" style="color: var(--text-primary);">Resource File (Optional)</span>
-                </label>
-                <input type="file" name="resource_file" class="file-input file-input-bordered w-full" style="background-color: var(--bg-page); color: var(--text-primary); border-color: var(--border-color);">
-            </div>
-            <div class="modal-action">
-                <button type="submit" class="btn w-full" style="background-color: var(--accent-primary); color: white; border: none;">
-                    <i class="bi bi-plus-circle"></i> Add Work
-                </button>
-            </div>
-        </form>
-    </div>
-</dialog>
+<!-- Countdown Timer for Scheduled Calls -->
+{% if not is_ongoing and call.status != 'cancelled' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const targetTime = new Date('{{ call.start_time|date:"Y-m-d" }}T{{ call.start_time|date:"H:i:s" }}').getTime();
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetTime - now;
+        
+        if (distance < 0) {
+            document.getElementById('countdown').innerHTML = 'Starting now!';
+            setTimeout(function() {
+                location.reload();
+            }, 5000);
+            return;
+        }
+        
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById('countdown').innerHTML = 
+            String(hours).padStart(2, '0') + ':' + 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+});
+</script>
+{% endif %}
 
 {% endblock %}
