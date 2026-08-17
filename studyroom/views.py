@@ -1,5 +1,3 @@
-# studyplanner/studyroom/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,7 +12,7 @@ from .forms import StudyRoomForm, ScheduledCallForm
 import json
 
 # ============================================
-# EXISTING VIEWS (Keep these as they are)
+# EXISTING VIEWS
 # ============================================
 
 @login_required
@@ -25,23 +23,6 @@ def studyroom_dashboard(request):
         'my_rooms': my_rooms.distinct(),
         'form': form
     })
-
-# studyplanner/studyroom/views.py
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.utils import timezone
-from django.contrib.auth.models import User
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.db import models
-from .notifications import notify_new_classwork, notify_new_submission, notify_grade
-from .models import StudyRoom, RoomActivity, ClassWork, WorkComment, Submission, RoomActivityLog, ScheduledCall, Note
-from .forms import StudyRoomForm, ScheduledCallForm
-import json
-
-# ... (your other views remain the same)
 
 @login_required
 def create_room(request):
@@ -70,11 +51,6 @@ def create_room(request):
         messages.error(request, "Invalid request method.")
     
     return redirect('studyroom:studyroom_dashboard')
-
-            messages.success(request, "Study room created successfully!")
-
-    return redirect('studyroom:studyroom_dashboard')
-
 
 @login_required
 def join_room(request):
@@ -109,6 +85,7 @@ def join_room(request):
             return redirect('studyroom:studyroom_dashboard')
     
     return redirect('studyroom:studyroom_dashboard')
+
 @login_required
 def room_detail(request, room_id):
     room = get_object_or_404(StudyRoom, id=room_id)
@@ -481,9 +458,8 @@ def delete_note(request, note_id):
         return JsonResponse({'status': 'deleted'})
     return JsonResponse({'error': 'Invalid method'}, status=400)
 
-
 # ============================================
-# NEW: VIDEO CALL & CALENDAR VIEWS
+# VIDEO CALL & CALENDAR VIEWS
 # ============================================
 
 @login_required
@@ -560,7 +536,6 @@ def schedule_call(request, room_id):
     """Schedule a new video call"""
     room = get_object_or_404(StudyRoom, id=room_id)
     
-    # Check permission
     if request.user not in room.members.all() and request.user != room.creator:
         messages.error(request, "You don't have permission to schedule calls.")
         return redirect('studyroom:room_detail', room_id=room.id)
@@ -573,7 +548,6 @@ def schedule_call(request, room_id):
             call.created_by = request.user
             call.save()
             
-            # Log activity
             try:
                 RoomActivityLog.objects.create(
                     room=room,
@@ -592,17 +566,19 @@ def schedule_call(request, room_id):
                     messages.error(request, f"{field}: {error}")
             return redirect('studyroom:room_detail', room_id=room.id)
     
-    # GET request - redirect to room detail
     return redirect('studyroom:room_detail', room_id=room.id)
 
 @login_required
 def join_call(request, jitsi_room_id):
     """Join a video call"""
+    print(f"🔵 ========================================")
     print(f"🔵 join_call called with jitsi_room_id: {jitsi_room_id}")
+    print(f"🔵 Full request path: {request.path}")
+    print(f"🔵 ========================================")
     
     try:
         call = get_object_or_404(ScheduledCall, jitsi_room_id=jitsi_room_id)
-        print(f"✅ Found call: {call.title}")
+        print(f"✅ Found call: {call.title} (ID: {call.id})")
     except Exception as e:
         print(f"❌ Error finding call: {e}")
         messages.error(request, "Call not found. Please check the link.")
@@ -614,11 +590,9 @@ def join_call(request, jitsi_room_id):
         messages.error(request, "You don't have access to this call.")
         return redirect('studyroom:studyroom_dashboard')
     
-    # Update status
-    call.save()
-    
     print(f"📹 Call status: {call.status}, is_ongoing: {call.is_ongoing()}")
     print(f"🔗 Meeting URL: {call.get_meeting_url()}")
+    print(f"✅ Rendering join_call.html template")
     
     context = {
         'call': call,
@@ -628,7 +602,6 @@ def join_call(request, jitsi_room_id):
         'time_until_start': (call.start_time - timezone.now()).total_seconds() if call.start_time > timezone.now() else 0,
     }
     return render(request, 'studyroom/join_call.html', context)
-
 @login_required
 @require_http_methods(["POST"])
 def cancel_call(request, call_id):
