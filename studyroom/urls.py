@@ -37,13 +37,12 @@ urlpatterns = [
     path('room/<int:room_id>/delete/', views.delete_room, name='delete_room'),
     
     # ============================================
-    # VIDEO CALL & CALENDAR ROUTES - ADD THESE
+    # VIDEO CALL & CALENDAR ROUTES
     # ============================================
     path('room/<int:room_id>/schedule-call/', views.schedule_call, name='schedule_call'),
     path('room/<int:room_id>/calendar-data/', views.calendar_data, name='calendar_data'),
     path('room/<int:room_id>/upcoming-calls/', views.upcoming_calls, name='upcoming_calls'),
     path('call/join/<str:jitsi_room_id>/', views.join_call, name='join_call'),
     path('call/<int:call_id>/cancel/', views.cancel_call, name='cancel_call'),
-    # Add this with your other video call routes
-path('room/<int:room_id>/instant-call/', views.start_instant_call, name='start_instant_call'),
+    path('room/<int:room_id>/instant-call/', views.start_instant_call, name='start_instant_call'),
 ]
