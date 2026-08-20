@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choose Your Plan - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn {
+        display: none !important;
+    }
+    
+    .plans-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    
+    .plans-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .plans-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .plans-header p {
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
+    
+    .plans-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    .plan-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 35px 30px;
+        border: 2px solid var(--border-color);
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .plan-card.premium {
+        border-color: var(--accent-primary);
+        background: linear-gradient(135deg, var(--bg-card), rgba(139, 105, 20, 0.05));
+    }
+    
+    .plan-card.premium .plan-badge {
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .plan-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .plan-price {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+    }
+    
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 25px 0;
+        flex: 1;
+    }
+    
+    .plan-features li {
+        padding: 8px 0;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+    
+    .plan-features li i {
+        font-size: 18px;
+        color: var(--accent-primary);
+        width: 24px;
+        text-align: center;
+    }
+    
+    .plan-features li .bi-x-lg {
+        color: #ef4444;
+    }
+    
+    .plan-features li .bi-check-lg {
+        color: #10b981;
+    }
+    
+    .plan-features li.disabled {
+        opacity: 0.5;
+    }
+    
+    /* Duration Options */
+    .duration-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .duration-option {
+        padding: 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--bg-card);
+    }
+    
+    .duration-option:hover {
+        border-color: var(--accent-primary);
+    }
+    
+    .duration-option.selected {
+        border-color: var(--accent-primary);
+        background: rgba(139, 105, 20, 0.05);
+    }
+    
+    .duration-option .duration-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .duration-option .duration-price {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    
+    .duration-option .duration-save {
+        font-size: 10px;
+        color: #10b981;
+        font-weight: 600;
+    }
+    
+    .duration-option .popular-badge {
+        font-size: 9px;
+        background: #f59e0b;
+        color: white;
+        padding: 1px 8px;
+        border-radius: 10px;
+        display: inline-block;
+        margin-top: 3px;
+    }
+    
+    .plan-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .plan-btn.free {
+        background: var(--bg-page);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        cursor: default;
+    }
+    
+    .plan-btn.premium {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+    }
+    
+    .plan-btn.premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 105, 20, 0.3);
+    }
+    
+    .plan-btn.active-plan {
+        background: #10b981;
+        color: white;
+        cursor: default;
+    }
+    
+    .current-plan-badge {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .plans-header h1 {
+            font-size: 24px;
+        }
+        
+        .plan-card {
+            padding: 25px 20px;
+        }
+        
+        .duration-options {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="plans-container">
+    <div class="plans-header">
+        <h1>Choose Your Plan</h1>
+        <p>Select the perfect plan to maximize your learning experience</p>
+    </div>
+    
+    <div class="plans-grid">
+        <!-- Free Plan -->
+        <div class="plan-card">
+            <div class="plan-name">FREE</div>
+            <div class="plan-price">$0 / forever</div>
+            
+            <ul class="plan-features">
+                <li><i class="bi bi-check-lg"></i> 4 posts per week</li>
+                <li><i class="bi bi-check-lg"></i> Basic AI Matching</li>
+                <li><i class="bi bi-check-lg"></i> Connect with learners</li>
+                <li><i class="bi bi-check-lg"></i> View profiles</li>
+                <li class="disabled"><i class="bi bi-x-lg"></i> Unlimited posts</li>
+                <li class="disabled"><i class="bi bi-x-lg"></i> Advanced AI matching</li>
+                <li class="disabled"><i class="bi bi-x-lg"></i> Priority support</li>
+            </ul>
+            
+            {% if user.subscription.plan == 'free' and user.subscription.is_active %}
+                <button class="plan-btn active-plan">
+                    <i class="bi bi-check-circle-fill"></i> Current Plan
+                </button>
+            {% else %}
+                <button class="plan-btn free" disabled>
+                    Current Plan
+                </button>
+            {% endif %}
+        </div>
+        
+        <!-- Premium Plan -->
+        <div class="plan-card premium">
+            <span class="plan-badge">Popular</span>
+            <div class="plan-name">PREMIUM</div>
+            <div class="plan-price">Starting from 5,000 MMK / month</div>
+            
+            <!-- Duration Options -->
+            <div class="duration-options" id="durationOptions">
+                <div class="duration-option selected" data-duration="30">
+                    <div class="duration-label">1 Month</div>
+                    <div class="duration-price">5,000 MMK</div>
+                </div>
+                <div class="duration-option" data-duration="90">
+                    <div class="duration-label">3 Months</div>
+                    <div class="duration-price">4,500 MMK/mo</div>
+                    <div class="duration-save">Save 10%</div>
+                </div>
+                <div class="duration-option" data-duration="180">
+                    <div class="duration-label">6 Months</div>
+                    <div class="duration-price">4,000 MMK/mo</div>
+                    <div class="duration-save">Save 20%</div>
+                    <div class="popular-badge">Best Value</div>
+                </div>
+                <div class="duration-option" data-duration="365">
+                    <div class="duration-label">12 Months</div>
+                    <div class="duration-price">3,500 MMK/mo</div>
+                    <div class="duration-save">Save 30%</div>
+                </div>
+            </div>
+            
+            <ul class="plan-features">
+                <li><i class="bi bi-check-lg"></i> Unlimited posts</li>
+                <li><i class="bi bi-check-lg"></i> Advanced AI Matching</li>
+                <li><i class="bi bi-check-lg"></i> Priority matching</li>
+                <li><i class="bi bi-check-lg"></i> Early access to features</li>
+                <li><i class="bi bi-check-lg"></i> Priority support</li>
+                <li><i class="bi bi-check-lg"></i> No ads</li>
+            </ul>
+            
+            {% if user.subscription.plan == 'premium' and user.subscription.is_active %}
+                <a href="{% url 'my_subscription' %}" class="plan-btn active-plan">
+                    <i class="bi bi-check-circle-fill"></i> Current Plan
+                </a>
+            {% elif user.subscription.plan == 'premium' and not user.subscription.is_active %}
+                <a href="{% url 'checkout' %}" class="plan-btn premium">
+                    <i class="bi bi-arrow-repeat"></i> Reactivate Premium
+                </a>
+            {% else %}
+                <a href="{% url 'checkout' %}?duration=30" class="plan-btn premium" id="upgradeBtn">
+                    <i class="bi bi-rocket-takeoff"></i> Upgrade to Premium
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const durationOptions = document.querySelectorAll('.duration-option');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    
+    durationOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            durationOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update the upgrade button URL with selected duration
+            const duration = this.dataset.duration;
+            if (upgradeBtn) {
+                const baseUrl = "{% url 'checkout' %}";
+                upgradeBtn.href = baseUrl + '?duration=' + duration;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Subscription - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn {
+        display: none !important;
+    }
+    
+    .subscription-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    
+    .subscription-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 35px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .subscription-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .subscription-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .subscription-header p {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+        margin: 10px 0 20px 0;
+    }
+    
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+    
+    .status-badge.inactive {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+    }
+    
+    .subscription-details {
+        background: var(--bg-page);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        margin: 20px 0;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-row .label {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .detail-row .value {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+    
+    .detail-row .value.premium {
+        color: var(--accent-primary);
+    }
+    
+    .days-remaining {
+        text-align: center;
+        padding: 20px;
+        margin: 20px 0;
+        background: linear-gradient(135deg, rgba(139, 105, 20, 0.05), rgba(15, 118, 110, 0.05));
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .days-remaining .number {
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--accent-primary);
+        display: block;
+        line-height: 1.2;
+    }
+    
+    .days-remaining .label {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    
+    .action-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        margin-top: 10px;
+    }
+    
+    .action-btn.renew {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+    }
+    
+    .action-btn.renew:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 105, 20, 0.3);
+    }
+    
+    .action-btn.upgrade {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+    }
+    
+    .action-btn.upgrade:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 105, 20, 0.3);
+    }
+    
+    .action-btn.secondary {
+        background: var(--bg-page);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .action-btn.secondary:hover {
+        background: var(--border-color);
+    }
+    
+    .action-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .no-subscription {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .no-subscription i {
+        font-size: 64px;
+        color: var(--accent-primary);
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+    
+    .no-subscription h3 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .no-subscription p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .subscription-card {
+            padding: 20px;
+        }
+        
+        .days-remaining .number {
+            font-size: 36px;
+        }
+        
+        .detail-row {
+            flex-direction: column;
+            gap: 4px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subscription-container">
+    <div class="subscription-card">
+        <div class="subscription-header">
+            <h1>My Subscription</h1>
+            <p>Manage your premium subscription</p>
+        </div>
+        
+        {% if subscription and subscription.plan == 'premium' %}
+            <!-- Premium Subscription -->
+            <div style="text-align: center;">
+                {% if subscription.is_active %}
+                    <span class="status-badge active">
+                        <i class="bi bi-check-circle-fill"></i> ACTIVE
+                    </span>
+                {% else %}
+                    <span class="status-badge inactive">
+                        <i class="bi bi-x-circle-fill"></i> EXPIRED
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div class="subscription-details">
+                <div class="detail-row">
+                    <span class="label">Plan</span>
+                    <span class="value premium">
+                        <i class="bi bi-gem"></i> Premium Monthly
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Started</span>
+                    <span class="value">{{ subscription.start_date|date:"d F Y"|default:"N/A" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Expires</span>
+                    <span class="value">{{ subscription.end_date|date:"d F Y"|default:"N/A" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Price</span>
+                    <span class="value">5,000 MMK / month</span>
+                </div>
+            </div>
+            
+            {% if subscription.is_active %}
+                <div class="days-remaining">
+                    <span class="number">{{ days_remaining }}</span>
+                    <span class="label">Days Remaining</span>
+                </div>
+            {% else %}
+                <div class="days-remaining" style="border-color: #ef4444;">
+                    <span class="number" style="color: #ef4444;">0</span>
+                    <span class="label">Subscription Expired</span>
+                </div>
+            {% endif %}
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="{% url 'checkout' %}" class="action-btn renew">
+                    <i class="bi bi-arrow-repeat"></i> Renew Subscription
+                </a>
+                <a href="{% url 'plans' %}" class="action-btn secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Plans
+                </a>
+            </div>
+            
+        {% elif pending_payment %}
+            <!-- Pending Payment -->
+            <div style="text-align: center;">
+                <span class="status-badge pending">
+                    <i class="bi bi-clock-history"></i> PENDING APPROVAL
+                </span>
+            </div>
+            
+            <div style="text-align: center; padding: 30px 20px;">
+                <i class="bi bi-hourglass-split" style="font-size: 48px; color: var(--accent-primary); opacity: 0.5;"></i>
+                <h3 style="margin-top: 16px; color: var(--text-primary);">Payment Under Review</h3>
+                <p style="color: var(--text-secondary); font-size: 14px;">
+                    Your payment is being reviewed by our team. 
+                    This usually takes 24-48 hours. You'll receive a notification when it's approved.
+                </p>
+                <div style="margin-top: 16px; padding: 12px; background: var(--bg-page); border-radius: 8px;">
+                    <p style="font-size: 13px; color: var(--text-secondary);">
+                        <strong>Payment ID:</strong> #{{ pending_payment.id }}
+                    </p>
+                    <p style="font-size: 13px; color: var(--text-secondary);">
+                        <strong>Submitted:</strong> {{ pending_payment.created_at|date:"d F Y, H:i" }}
+                    </p>
+                </div>
+            </div>
+            
+            <a href="{% url 'plans' %}" class="action-btn secondary">
+                <i class="bi bi-arrow-left"></i> Back to Plans
+            </a>
+            
+        {% else %}
+            <!-- No Subscription / Free Plan -->
+            <div class="no-subscription">
+                <i class="bi bi-gem"></i>
+                <h3>Free Plan</h3>
+                <p>You are currently on the Free plan. Upgrade to Premium for unlimited features!</p>
+                <a href="{% url 'plans' %}" class="action-btn upgrade" style="width: auto; display: inline-flex; padding: 12px 30px;">
+                    <i class="bi bi-rocket-takeoff"></i> Upgrade to Premium
+                </a>
+            </div>
+            
+            <div class="subscription-details" style="margin-top: 20px;">
+                <div class="detail-row">
+                    <span class="label">Current Plan</span>
+                    <span class="value">Free</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Posts Limit</span>
+                    <span class="value">4 posts / week</span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

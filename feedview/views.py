@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 
 from useraccount.forms import (
@@ -17,7 +18,7 @@ from useraccount.forms import (
 )
 from useraccount.models import UserProfile, UserSkill, Certification
 from feedview.models import MatchRequest, Post, Interested, Like, Comment, Notification
-
+from Subscription.models import Subscription, Payment
 
 @login_required
 def feed_view(request):
@@ -198,29 +199,37 @@ def check_level_compatibility(teacher_level, learner_level, category):
 
 @login_required
 def create_post(request):
-    # Free users can only create 4 posts every 7 days
+    # Check if user has premium subscription
+    subscription = Subscription.objects.filter(user=request.user).first()
+    is_premium = subscription and subscription.is_premium() if subscription else False
+    
+    # Free users: Check post limit (4 posts per 7 days)
     week_ago = timezone.now() - timedelta(days=7)
-
     weekly_posts = Post.objects.filter(
         user=request.user,
         created_at__gte=week_ago
     ).count()
-
+    
     FREE_POST_LIMIT = 4
 
     if request.method == "POST":
-
-        if weekly_posts >= FREE_POST_LIMIT:
+        # Check if user has reached the limit (only for free users)
+        if not is_premium and weekly_posts >= FREE_POST_LIMIT:
             messages.error(
                 request,
-                "You have reached the free limit of 4 posts this week. Upgrade to Premium to post unlimited content."
+                mark_safe(
+                    'You have reached the free limit of 4 posts this week. '
+                    '<a href="{}" style="color: var(--accent-primary); text-decoration: underline;">Upgrade to Premium</a> '
+                    'to post unlimited content.'.format(reverse('plans'))
+                )
             )
             return redirect("create_post")
 
-        Post.objects.create(
+        # Create the post
+        post = Post.objects.create(
             user=request.user,
             content=request.POST.get("content"),
-            post_type="study",
+            post_type=request.POST.get("post_type", "study"),
             topic=request.POST.get("topic"),
             hashtags=request.POST.get("hashtags"),
             image=request.FILES.get("image"),
@@ -230,12 +239,26 @@ def create_post(request):
         messages.success(request, "Post created successfully!")
         return redirect("feed")
 
-    remaining_posts = max(0, FREE_POST_LIMIT - weekly_posts)
+    # Calculate remaining posts for free users
+    remaining_posts = 0
+    if not is_premium:
+        remaining_posts = max(0, FREE_POST_LIMIT - weekly_posts)
+    
+    # Check if user has a pending payment
+    pending_payment = Payment.objects.filter(
+        user=request.user,
+        status='pending'
+    ).first() if not is_premium else None
 
-    return render(request, "feedview/create_post.html", {
+    context = {
         "remaining_posts": remaining_posts,
         "weekly_posts": weekly_posts,
-    })
+        "is_premium": is_premium,
+        "post_limit": FREE_POST_LIMIT if not is_premium else "Unlimited",
+        "pending_payment": pending_payment,
+    }
+
+    return render(request, "feedview/create_post.html", context)
 
 @login_required
 def like_post(request, post_id):

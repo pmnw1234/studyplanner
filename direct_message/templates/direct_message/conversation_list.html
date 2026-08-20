@@ -268,7 +268,7 @@
     }
     
     /* ============================================ */
-    /* UNREAD BADGE - Yellow/Gold Style */
+    /* UNREAD BADGE - Keep original yellow style */
     /* ============================================ */
     .unread-badge {
         background: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -291,12 +291,14 @@
         50% { transform: scale(1.05); }
     }
     
+    /* Larger badge for count > 9 */
     .unread-badge.large {
         min-width: 28px;
         font-size: 11px;
         padding: 2px 10px;
     }
     
+    /* Group indicator */
     .group-indicator {
         display: inline-flex;
         align-items: center;
@@ -456,6 +458,101 @@
         animation: fadeIn 0.2s ease forwards;
     }
     
+    /* ==================== */
+    /* RESPONSIVE DESIGN */
+    /* ==================== */
+    
+    /* Tablet View */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .conversations-sidebar {
+            width: 320px;
+        }
+        
+        .conversation-item {
+            padding: 14px 16px;
+        }
+        
+        .avatar-img,
+        .avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
+        }
+        
+        .conversation-name {
+            font-size: 14px;
+        }
+        
+        .preview-text {
+            font-size: 12px;
+        }
+    }
+    
+    /* Mobile View - Stack Layout */
+    @media (max-width: 768px) {
+        .messages-container {
+            flex-direction: column;
+            height: calc(100vh - 56px);
+        }
+        
+        .conversations-sidebar {
+            width: 100%;
+            height: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+        
+        .chat-area {
+            height: 100%;
+        }
+        
+        .messages-container.conversation-open .conversations-sidebar {
+            display: none;
+        }
+        
+        .messages-container.conversation-open .chat-area {
+            display: flex;
+        }
+        
+        .conversations-header {
+            padding: 16px;
+        }
+        
+        .conversations-header h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        
+        .conversation-item {
+            padding: 14px 16px;
+        }
+        
+        .avatar-img,
+        .avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
+        }
+        
+        .conversation-name {
+            font-size: 14px;
+        }
+        
+        .preview-text {
+            font-size: 12px;
+        }
+        
+        .filter-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        .search-box input {
+            font-size: 13px;
+            padding: 9px 12px 9px 38px;
+        }
+    }
+
     /* Group Modal Styling */
     .group-modal-overlay {
         position: fixed;
@@ -658,7 +755,6 @@
             <h2>
                 <i class="bi bi-chat-dots-fill"></i>
                 Messages
-                <span id="totalUnreadBadge" class="unread-badge" style="display: none; margin-left: auto; font-size: 12px; min-width: 28px;">0</span>
             </h2>
             
             <div class="filter-buttons" style="flex-wrap: wrap;">
@@ -673,7 +769,7 @@
                 </button>
             </div>
 
-            <!-- Group Creation Modal -->
+            <!-- Group Creation Modal Structure -->
             <div id="groupModal" class="group-modal-overlay" style="display: none;">
                 <div class="group-modal-card">
                     <div class="group-modal-header">
@@ -687,7 +783,7 @@
                         </div>
                         <label style="font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block;">Select Friends</label>
                         <div id="friendsListContainer" class="friends-checkbox-list">
-                            <!-- Friends loaded by JS -->
+                            <!-- Friends will be dynamically loaded here by JS -->
                         </div>
                     </div>
                     <div class="group-modal-footer">
@@ -711,7 +807,7 @@
         </div>
     </div>
     
-    <!-- Right Panel - Chat Area -->
+    <!-- Right Panel - Chat Area (Placeholder) -->
     <div class="chat-area" id="chatArea">
         <div class="no-chat-selected">
             <i class="bi bi-chat-square-heart"></i>
@@ -728,19 +824,6 @@
     let currentFilter = 'all';
     let currentSearchTerm = '';
     let refreshInterval = null;
-    let totalUnreadCount = 0;
-
-    function updateHeaderBadge() {
-        const badge = document.getElementById('totalUnreadBadge');
-        if (totalUnreadCount > 0) {
-            badge.style.display = 'inline-block';
-            badge.textContent = totalUnreadCount;
-            badge.style.animation = 'badgePulse 2s ease-in-out infinite';
-        } else {
-            badge.style.display = 'none';
-            badge.style.animation = 'none';
-        }
-    }
 
     async function loadConversations() {
         try {
@@ -754,13 +837,9 @@
             
             if (data && data.conversations && data.conversations.length > 0) {
                 allConversations = data.conversations;
-                totalUnreadCount = allConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
-                updateHeaderBadge();
                 applyFilterAndDisplay();
             } else {
                 allConversations = [];
-                totalUnreadCount = 0;
-                updateHeaderBadge();
                 showEmptyState();
             }
             
@@ -773,10 +852,12 @@
     function applyFilterAndDisplay() {
         let filtered = [...allConversations];
         
+        // Apply unread filter
         if (currentFilter === 'unread') {
             filtered = filtered.filter(conv => conv.unread_count > 0);
         }
         
+        // Apply search filter
         if (currentSearchTerm) {
             filtered = filtered.filter(conv => {
                 const nameToSearch = conv.name || conv.username || '';
@@ -801,6 +882,7 @@
         const container = document.getElementById('conversationsList');
         let html = '';
         
+        // Sort conversations by last message time (most recent first)
         conversations.sort((a, b) => {
             if (!a.last_message_time) return 1;
             if (!b.last_message_time) return -1;
@@ -819,10 +901,12 @@
             
             const truncatedMessage = lastMessage.length > 50 ? lastMessage.substring(0, 47) + '...' : lastMessage;
             
+            // Determine click action
             const clickActionHtml = isGroup 
-                ? `onclick="openGroupConversation(${conv.group_id})"`
+                ? `onclick="window.location.href='/messages/group-chat/${conv.group_id}/'"`
                 : `onclick="openConversation(${conv.user_id}, '${escapeHtml(displayName)}')"`;
 
+            // Get avatar HTML
             let avatarHtml = '';
             if (isGroup) {
                 avatarHtml = `<div class="avatar-placeholder group-avatar">👥</div>`;
@@ -835,6 +919,7 @@
                 avatarHtml = `<div class="avatar-placeholder">${escapeHtml(initialLetter)}</div>`;
             }
 
+            // Format the display name with group indicator if applicable
             let nameDisplay = '';
             if (isGroup) {
                 nameDisplay = `<span class="group-indicator"><i class="bi bi-people-fill"></i> ${escapeHtml(displayName)}</span>`;
@@ -842,12 +927,14 @@
                 nameDisplay = escapeHtml(displayName);
             }
 
+            // Build badge - Keep original yellow style
             let badgeHtml = '';
             if (unreadCount > 0) {
                 const badgeClass = unreadCount > 9 ? 'unread-badge large' : 'unread-badge';
                 badgeHtml = `<span class="${badgeClass}">${unreadCount}</span>`;
             }
 
+            // Build the conversation item
             html += `
                 <div class="conversation-item ${isUnread ? 'unread' : ''}" ${clickActionHtml}>
                     <div class="conversation-link">
@@ -884,52 +971,12 @@
         if (window.innerWidth <= 768) {
             const container = document.getElementById('messagesContainer');
             if (container) container.classList.add('conversation-open');
+            sessionStorage.setItem('conversationOpen', 'true');
+            sessionStorage.setItem('currentConversationId', userId);
         }
+        localStorage.setItem('selectedConversation', userId);
+        localStorage.setItem('selectedUserName', userName);
         window.location.href = `/messages/chat/${userId}/`;
-    }
-    
-    function openGroupConversation(groupId) {
-        // Mark group messages as read when opening
-        markGroupAsRead(groupId);
-        
-        if (window.innerWidth <= 768) {
-            const container = document.getElementById('messagesContainer');
-            if (container) container.classList.add('conversation-open');
-        }
-        window.location.href = `/messages/group-chat/${groupId}/`;
-    }
-    
-    function markGroupAsRead(groupId) {
-        fetch(`/messages/group/${groupId}/mark-read/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCsrfToken(),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const conv = allConversations.find(c => c.group_id === groupId);
-                if (conv) {
-                    conv.unread_count = 0;
-                    totalUnreadCount = allConversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
-                    updateHeaderBadge();
-                    applyFilterAndDisplay();
-                }
-            }
-        })
-        .catch(err => console.error('Error marking group messages as read:', err));
-    }
-    
-    function getCsrfToken() {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            if (cookie.trim().startsWith('csrftoken=')) {
-                return cookie.split('=')[1];
-            }
-        }
-        return '';
     }
     
     function showEmptyState() {
@@ -997,6 +1044,7 @@
         return div.innerHTML;
     }
     
+    // Live search handler
     let searchTimeout;
     function handleSearch() {
         clearTimeout(searchTimeout);
@@ -1018,21 +1066,45 @@
         applyFilterAndDisplay();
     }
     
+    function checkSelectedConversation() {
+        const selectedId = localStorage.getItem('selectedConversation');
+        if (selectedId) {
+            const selectedItem = document.querySelector(`.conversation-item[data-user-id="${selectedId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+        }
+    }
+
+    // Auto-refresh conversations every 15 seconds for new messages
     function startAutoRefresh() {
         if (refreshInterval) {
             clearInterval(refreshInterval);
         }
         refreshInterval = setInterval(() => {
+            // Only refresh if not on a chat page (to avoid conflicts)
             if (!window.location.pathname.includes('/messages/chat/') && 
                 !window.location.pathname.includes('/messages/group-chat/')) {
                 loadConversations();
             }
-        }, 10000);
+        }, 15000);
+    }
+
+    // Setup real-time notifications
+    function setupRealtimeNotifications() {
+        startAutoRefresh();
+        
+        // Refresh when tab becomes active
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadConversations();
+            }
+        });
     }
     
     document.addEventListener('DOMContentLoaded', () => {
         loadConversations();
-        startAutoRefresh();
+        setupRealtimeNotifications();
         
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
@@ -1045,21 +1117,24 @@
             });
         });
         
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                loadConversations();
+        // Handle back button on mobile
+        window.addEventListener('popstate', () => {
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                container.classList.remove('conversation-open');
             }
         });
     });
-    
+
+    // Clean up interval when leaving page
     window.addEventListener('beforeunload', () => {
         if (refreshInterval) {
             clearInterval(refreshInterval);
             refreshInterval = null;
         }
     });
-    
-    // Modal Functions
+
+    // Modal Control Functions
     function openGroupModal() {
         document.getElementById('groupModal').style.display = 'flex';
         const container = document.getElementById('friendsListContainer');
@@ -1089,12 +1164,12 @@
                 container.innerHTML = '<p style="font-size:12px;color:red;text-align:center;padding:10px;">Error loading connections.</p>';
             });
     }
-    
+
     function closeGroupModal() {
         document.getElementById('groupModal').style.display = 'none';
         document.getElementById('groupNameInput').value = '';
     }
-    
+
     function submitCreateGroup() {
         const groupName = document.getElementById('groupNameInput').value.trim();
         const checkedBoxes = document.querySelectorAll('.group-member-checkbox:checked');
@@ -1107,10 +1182,17 @@
             alert('Please select at least one friend to join the group.');
             return;
         }
-        
+
         const memberIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
-        const csrfToken = getCsrfToken();
-        
+        const cookies = document.cookie.split(';');
+        let csrfToken = '';
+        for (let cookie of cookies) {
+            if (cookie.trim().startsWith('csrftoken=')) {
+                csrfToken = cookie.split('=')[1];
+                break;
+            }
+        }
+
         fetch('/messages/group/create/', {
             method: 'POST',
             headers: {

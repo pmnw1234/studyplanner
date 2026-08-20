@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 import random
 import string
 from django.core.validators import FileExtensionValidator
+import secrets
+from django.utils import timezone
+from django.urls import reverse
+
 
 
 def generate_room_code():
@@ -41,9 +45,17 @@ class StudyRoom(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # NEW: Max members limit (3 for free, 999 for premium)
+    max_members = models.IntegerField(default=3, help_text="Maximum number of members allowed (3 for free, 999 for premium)")
 
     def is_full(self):
-        return self.members.count() >= 3
+        """Check if room has reached max members"""
+        return self.members.count() >= self.max_members
+    
+    def get_member_count(self):
+        """Get total members including creator"""
+        return self.members.count() + 1
 
     def __str__(self):
         return f"{self.course_name} ({self.room_code})"

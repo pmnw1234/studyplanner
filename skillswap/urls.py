@@ -19,6 +19,7 @@ urlpatterns = [
     # path('studyroom/', include('studyroom.urls')),  ← DELETE/REMOVE THIS LINE
     path('reviews/', include('reviews.urls')),
     path('ai-assistant/', include('ai_assistant.urls')),
+    path('Subscription/',include('Subscription.urls')),
 ]
 
 # Override Django's debug 404

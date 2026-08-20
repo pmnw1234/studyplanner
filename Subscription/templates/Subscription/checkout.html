@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - SkillSwap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .view-profile-btn {
+        display: none !important;
+    }
+    
+    .checkout-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    
+    .checkout-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 35px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .checkout-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .checkout-header p {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .plan-summary {
+        background: var(--bg-page);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .plan-summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        color: var(--text-primary);
+    }
+    
+    .plan-summary-row .label {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .plan-summary-row .value {
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .plan-summary-row .value.premium {
+        color: var(--accent-primary);
+    }
+    
+    .divider {
+        border-top: 1px solid var(--border-color);
+        margin: 12px 0;
+    }
+    
+    .total-row {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .total-row .value {
+        color: var(--accent-primary);
+    }
+    
+    .savings-badge {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .checkout-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-ocean));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+    
+    .checkout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 105, 20, 0.3);
+    }
+    
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .back-link:hover {
+        color: var(--accent-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-card">
+        <div class="checkout-header">
+            <h1>Premium Subscription</h1>
+            <p>Get unlimited access to all premium features</p>
+        </div>
+        
+        <div class="plan-summary">
+            <div class="plan-summary-row">
+                <span class="label">Plan</span>
+                <span class="value premium">
+                    <i class="bi bi-gem"></i> Premium {{ selected_plan.get_duration_days_display }}
+                </span>
+            </div>
+            <div class="plan-summary-row">
+                <span class="label">Duration</span>
+                <span class="value">{{ selected_plan.get_duration_days_display }}</span>
+            </div>
+            <div class="plan-summary-row">
+                <span class="label">Price</span>
+                <span class="value">{{ selected_plan.price }} MMK</span>
+            </div>
+            {% if selected_plan.discount_percentage > 0 %}
+            <div class="plan-summary-row">
+                <span class="label">Discount</span>
+                <span class="value" style="color: #10b981;">
+                    <span class="savings-badge">Save {{ selected_plan.discount_percentage }}%</span>
+                </span>
+            </div>
+            {% endif %}
+            <div class="divider"></div>
+            <div class="plan-summary-row total-row">
+                <span>Total</span>
+                <span class="value">{{ selected_plan.price }} MMK</span>
+            </div>
+            <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                ~{{ selected_plan.get_price_per_month }} MMK per month
+            </div>
+        </div>
+        
+        <a href="{% url 'payment' %}?duration={{ selected_plan.duration_days }}" class="checkout-btn">
+            <i class="bi bi-credit-card"></i> Continue to Payment
+        </a>
+        
+        <a href="{% url 'plans' %}" class="back-link">
+            <i class="bi bi-arrow-left"></i> Back to Plans
+        </a>
+    </div>
+</div>
+{% endblock %}

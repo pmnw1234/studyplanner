@@ -33,6 +33,8 @@ urlpatterns = [
     # Notes
     path('notes/', views.notes_list, name='notes'),
     path('notes/<int:note_id>/delete/', views.delete_note, name='delete_note'),
+    path('room/<int:room_id>/schedule/', views.schedule_call, name='schedule_call'),
+    path('room/<int:room_id>/delete/', views.delete_room, name='delete_room'),
     
     # ============================================
     # VIDEO CALL & CALENDAR ROUTES - ADD THESE
