@@ -13,7 +13,7 @@ from .forms import StudyRoomForm, ScheduledCallForm
 import json
 from django.urls import reverse
 # ============================================
-# EXISTING VIEWS (Keep these as they are)
+# EXISTING VIEWS
 # ============================================
 
 
@@ -668,9 +668,8 @@ def delete_note(request, note_id):
         return JsonResponse({'status': 'deleted'})
     return JsonResponse({'error': 'Invalid method'}, status=400)
 
-
 # ============================================
-# NEW: VIDEO CALL & CALENDAR VIEWS
+# VIDEO CALL & CALENDAR VIEWS
 # ============================================
 
 @login_required
@@ -747,7 +746,6 @@ def schedule_call(request, room_id):
     """Schedule a new video call"""
     room = get_object_or_404(StudyRoom, id=room_id)
     
-    # Check permission
     if request.user not in room.members.all() and request.user != room.creator:
         messages.error(request, "You don't have permission to schedule calls.")
         return redirect('studyroom:room_detail', room_id=room.id)
@@ -760,7 +758,6 @@ def schedule_call(request, room_id):
             call.created_by = request.user
             call.save()
             
-            # Log activity
             try:
                 RoomActivityLog.objects.create(
                     room=room,
@@ -779,17 +776,22 @@ def schedule_call(request, room_id):
                     messages.error(request, f"{field}: {error}")
             return redirect('studyroom:room_detail', room_id=room.id)
     
-    # GET request - redirect to room detail
     return redirect('studyroom:room_detail', room_id=room.id)
 
 @login_required
 def join_call(request, jitsi_room_id):
     """Join a video call"""
+    print(f"🔵 ========================================")
     print(f"🔵 join_call called with jitsi_room_id: {jitsi_room_id}")
+    print(f"🔵 Full request path: {request.path}")
+    print(f"🔵 ========================================")
     
     try:
         call = get_object_or_404(ScheduledCall, jitsi_room_id=jitsi_room_id)
-        print(f"✅ Found call: {call.title}")
+        print(f"✅ Found call: {call.title} (ID: {call.id})")
+        print(f"✅ Call status: {call.status}")
+        print(f"✅ Call start_time: {call.start_time}")
+        print(f"✅ Call end_time: {call.end_time}")
     except Exception as e:
         print(f"❌ Error finding call: {e}")
         messages.error(request, "Call not found. Please check the link.")
@@ -801,20 +803,33 @@ def join_call(request, jitsi_room_id):
         messages.error(request, "You don't have access to this call.")
         return redirect('studyroom:studyroom_dashboard')
     
-    # Update status
-    call.save()
+    # Force the call to be ongoing if status is 'ongoing'
+    is_ongoing = call.is_ongoing()
     
-    print(f"📹 Call status: {call.status}, is_ongoing: {call.is_ongoing()}")
+    # If status is 'ongoing' but is_ongoing() returns False due to time,
+    # we should still show the call as ongoing if status is 'ongoing'
+    if call.status == 'ongoing' and not is_ongoing:
+        # Update the time to make it ongoing
+        call.start_time = timezone.now() - timezone.timedelta(minutes=30)
+        call.end_time = timezone.now() + timezone.timedelta(hours=1)
+        call.save()
+        is_ongoing = True
+        print(f"✅ Fixed time range - now ongoing: {is_ongoing}")
+    
+    print(f"📹 Call status: {call.status}, is_ongoing: {is_ongoing}")
     print(f"🔗 Meeting URL: {call.get_meeting_url()}")
+    print(f"✅ Rendering join_call.html template")
     
     context = {
         'call': call,
         'room': room,
         'meeting_url': call.get_meeting_url(),
-        'is_ongoing': call.is_ongoing(),
+        'is_ongoing': is_ongoing,
+        'call_status': call.status,
         'time_until_start': (call.start_time - timezone.now()).total_seconds() if call.start_time > timezone.now() else 0,
     }
     return render(request, 'studyroom/join_call.html', context)
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -864,3 +879,51 @@ def get_rooms_created_this_month(user):
         creator=user,
         created_at__gte=start_of_month
     ).count()
+
+@login_required
+def start_instant_call(request, room_id):
+    """Start an instant video call immediately"""
+    room = get_object_or_404(StudyRoom, id=room_id)
+    
+    # Check if user is a member
+    if request.user not in room.members.all() and request.user != room.creator:
+        messages.error(request, "You don't have permission to start a call.")
+        return redirect('studyroom:room_detail', room_id=room.id)
+    
+    # Check if there's already an ongoing call
+    existing_call = room.scheduled_calls.filter(
+        status='ongoing'
+    ).first()
+    
+    if existing_call:
+        messages.info(request, "There's already an ongoing call. Join it!")
+        return redirect('studyroom:join_call', jitsi_room_id=existing_call.jitsi_room_id)
+    
+    # Create an instant call
+    import uuid
+    from django.utils import timezone
+    
+    call = ScheduledCall.objects.create(
+        room=room,
+        title=f"Instant Call - {request.user.username}",
+        description="Instant video call started by " + request.user.username,
+        created_by=request.user,
+        start_time=timezone.now(),
+        end_time=timezone.now() + timezone.timedelta(hours=1),
+        status='ongoing',
+        jitsi_room_id=f"instant-{uuid.uuid4().hex[:8]}"
+    )
+    
+    # Log activity
+    try:
+        RoomActivityLog.objects.create(
+            room=room,
+            user=request.user,
+            action='create_work',
+            details=f'Started instant video call: {call.title}'
+        )
+    except:
+        pass
+    
+    messages.success(request, "Instant call started! Joining now...")
+    return redirect('studyroom:join_call', jitsi_room_id=call.jitsi_room_id)

@@ -435,3 +435,5 @@ def saved_items(request):
     return render(request, 'saved_items.html', {
         'saved_posts': saved_posts
     })
+
+

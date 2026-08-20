@@ -12,12 +12,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('useraccount.urls')),
     path('dashboard/', include('dashboard.urls')),
-    path('feed/', include('feedview.urls')),  # Keep feedview from feed-view branch
-    path('profiles/', include('profiles.urls')),  # Keep profiles from main branch
-    path('messages/', include('direct_message.urls')),  # ADD THIS LINE - include direct_message URLs
-    path('library/', include('studyroom.urls')),
+    path('feed/', include('feedview.urls')),
+    path('profiles/', include('profiles.urls')),
+    path('messages/', include('direct_message.urls')),
+    path('library/', include('studyroom.urls')),  # ← KEEP ONLY THIS ONE
+    # path('studyroom/', include('studyroom.urls')),  ← DELETE/REMOVE THIS LINE
     path('reviews/', include('reviews.urls')),
-    path('studyroom/', include('studyroom.urls')),
     path('ai-assistant/', include('ai_assistant.urls')),
     path('Subscription/',include('Subscription.urls')),
 ]
