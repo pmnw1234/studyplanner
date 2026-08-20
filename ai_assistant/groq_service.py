@@ -9,7 +9,9 @@ class GroqStudyAssistant:
     def __init__(self):
         try:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
-            print("✅ Groq client initialized successfully")
+            # Use a model that is actually available
+            self.model_name = "openai/gpt-oss-120b"  # Changed from llama-3.3-70b-versatile
+            print(f"✅ Groq client initialized successfully with model: {self.model_name}")
         except Exception as e:
             logger.error(f"Failed to initialize Groq client: {e}")
             self.client = None
@@ -36,7 +38,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=[
                     {"role": "system", "content": "You are a helpful study assistant. ALWAYS format your responses with a clear, concise tip. Keep it under 15 words."},
                     {"role": "user", "content": prompt}
@@ -66,13 +68,13 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=[
                     {"role": "system", "content": "You generate motivational messages. ALWAYS use **bold headers**, > for quotes, and clean formatting."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.8,
-                max_tokens=400
+                max_tokens=500  # Increased from 400
             )
             return response.choices[0].message.content
         except Exception as e:
@@ -100,7 +102,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=[
                     {"role": "system", "content": "You recommend learning resources. ALWAYS format with **bold titles**, bullet points (•), and clear separation between resources."},
                     {"role": "user", "content": prompt}
@@ -136,7 +138,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=[
                     {"role": "system", "content": "You are a study assistant. ALWAYS format responses with **bold headers**, bullet points (•), numbered steps, clear sections, and a final key takeaway. Make responses beautiful and readable."},
                     {"role": "user", "content": prompt}
@@ -168,7 +170,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=messages,
                 temperature=0.7,
                 max_tokens=900
@@ -200,7 +202,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=messages,
                 temperature=0.7,
                 max_tokens=200
@@ -232,7 +234,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=messages,
                 temperature=0.8,
                 max_tokens=500
@@ -264,7 +266,7 @@ class GroqStudyAssistant:
         
         try:
             response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=self.model_name,  # Changed to use self.model_name
                 messages=messages,
                 temperature=0.5,
                 max_tokens=800
