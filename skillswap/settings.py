@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,8 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-v3((vc&=*1li#v=41(-x8lj3san_0(&!(a=em-loz0vl43!yx1'
 
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# Production settings for PythonAnywhere
+DEBUG = False
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'pmnw.pythonanywhere.com']
+
+# CSRF trusted origins for PythonAnywhere
+CSRF_TRUSTED_ORIGINS = ['https://pmnw.pythonanywhere.com']
 
 
 # ======================
@@ -37,7 +46,6 @@ INSTALLED_APPS = [
     'reviews',
     'ai_assistant',  
     'Subscription',
-    
 ]
 
 
@@ -120,9 +128,10 @@ USE_TZ = True
 # ======================
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # ADDED for PythonAnywhere
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'   # ✅ cleaner
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ======================
@@ -141,13 +150,28 @@ LOGOUT_REDIRECT_URL = 'landing'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
-# settings.py
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
+# ======================
+# GROQ API CONFIGURATION
+# ======================
 
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 
+
+# ======================
+# LOGGING CONFIGURATION
+# ======================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
